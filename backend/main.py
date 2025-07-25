@@ -6,7 +6,7 @@ from models import DesignRequestModel, DesignResponseModel
 from exceptions import setup_exception_handlers
 from routers import design_router, health_router
 
-# Logging'i başlat
+# Initialize logging
 setup_logging()
 
 @asynccontextmanager
@@ -44,8 +44,8 @@ app.include_router(design_router, prefix="/api", tags=["Design"])
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
-        "main:app",  # Import string formatında
-        host=settings.host,      # Environment'a göre otomatik
-        port=settings.port,      # Environment'a göre otomatik  
-        reload=settings.reload   # Environment'a göre otomatik
+        "main:app",  # Import string format
+        host=settings.host,      # Automatic based on environment
+        port=settings.port,      # Automatic based on environment  
+        reload=settings.reload   # Automatic based on environment
     )

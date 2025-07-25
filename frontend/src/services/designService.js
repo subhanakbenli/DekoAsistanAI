@@ -1,23 +1,19 @@
 import { API_CONFIG } from '../config/api';
 
 /**
- * Design service - Backend API ile iletişim
+ * Design service - Backend API communication
  */
 export class DesignService {
   static async submitDesignRequest(formData) {
     try {
-      // FormData oluştur
       const formDataObj = new FormData();
       
-      // Form verilerini ekle
-      formDataObj.append('oda_tipi', formData.roomType);
-      formDataObj.append('tasarim_stili', formData.designStyle);
+      formDataObj.append('room_type', formData.roomType);
+      formDataObj.append('design_style', formData.designStyle);
       
-      // Notları ve oda boyutlarını birleştir
       const fullNotes = this.createFullNotes(formData);
-      formDataObj.append('notlar', fullNotes);
+      formDataObj.append('notes', fullNotes);
 
-      // API isteği gönder
       const response = await fetch(`${API_CONFIG.BASE_URL}/api/test`, {
         method: 'POST',
         body: formDataObj,
@@ -28,6 +24,20 @@ export class DesignService {
       }
 
       const result = await response.json();
+      
+      console.log('✅ Backend Response Received:');
+      console.log('📊 Full Response:', result);
+      console.log('🎯 Response Structure:', {
+        success: result.success,
+        message: result.message,
+        design_title: result.design_title,
+        design_description: result.design_description,
+        product_suggestion: result.product_suggestion,
+        room_type: result.room_type,
+        design_style: result.design_style,
+        notes: result.notes
+      });
+      
       return {
         success: true,
         data: result
@@ -43,12 +53,12 @@ export class DesignService {
   }
 
   /**
-   * Form verilerini tam notlar haline getirir
+   * Converts form data into comprehensive notes for AI processing
    */
   static createFullNotes(formData) {
     let notes = [];
     
-    // Oda boyutları
+    // Room dimensions
     if (formData.width && formData.length && formData.height) {
       notes.push(`Oda Boyutları: ${formData.width}cm x ${formData.length}cm x ${formData.height}cm (G x U x Y)`);
     } else if (formData.width && formData.length) {
@@ -58,7 +68,7 @@ export class DesignService {
       }
     }
 
-    // Ekstra alanlar (çıkıntılar)
+    // Extra areas (protrusions)
     if (formData.extras && formData.extras.length > 0) {
       notes.push(`Ekstra Alanlar:`);
       formData.extras.forEach((extra, index) => {
@@ -66,7 +76,7 @@ export class DesignService {
       });
     }
 
-    // Kullanıcı notları
+    // User notes
     if (formData.notes?.trim()) {
       notes.push(`Kullanıcı Notları: ${formData.notes}`);
     }

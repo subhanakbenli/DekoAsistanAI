@@ -92,16 +92,13 @@ export const useRoomDesign = () => {
       // Backend'e istek gönder
       const response = await DesignService.submitDesignRequest(form);
       
+      console.log('🔄 Hook received response:', response);
+      
       if (response.success) {
-        // Backend'den gelen veriyi işle
-        const backendResult = {
-          success: true,
-          backendData: response.data,
-          // Şimdilik mock tasarım önerisi de ekleyelim
-          designSuggestion: generateDesignSuggestion(form)
-        };
-        setResult(backendResult);
-        alert('✅ İstek başarıyla backend\'e gönderildi!');
+        // Backend'den gelen veriyi direkt result'a set et
+        console.log('✅ Setting result to:', response.data);
+        setResult(response.data);
+        alert('✅ Tasarım önerisi başarıyla oluşturuldu!');
       } else {
         throw new Error(response.error);
       }

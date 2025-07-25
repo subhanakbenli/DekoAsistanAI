@@ -6,7 +6,7 @@ router = APIRouter()
 @router.get("/")
 async def root():
     """
-    Ana endpoint - API'nin çalıştığını kontrol et.
+    Main endpoint - check if API is running.
     """
-    logger.info("Root endpoint'e istek geldi")
+    logger.info("Request received at root endpoint")
     return {"message": "API is running"}

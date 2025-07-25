@@ -5,31 +5,31 @@ from .settings import settings
 
 def setup_logging():
     """
-    Logging konfigürasyonunu ayarla
+    Set up logging configuration
     """
-    # Logs klasörünü oluştur
+    # Create logs directory
     os.makedirs("logs", exist_ok=True)
     
-    # TimedRotatingFileHandler oluştur
+    # Create TimedRotatingFileHandler
     log_handler = TimedRotatingFileHandler(
         settings.LOG_FILE,
         when="midnight",
         interval=1,
-        backupCount=settings.LOG_BACKUP_COUNT,
-        encoding=settings.LOG_ENCODING,
+        backupCount=7,
+        encoding="utf-8",
     )
     
-    # Logging'i yapılandır
+    # Configure logging
     logging.basicConfig(
         level=getattr(logging, settings.LOG_LEVEL),
         format=settings.LOG_FORMAT,
         handlers=[
             log_handler,
-            logging.StreamHandler()  # Console'a da log
+            logging.StreamHandler()  # Also log to console
         ]
     )
     
     return logging.getLogger(__name__)
 
-# Logger instance'ı al
+# Get logger instance
 logger = setup_logging()

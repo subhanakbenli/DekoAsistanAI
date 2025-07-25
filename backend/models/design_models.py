@@ -3,17 +3,27 @@ from pydantic import BaseModel, Field
 
 class DesignRequestModel(BaseModel):
     """
-    Tasarım isteği için model - main.py'dan taşındı.
+    Model for design request - moved from main.py.
     """
-    oda_tipi: str = Field(..., example="Salon")
-    tasarim_stili: str = Field(..., example="Modern")
-    notlar: str = Field(..., example="Geniş bir kitaplık ve rahat bir okuma koltuğu istiyorum...")
+    room_type: str = Field(..., example="Living Room")
+    design_style: str = Field(..., example="Modern")
+    notes: str = Field(..., example="I want a large bookshelf and a comfortable reading chair...")
 
 
 class DesignResponseModel(BaseModel):
     """
-    Tasarım cevabı için model - fotoğraf özelliği kaldırıldı.
+    Extended model for design response from Gemini.
+    According to PRD, includes design title, description and product suggestion.
     """
-    oda_tipi: str
-    tasarim_stili: str
-    notlar: str
+    room_type: str = Field(..., description="User's selected room type")
+    design_style: str = Field(..., description="User's selected design style")
+    notes: str = Field(..., description="User's special requests")
+    
+    # AI response from Gemini
+    design_title: str = Field(..., description="AI-generated design title")
+    design_description: str = Field(..., description="Detailed design description")
+    product_suggestion: str = Field(..., description="Featured product suggestion")
+    
+    # Success status
+    success: bool = Field(default=True, description="Whether the request was processed successfully")
+    message: str = Field(default="Design suggestion created successfully", description="Operation status message")

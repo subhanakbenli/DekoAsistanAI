@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class DekoAssistantException(Exception):
     """
-    Deko Assistant için özel exception sınıfı.
+    Custom exception class for Deko Assistant.
     """
     def __init__(self, message: str, status_code: int = 500):
         self.message = message
@@ -19,23 +19,23 @@ class DekoAssistantException(Exception):
 
 class AIServiceException(DekoAssistantException):
     """
-    AI servisleri (Gemini, Imagen) için exception.
+    Exception for AI services (Gemini, Imagen).
     """
-    def __init__(self, message: str = "AI servisinde hata oluştu"):
+    def __init__(self, message: str = "Error occurred in AI service"):
         super().__init__(message, status_code=503)
 
 
 class FileUploadException(DekoAssistantException):
     """
-    Dosya yükleme hataları için exception.
+    Exception for file upload errors.
     """
-    def __init__(self, message: str = "Dosya yükleme hatası"):
+    def __init__(self, message: str = "File upload error"):
         super().__init__(message, status_code=400)
 
 
 def setup_exception_handlers(app: FastAPI):
     """
-    FastAPI uygulaması için exception handler'ları ayarla.
+    Set up exception handlers for FastAPI application.
     """
     
     @app.exception_handler(DekoAssistantException)
@@ -44,7 +44,7 @@ def setup_exception_handlers(app: FastAPI):
         return JSONResponse(
             status_code=exc.status_code,
             content={
-                "error": "Deko Assistant Hatası",
+                "error": "Deko Assistant Error",
                 "message": exc.message,
                 "status_code": exc.status_code
             }
@@ -56,7 +56,7 @@ def setup_exception_handlers(app: FastAPI):
         return JSONResponse(
             status_code=exc.status_code,
             content={
-                "error": "HTTP Hatası",
+                "error": "HTTP Error",
                 "message": exc.detail,
                 "status_code": exc.status_code
             }
@@ -68,8 +68,8 @@ def setup_exception_handlers(app: FastAPI):
         return JSONResponse(
             status_code=422,
             content={
-                "error": "Veri Doğrulama Hatası",
-                "message": "Gönderilen veriler geçersiz",
+                "error": "Data Validation Error",
+                "message": "Submitted data is invalid",
                 "details": exc.errors(),
                 "status_code": 422
             }
@@ -77,12 +77,12 @@ def setup_exception_handlers(app: FastAPI):
     
     @app.exception_handler(Exception)
     async def general_exception_handler(request: Request, exc: Exception):
-        logger.error(f"Genel Hata: {str(exc)}", exc_info=True)
+        logger.error(f"General Error: {str(exc)}", exc_info=True)
         return JSONResponse(
             status_code=500,
             content={
-                "error": "Sunucu Hatası",
-                "message": "Beklenmeyen bir hata oluştu",
+                "error": "Server Error",
+                "message": "An unexpected error occurred",
                 "status_code": 500
             }
         )
