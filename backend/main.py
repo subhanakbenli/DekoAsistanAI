@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import settings, setup_logging, logger
 from models import DesignRequestModel, DesignResponseModel
 from exceptions import setup_exception_handlers
-from routers import design_router, health_router
+from routers import design_router, health_router, websocket_router
 
 # Initialize logging
 setup_logging()
@@ -40,6 +40,7 @@ setup_exception_handlers(app)
 # Include routers
 app.include_router(health_router, tags=["Health"])
 app.include_router(design_router, prefix="/api", tags=["Design"])
+app.include_router(websocket_router, prefix="/api", tags=["WebSocket"])
 
 if __name__ == "__main__":
     import uvicorn

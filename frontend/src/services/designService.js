@@ -4,7 +4,7 @@ import { API_CONFIG } from '../config/api';
  * Design service - Backend API communication
  */
 export class DesignService {
-  static async submitDesignRequest(formData) {
+  static async submitDesignRequest(formData, connectionId = null) {
     try {
       const formDataObj = new FormData();
       
@@ -13,6 +13,12 @@ export class DesignService {
       
       const fullNotes = this.createFullNotes(formData);
       formDataObj.append('notes', fullNotes);
+
+      // WebSocket connection ID ekle (eğer varsa)
+      if (connectionId) {
+        formDataObj.append('connection_id', connectionId);
+        console.log('🔗 Adding connection_id to request:', connectionId);
+      }
 
       const response = await fetch(`${API_CONFIG.BASE_URL}/api/test`, {
         method: 'POST',

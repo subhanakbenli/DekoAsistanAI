@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     GOOGLE_CLOUD_PROJECT_ID: str = "dekoasistanai"
     GENERATIVE_MODEL_NAME: str = "gemini-2.0-flash-exp"
     
+    # Imagen 4 settings
+    IMAGEN_MODEL_NAME: str = "imagen-3.0-generate-001"
+    IMAGEN_API_ENDPOINT: str = "https://us-central1-aiplatform.googleapis.com"
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

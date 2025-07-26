@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { validateForm, validateBlock, generateDesignSuggestion } from '../utils/roomDesignUtils';
 import { DesignService } from '../services/designService';
 
@@ -23,6 +23,85 @@ export const useRoomDesign = () => {
 
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // WebSocket state
+  const [moodBoard, setMoodBoard] = useState(null);
+  const [progress, setProgress] = useState(null);
+  const [isMoodBoardLoading, setIsMoodBoardLoading] = useState(false);
+  const [connectionId, setConnectionId] = useState(null);
+  const wsRef = useRef(null);
+
+  // WebSocket bağlantısı kur
+  useEffect(() => {
+    const connectWebSocket = () => {
+      try {
+        wsRef.current = new WebSocket('ws://localhost:8000/api/ws');
+        
+        wsRef.current.onopen = () => {
+          console.log('🔗 WebSocket connected');
+        };
+
+        wsRef.current.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          console.log('📨 WebSocket message:', data);
+
+          switch (data.type) {
+            case 'connection_established':
+              setConnectionId(data.connection_id);
+              console.log('✅ Connection ID set:', data.connection_id);
+              break;
+
+            case 'mood_board_progress':
+              setProgress(data.progress);
+              setIsMoodBoardLoading(true);
+              console.log('📊 Progress update:', data.progress);
+              break;
+
+            case 'mood_board_completed':
+              setMoodBoard(data.mood_board);
+              setProgress(null);
+              setIsMoodBoardLoading(false);
+              console.log('🎨 Mood board completed:', data.mood_board);
+              break;
+
+            case 'mood_board_error':
+              setProgress({ type: 'mood_board_error', error: data.error });
+              setIsMoodBoardLoading(false);
+              console.error('❌ Mood board error:', data.error);
+              break;
+
+            default:
+              console.log('📦 Unknown message type:', data.type);
+          }
+        };
+
+        wsRef.current.onclose = (event) => {
+          console.log('🔌 WebSocket disconnected:', event.code);
+          // Reconnect after 3 seconds
+          setTimeout(() => {
+            console.log('🔄 Attempting to reconnect...');
+            connectWebSocket();
+          }, 3000);
+        };
+
+        wsRef.current.onerror = (error) => {
+          console.error('🚨 WebSocket error:', error);
+        };
+
+      } catch (error) {
+        console.error('Failed to connect WebSocket:', error);
+      }
+    };
+
+    connectWebSocket();
+
+    // Cleanup
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
 
   // Form değişiklik handler'ı
   const handleChange = (e) => {
@@ -88,9 +167,14 @@ export const useRoomDesign = () => {
 
     setIsLoading(true);
     
+    // Reset mood board states
+    setMoodBoard(null);
+    setProgress(null);
+    setIsMoodBoardLoading(false);
+    
     try {
-      // Backend'e istek gönder
-      const response = await DesignService.submitDesignRequest(form);
+      // Backend'e istek gönder (connectionId ile birlikte)
+      const response = await DesignService.submitDesignRequest(form, connectionId);
       
       console.log('🔄 Hook received response:', response);
       
@@ -98,6 +182,13 @@ export const useRoomDesign = () => {
         // Backend'den gelen veriyi direkt result'a set et
         console.log('✅ Setting result to:', response.data);
         setResult(response.data);
+        
+        // Mood board loading başlat (eğer connection_id varsa)
+        if (connectionId && response.data.message && response.data.message.includes('connection:')) {
+          setIsMoodBoardLoading(true);
+          console.log('🎨 Starting mood board generation...');
+        }
+        
         alert('✅ Tasarım önerisi başarıyla oluşturuldu!');
       } else {
         throw new Error(response.error);
@@ -122,6 +213,12 @@ export const useRoomDesign = () => {
     newBlock,
     result,
     isLoading,
+    
+    // WebSocket State
+    moodBoard,
+    progress,
+    isMoodBoardLoading,
+    connectionId,
     
     // Handlers
     handleChange,

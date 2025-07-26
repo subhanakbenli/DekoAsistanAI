@@ -14,6 +14,10 @@ const RoomDesignDemo = () => {
     newBlock,
     result,
     isLoading,
+    moodBoard,
+    progress,
+    isMoodBoardLoading,
+    connectionId,
     handleChange,
     handleExtraChange,
     addBlock,
@@ -22,7 +26,7 @@ const RoomDesignDemo = () => {
   } = useRoomDesign();
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8 font-sans">
+    <div id="demo" className="min-h-screen bg-gray-900 text-white p-8 font-sans">
       <h1 className="text-3xl font-bold mb-6 text-center">🛠️ Oda Tasarımı Prototipi</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -45,7 +49,23 @@ const RoomDesignDemo = () => {
         />
 
         {/* SECTION 3 - Tasarım Önerisi */}
-        <DesignResultSection result={result} />
+        <DesignResultSection 
+          result={result} 
+          moodBoard={moodBoard}
+          progress={progress}
+          isMoodBoardLoading={isMoodBoardLoading}
+        />
+
+        {/* WebSocket Connection Status (Debugging) */}
+        {connectionId && (
+          <div className="lg:col-span-3 text-center">
+            <div className="bg-blue-900 border border-blue-600 p-2 rounded inline-block">
+              <span className="text-xs text-blue-200">
+                🔗 WebSocket ID: {connectionId.substring(0, 8)}...
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

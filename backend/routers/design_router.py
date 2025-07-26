@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Form, HTTPException
+from fastapi import APIRouter, Form, HTTPException, BackgroundTasks
+from fastapi.responses import FileResponse
 from config import logger
 from models import DesignResponseModel
-from services import GeminiService, DesignHistoryService
+from services import GeminiService, DesignHistoryService, mood_board_service, mood_board_log_service
+import os
+from datetime import datetime
 
 router = APIRouter()
 
@@ -11,9 +14,11 @@ history_service = DesignHistoryService()
 
 @router.post("/test", response_model=DesignResponseModel)
 async def design_request_endpoint(
+    background_tasks: BackgroundTasks,
     room_type: str = Form(...),
     design_style: str = Form(...),
-    notes: str = Form(...)
+    notes: str = Form(...),
+    connection_id: str = Form(None)  # WebSocket connection ID for mood board
 ):
     """
     Main design request endpoint - processes data from frontend and generates design suggestions with Gemini AI.
@@ -34,6 +39,19 @@ async def design_request_endpoint(
         
         logger.info(f"Design suggestion created successfully: {design_result['title']}")
         
+        # Start mood board generation in background if connection_id provided
+        if connection_id:
+            logger.info(f"Starting mood board generation for connection: {connection_id}")
+            background_tasks.add_task(
+                mood_board_service.generate_mood_board,
+                connection_id,
+                room_type,
+                design_style, 
+                notes,
+                design_result["title"],
+                design_result["description"]
+            )
+        
         # Save to history
         request_id = history_service.save_design_request(
             room_type=room_type,
@@ -51,7 +69,8 @@ async def design_request_endpoint(
             design_description=design_result["description"],
             product_suggestion=design_result["product_suggestion"],
             success=True,
-            message=f"Design suggestion created successfully (ID: {request_id})"
+            message=f"Design suggestion created successfully (ID: {request_id})" + 
+                   (f" - Mood board generating for connection: {connection_id}" if connection_id else "")
         )
         
     except Exception as e:
@@ -156,5 +175,158 @@ async def get_design_stats():
             "data": {},
             "message": f"Error retrieving statistics: {str(e)}"
         }
+@router.get("/mood-board/history")
+async def get_mood_board_history(limit: int = 20):
+    """
+    Get recent mood board generation history.
+    """
+    try:
+        history = mood_board_log_service.get_mood_board_history(limit=limit)
+        return {
+            "success": True,
+            "data": history,
+            "count": len(history),
+            "message": "Mood board history retrieved successfully"
+        }
+    except Exception as e:
+        logger.error(f"Error retrieving mood board history: {str(e)}")
+        return {
+            "success": False,
+            "data": [],
+            "count": 0,
+            "message": f"Error retrieving mood board history: {str(e)}"
+        }
+
+
+@router.get("/mood-board/stats")
+async def get_mood_board_stats():
+    """
+    Get mood board generation statistics.
+    """
+    try:
+        stats = mood_board_log_service.get_mood_board_stats()
+        return {
+            "success": True,
+            "data": stats,
+            "message": "Mood board statistics retrieved successfully"
+        }
+    except Exception as e:
+        logger.error(f"Error retrieving mood board stats: {str(e)}")
+        return {
+            "success": False,
+            "data": {},
+            "message": f"Error retrieving mood board statistics: {str(e)}"
+        }
+
+
+@router.get("/mood-board/{mood_board_id}")
+async def get_mood_board_by_id(mood_board_id: str):
+    """
+    Get specific mood board by ID.
+    """
+    try:
+        mood_board = mood_board_log_service.get_mood_board_by_id(mood_board_id)
+        if mood_board:
+            return {
+                "success": True,
+                "data": mood_board,
+                "message": "Mood board found successfully"
+            }
+        else:
+            return {
+                "success": False,
+                "data": None,
+                "message": "Mood board not found"
+            }
+    except Exception as e:
+        logger.error(f"Error retrieving mood board by ID: {str(e)}")
+        return {
+            "success": False,
+            "data": None,
+            "message": f"Error retrieving mood board: {str(e)}"
+        }
     
+
+@router.get("/mood-board/image/{mood_board_id}")
+async def get_mood_board_image(mood_board_id: str):
+    """
+    Get mood board image file by ID.
+    """
+    try:
+        # Get mood board info from history
+        mood_board = mood_board_log_service.get_mood_board_by_id(mood_board_id)
+        
+        if not mood_board:
+            raise HTTPException(status_code=404, detail="Mood board not found")
+        
+        # Check if file path exists in generation result
+        generation_result = mood_board.get("generation_result", {})
+        image_file_path = generation_result.get("image_file_path")
+        
+        if not image_file_path or not os.path.exists(image_file_path):
+            raise HTTPException(status_code=404, detail="Mood board image file not found")
+        
+        # Return image file
+        return FileResponse(
+            path=image_file_path,
+            media_type="image/png",
+            filename=f"mood_board_{mood_board_id[:8]}.png"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error serving mood board image: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving mood board image")
+
+
+@router.get("/mood-board/files")
+async def list_mood_board_files():
+    """
+    List all saved mood board files.
+    """
+    try:
+        mood_boards_dir = os.path.join("data", "mood_boards")
+        
+        if not os.path.exists(mood_boards_dir):
+            return {
+                "success": True,
+                "data": [],
+                "count": 0,
+                "message": "No mood board files found"
+            }
+        
+        # List PNG files in mood_boards directory
+        files = []
+        for filename in os.listdir(mood_boards_dir):
+            if filename.endswith('.png'):
+                file_path = os.path.join(mood_boards_dir, filename)
+                file_stat = os.stat(file_path)
+                
+                files.append({
+                    "filename": filename,
+                    "file_path": file_path,
+                    "size_bytes": file_stat.st_size,
+                    "created_at": datetime.fromtimestamp(file_stat.st_ctime).isoformat(),
+                    "modified_at": datetime.fromtimestamp(file_stat.st_mtime).isoformat()
+                })
+        
+        # Sort by creation time (newest first)
+        files.sort(key=lambda x: x["created_at"], reverse=True)
+        
+        return {
+            "success": True,
+            "data": files,
+            "count": len(files),
+            "message": f"Found {len(files)} mood board files"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error listing mood board files: {str(e)}")
+        return {
+            "success": False,
+            "data": [],
+            "count": 0,
+            "message": f"Error listing mood board files: {str(e)}"
+        }
     
