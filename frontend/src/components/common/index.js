@@ -8,3 +8,4 @@ export { default as DesignResults } from './DesignResults';
 export { default as Tooltip } from './Tooltip';
 export { default as ExtraBlock } from './ExtraBlock';
 export { default as RoomVisualization } from './RoomVisualization';
+export { default as ProductCard } from './ProductCard';

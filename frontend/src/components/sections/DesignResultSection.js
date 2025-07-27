@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ProductSuggestionSection from './ProductSuggestionSection';
 
 /**
  * Design suggestion result section with mood board support
@@ -79,10 +80,7 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
             </div>
 
             {/* Product Suggestions */}
-            <div className="bg-gray-800 p-3 rounded">
-              <p className="text-sm font-medium text-purple-300 mb-2">🛍️ Ürün Önerileri:</p>
-              <p className="text-xs text-gray-300 leading-relaxed">{result.product_suggestion}</p>
-            </div>
+            <ProductSuggestionSection result={result} />
 
             {/* User Notes */}
             {result.notes && (

@@ -1,11 +1,17 @@
 import React from 'react';
-import LandingPage from './components/LandingPage';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HomePage, RoomDesignStudio } from './pages';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
-      <LandingPage />
+      <Router>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/studio" element={<RoomDesignStudio />} />
+        </Routes>
+      </Router>
     </div>
   );
 }
