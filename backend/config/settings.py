@@ -8,12 +8,17 @@ class Settings(BaseSettings):
     """
     
     # FastAPI App settings
-    APP_TITLE: str = "Deko Assistant AI API"
-    APP_DESCRIPTION: str = "Deko Assistant AI API is an AI-powered application where users can get decoration suggestions."
-    APP_VERSION: str = "1.0.0"
+    APP_TITLE: str
+    APP_DESCRIPTION: str  
+    APP_VERSION: str
 
     # CORS settings
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000"]
+    ALLOWED_ORIGINS: str
+    
+    @property
+    def allowed_origins_list(self) -> List[str]:
+        """Convert comma-separated origins to list."""
+        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
     
     # Server settings - development vs production
     ENVIRONMENT: str = "development"  # development, production
@@ -26,13 +31,16 @@ class Settings(BaseSettings):
     PROD_RELOAD: bool = False        # Reload disabled in production
 
     # AI API settings
-    GEMINI_API_KEY: str = "test_key_for_development"
-    GOOGLE_CLOUD_PROJECT_ID: str = "dekoasistanai"
-    GENERATIVE_MODEL_NAME: str = "gemini-2.0-flash-exp"
+    GEMINI_API_KEY: str
+    GOOGLE_CLOUD_PROJECT_ID: str
+    GENERATIVE_MODEL_NAME: str
     
     # Imagen 4 settings
-    IMAGEN_MODEL_NAME: str = "imagen-3.0-generate-001"
-    IMAGEN_API_ENDPOINT: str = "https://us-central1-aiplatform.googleapis.com"
+    IMAGEN_MODEL_NAME: str
+    IMAGEN_API_ENDPOINT: str
+    
+    # Google Cloud Authentication
+    GOOGLE_APPLICATION_CREDENTIALS: str = ""
     
     class Config:
         env_file = ".env"
@@ -54,11 +62,11 @@ class Settings(BaseSettings):
         return self.DEV_RELOAD if self.ENVIRONMENT == "development" else self.PROD_RELOAD
     
     # Logging settings (to be used by logging_config.py)
-    LOG_LEVEL: str = "INFO"
-    LOG_FORMAT: str = "\n%(asctime)s - %(levelname)s - %(message)s"
-    LOG_FILE: str = "logs/deko_assistant.log"
-    LOG_BACKUP_COUNT: int = 7
-    LOG_ENCODING: str = "utf-8"
+    LOG_LEVEL: str
+    LOG_FORMAT: str
+    LOG_FILE: str
+    LOG_BACKUP_COUNT: int
+    LOG_ENCODING: str
     
     class Config:
         env_file = ".env"

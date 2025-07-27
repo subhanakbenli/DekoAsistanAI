@@ -334,8 +334,25 @@ Sadece prompt'u döndür, açıklama yapma.
             #     return {"base64": image_base64, "success": True}
             
             # Placeholder response for development
+            # Creating a more realistic placeholder (still fake but bigger)
+            import random
+            import time
+            
+            # Create a larger fake base64 string to simulate a real image
+            fake_png_header = "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAABHNCSVQICAgIfAhkiAAAAAlwSFlz"
+            fake_image_data = fake_png_header
+            
+            # Add random data to make it look like a real image (but still fake)
+            random.seed(hash(prompt))  # Use prompt as seed for consistency
+            for _ in range(50):  # Make it bigger
+                fake_chunk = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/', k=64))
+                fake_image_data += fake_chunk
+            
+            # Add proper PNG ending
+            fake_image_data += "AAAAASUVORK5CYII="
+            
             placeholder_image_data = {
-                "base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+                "base64": fake_image_data,
                 "success": True
             }
             

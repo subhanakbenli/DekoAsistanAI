@@ -105,6 +105,76 @@ async def design_request_endpoint(
         )
 
 
+@router.post("/test-image-generation")
+async def test_image_generation(prompt: str = Form(...)):
+    """
+    Test endpoint for Imagen API - generates image from prompt and measures execution time.
+    For testing purposes only.
+    """
+    import time
+    
+    logger.info(f"Test image generation requested with prompt: {prompt}")
+    
+    try:
+        # Start timing
+        start_time = time.time()
+        
+        # Generate image using mood board service's imagen method
+        image_result = await mood_board_service._generate_image_with_imagen(prompt)
+        
+        # Calculate execution time
+        end_time = time.time()
+        execution_time = round(end_time - start_time, 2)
+        
+        if image_result and image_result.get("success"):
+            logger.info(f"Test image generated successfully in {execution_time} seconds")
+            
+            # Save test image to file
+            if image_result.get("base64"):
+                timestamp = time.strftime("%Y%m%d_%H%M%S")
+                test_filename = f"test_image_{timestamp}.png"
+                saved_path = mood_board_service._save_mood_board_image(f"test_{timestamp}", image_result["base64"])
+                
+                return {
+                    "success": True,
+                    "message": f"Image generated successfully in {execution_time} seconds",
+                    "execution_time_seconds": execution_time,
+                    "prompt_used": prompt,
+                    "image_saved_to": saved_path,
+                    "image_base64": image_result["base64"],
+                    "model_used": mood_board_service.settings.IMAGEN_MODEL_NAME,
+                    "timestamp": timestamp
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": f"Image generation completed in {execution_time} seconds but no image data returned",
+                    "execution_time_seconds": execution_time,
+                    "prompt_used": prompt
+                }
+        else:
+            return {
+                "success": False,
+                "message": f"Image generation failed after {execution_time} seconds",
+                "execution_time_seconds": execution_time,
+                "prompt_used": prompt,
+                "error": "No result or unsuccessful generation"
+            }
+            
+    except Exception as e:
+        end_time = time.time()
+        execution_time = round(end_time - start_time, 2) if 'start_time' in locals() else 0
+        
+        logger.error(f"Error in test image generation: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Error occurred after {execution_time} seconds: {str(e)}",
+            "execution_time_seconds": execution_time,
+            "prompt_used": prompt,
+            "error": str(e)
+        }
+
+
 @router.get("/history")
 async def get_design_history(limit: int = 20):
     """
