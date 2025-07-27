@@ -40,17 +40,17 @@ async def design_request_endpoint(
         logger.info(f"Design suggestion created successfully: {design_result['title']}")
         
         # Start mood board generation in background if connection_id provided
-        if connection_id:
-            logger.info(f"Starting mood board generation for connection: {connection_id}")
-            background_tasks.add_task(
-                mood_board_service.generate_mood_board,
-                connection_id,
-                room_type,
-                design_style, 
-                notes,
-                design_result["title"],
-                design_result["description"]
-            )
+        # if connection_id:
+        #     logger.info(f"Starting mood board generation for connection: {connection_id}")
+        #     background_tasks.add_task(
+        #         mood_board_service.generate_mood_board,
+        #         connection_id,
+        #         room_type,
+        #         design_style, 
+        #         notes,
+        #         design_result["title"],
+        #         design_result["description"]
+        #     )
         
         # Save to history
         request_id = history_service.save_design_request(
@@ -68,6 +68,7 @@ async def design_request_endpoint(
             design_title=design_result["title"],
             design_description=design_result["description"],
             product_suggestion=design_result["product_suggestion"],
+            products=design_result.get("products", []),
             success=True,
             message=f"Design suggestion created successfully (ID: {request_id})" + 
                    (f" - Mood board generating for connection: {connection_id}" if connection_id else "")
@@ -80,7 +81,8 @@ async def design_request_endpoint(
         error_result = {
             "title": f"Custom {design_style} {room_type} Design",
             "description": f"We are preparing a custom design concept in {design_style.lower()} style for this {room_type.lower()}. Please try again later.",
-            "product_suggestion": "Product suggestions suitable for this design will be added soon"
+            "product_suggestion": "Product suggestions suitable for this design will be added soon",
+            "products": []
         }
         
         request_id = history_service.save_design_request(
@@ -100,6 +102,7 @@ async def design_request_endpoint(
             design_title=f"Custom {design_style} {room_type} Design",
             design_description=f"We are preparing a custom design concept in {design_style.lower()} style for this {room_type.lower()}. Please try again later.",
             product_suggestion="Product suggestions suitable for this design will be added soon",
+            products=[],
             success=False,
             message=f"A temporary error occurred: {str(e)} (ID: {request_id})"
         )

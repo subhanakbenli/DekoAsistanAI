@@ -8,38 +8,24 @@ import { CATEGORY_ICONS, filterValidProducts } from '../../utils/productUtils';
  * @param {Object} result - Design result data
  */
 const ProductSuggestionSection = ({ result }) => {
-  // Debug: Console log to check data structure
-  console.log('ProductSuggestionSection - Result data:', result);
-  console.log('ProductSuggestionSection - Products array:', result?.products);
-  
   // Validate and filter products
   const validProducts = filterValidProducts(result.products);
   const hasValidProducts = validProducts.length > 0;
-  
-  console.log('ProductSuggestionSection - Valid products:', validProducts);
-  console.log('ProductSuggestionSection - Has valid products:', hasValidProducts);
 
   // Test için geçici mock data (backend henüz yeni format göndermiyorsa)
   const mockProducts = [
     {
       category: "Mobilyalar",
-      name: "L Şeklinde Koltuk Takımı",
-      description: "Modern tasarım, rahat oturma için ideal"
-    },
-    {
-      category: "Aydınlatma",
-      name: "LED Avize",
-      description: "Sıcak ışık, dimmer özelliği"
-    },
-    {
-      category: "Dekoratif Ürünler",
-      name: "Modern Halı",
-      description: "Geometrik desen, yumuşak dokulu"
+      name: "Test Koltuk",
+      description: "Bu mock data - gerçek data geldiğinde kaybolacak"
     }
   ];
 
-  // Eğer backend'den products gelmiyorsa test için mock data kullan
-  const productsToShow = hasValidProducts ? validProducts : mockProducts;
+  // Gerçek data varsa onu kullan, yoksa mock data
+  const productsToShow = hasValidProducts ? validProducts : (
+    // Mock data'yı sadece hiç gerçek data yoksa göster
+    validProducts.length === 0 && result?.products === undefined ? mockProducts : []
+  );
 
   return (
     <div className="bg-gray-800 p-4 rounded-lg">
@@ -65,12 +51,13 @@ const ProductSuggestionSection = ({ result }) => {
         ))}
       </div>
 
-      {/* Debug bilgisi */}
+      {/* Debug bilgisi - Sadece debug amaçlı */}
       <div className="mt-4 p-2 bg-yellow-900/20 border border-yellow-600 rounded text-xs">
-        <p className="text-yellow-300">DEBUG:</p>
+        <p className="text-yellow-300">DEBUG INFO:</p>
         <p className="text-yellow-200">Has valid products: {hasValidProducts ? 'YES' : 'NO'}</p>
         <p className="text-yellow-200">Products count: {validProducts.length}</p>
-        <p className="text-yellow-200">Using: {hasValidProducts ? 'Real data' : 'Mock data'}</p>
+        <p className="text-yellow-200">Raw products length: {result?.products?.length || 0}</p>
+        <p className="text-yellow-200">Using: {hasValidProducts ? 'Real backend data' : 'No data available'}</p>
       </div>
 
       {/* Fallback sadece gerçek data yokken ve mock da çalışmıyorsa */}
