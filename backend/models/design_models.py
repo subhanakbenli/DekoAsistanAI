@@ -1,4 +1,15 @@
 from pydantic import BaseModel, Field
+from typing import List, Dict, Any
+
+
+class ProductModel(BaseModel):
+    """
+    Model for individual product information.
+    """
+    category: str = Field(..., description="Product category")
+    name: str = Field(..., description="Product name")
+    description: str = Field(..., description="Product description")
+    type: str = Field(default="product", description="Product type")
 
 
 class DesignRequestModel(BaseModel):
@@ -22,7 +33,8 @@ class DesignResponseModel(BaseModel):
     # AI response from Gemini
     design_title: str = Field(..., description="AI-generated design title")
     design_description: str = Field(..., description="Detailed design description")
-    product_suggestion: str = Field(..., description="Featured product suggestion")
+    product_suggestion: str = Field(..., description="Featured product suggestion (text format)")
+    products: List[ProductModel] = Field(default=[], description="Structured product list")
     
     # Success status
     success: bool = Field(default=True, description="Whether the request was processed successfully")

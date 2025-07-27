@@ -80,39 +80,35 @@ Sen bir uzman iç mimar ve dekorasyon danışmanısın. Türkiye'de yaşayan bir
 **ÖNEMLİ:** Cevabını mutlaka aşağıdaki JSON formatında ver. Başka hiçbir metin ekleme, sadece JSON:
 
 {{
-  "title": "Kısa ve çekici tasarım başlığı (maksimum 50 karakter)",
-  "description": "Bu {room_type.lower()} için {design_style.lower()} konsepti hakkında 2-3 cümle ile özet. Renk paleti ve genel atmosfer hakkında bilgi.",
+  "title": "Tasarım başlığı (maksimum 60 karakter)",
+  "description": "Bu tasarım hakkında detaylı açıklama. Renk paleti, atmosfer, stil özellikleri hakkında bilgi ver.",
   "products": [
     {{
-      "category": "Mobilyalar",
+      "category": "Kategori adı",
       "name": "Ürün adı",
-      "description": "Ürün açıklaması ve neden gerekli olduğu"
+      "description": "Ürün detayları ve neden önerildiği"
     }},
     {{
-      "category": "Aydınlatma",
-      "name": "Ürün adı", 
-      "description": "Ürün açıklaması ve neden gerekli olduğu"
-    }},
-    {{
-      "category": "Dekoratif Ürünler",
+      "category": "Kategori adı",
       "name": "Ürün adı",
-      "description": "Ürün açıklaması ve neden gerekli olduğu"
-    }},
-    {{
-      "category": "Aksesuarlar",
-      "name": "Ürün adı",
-      "description": "Ürün açıklaması ve neden gerekli olduğu"
+      "description": "Ürün detayları ve neden önerildiği"
     }}
   ]
 }}
 
-**Kategoriler:** Sadece şu kategorileri kullan: "Mobilyalar", "Aydınlatma", "Dekoratif Ürünler", "Aksesuarlar"
+**Format Kuralları:**
+- "title": Kısa ve çekici başlık (maksimum 60 karakter)
+- "description": Tasarım konsepti hakkında kapsamlı açıklama (2-4 cümle)
+- "products": Ürün listesi array'i
+  - "category": Ürün kategorisi (örn: "Mobilyalar", "Aydınlatma", "Tekstil", "Dekoratif Objeler" vs.)
+  - "name": Ürün adı (maksimum 40 karakter)
+  - "description": Ürün açıklaması (maksimum 120 karakter)
 
-**Önemli:** 
-- Her kategoriden EN AZ 2 ürün öner
-- Ürün isimleri kısa ve net olsun (maksimum 30 karakter)
-- Açıklamalar öz ve bilgilendirici olsun (maksimum 80 karakter)
+**Önemli:**
+- İstediğin kategorileri kullanabilirsin, sınırlama yok
+- Kaç ürün önereceğin sana kalmış (önerilen: 6-12 ürün)
 - Sadece JSON formatında cevap ver, başka hiçbir metin ekleme
+- Kullanıcının özel isteklerini dikkate al
 """
         return prompt
     

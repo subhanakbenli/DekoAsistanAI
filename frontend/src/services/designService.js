@@ -17,7 +17,6 @@ export class DesignService {
       // WebSocket connection ID ekle (eğer varsa)
       if (connectionId) {
         formDataObj.append('connection_id', connectionId);
-        console.log('🔗 Adding connection_id to request:', connectionId);
       }
 
       const response = await fetch(`${API_CONFIG.BASE_URL}/api/test`, {
@@ -31,22 +30,15 @@ export class DesignService {
 
       const result = await response.json();
       
-      console.log('✅ Backend Response Received:');
-      console.log('📊 Full Response:', result);
-      console.log('🎯 Response Structure:', {
-        success: result.success,
-        message: result.message,
-        design_title: result.design_title,
-        design_description: result.design_description,
-        product_suggestion: result.product_suggestion,
-        room_type: result.room_type,
-        design_style: result.design_style,
-        notes: result.notes
-      });
+      // Backend Response - Single log to show API response
+      console.log('� Backend API Response:', result);
+      
+      // Backend response structure check - actual data is in 'output' field
+      const actualData = result.output || result;
       
       return {
         success: true,
-        data: result
+        data: actualData  // Use actualData instead of result
       };
 
     } catch (error) {

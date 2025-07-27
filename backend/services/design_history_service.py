@@ -56,6 +56,7 @@ class DesignHistoryService:
                     "design_title": design_result.get("title", ""),
                     "design_description": design_result.get("description", ""),
                     "product_suggestion": design_result.get("product_suggestion", ""),
+                    "products": design_result.get("products", []),
                     "raw_response": design_result.get("raw_response", "")
                 },
                 "error_message": error_message

@@ -3,13 +3,17 @@
  */
 
 /**
- * Category icons mapping
+ * Category icons mapping - Updated with new categories from backend
  */
 export const CATEGORY_ICONS = {
   'Mobilyalar': '🪑',
   'Aydınlatma': '💡',
   'Dekoratif Ürünler': '🎨',
-  'Aksesuarlar': '✨'
+  'Aksesuarlar': '✨',
+  'Tekstil': '🧵',
+  'Dekoratif Objeler': '🏺',
+  'Bitkiler': '🪴',
+  'Perdeler': '🪟'
 };
 
 /**
