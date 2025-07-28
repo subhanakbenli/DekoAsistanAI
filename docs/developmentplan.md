@@ -12,64 +12,83 @@ Bu haftanın ana hedefi, projenin iskeletini kurmak, backend ve frontend'in teme
 
 * **Görevler:**  
   * \[ \] GitHub repository oluşturma, main ve develop branch'lerini açma.  
-  * \[ \] **Backend (Geliştirici 1):** FastAPI projesini başlatma, temel dosya yapısını (main.py, routers/, services/) oluşturma.  
-  * \[ \] **Frontend (Geliştirici 2):** React (Vite) projesini başlatma, temel dosya yapısını (components/, pages/) oluşturma ve Tailwind CSS'i entegre etme.  
+  * \[ \] **Backend (Geliştirici 1):** FastAPI projesini başlatma, temel dosya yapısını (main.py, routers/, services/, models/) oluşturma.  
+  * \[ \] **Backend (Geliştirici 1):** PostgreSQL veritabanı kurulumu ve SQLAlchemy ORM konfigürasyonu.  
+  * \[ \] **Backend (Geliştirici 1):** Kullanıcı modeli ve JWT kimlik doğrulama sistemi altyapısı.  
+  * \[ \] **Frontend (Geliştirici 2):** React (Vite) projesini başlatma, React Router ve Tailwind CSS entegrasyonu.  
+  * \[ \] **Frontend (Geliştirici 2):** Temel sayfa yapısı (Ana sayfa, Giriş, Kayıt, Favoriler, Blog).  
   * \[ \] **Backend (Geliştirici 1):** .env dosyası ile API anahtarlarını güvenli bir şekilde yönetme altyapısını kurma.  
   * \[ \] **Ortak Görev:** products.json dosyasını oluşturma (15-20 örnek ürünle başlangıç).
 
-#### **🧠 Gün 3-4: Backend Çekirdek Mantığı ve Frontend Arayüzü (25-26 Temmuz)**
+#### **🧠 Gün 3-4: Kimlik Doğrulama ve Temel UI (25-26 Temmuz)**
 
 * **Görevler (Backend \- Geliştirici 1):**  
+  * \[ \] Kullanıcı kayıt ve giriş endpoint'lerini oluşturma (/auth/register, /auth/login).  
+  * \[ \] JWT token oluşturma ve doğrulama middleware'i.  
+  * \[ \] Favori sistemi için veritabanı modellerini oluşturma.  
   * \[ \] /api/tasarim endpoint'ini oluşturma.  
   * \[ \] multipart/form-data ile metin ve resim dosyasını alacak Pydantic modellerini tanımlama.  
-  * \[ \] Gemini API'ye metin ve görsel prompt gönderecek temel servis fonksiyonunu yazma.  
-  * \[ \] Imagen API'ye prompt gönderip görsel üretecek temel servis fonksiyonunu yazma.  
 * **Görevler (Frontend \- Geliştirici 2):**  
-  * \[ \] AI asistanlarla temel UI bileşenlerini (Form, dosya yükleme, buton, sonuç kartları) oluşturma.  
-  * \[ \] Ana sayfanın statik tasarımını (veri göndermeden) Tailwind CSS ile tamamlama.
+  * \[ \] Giriş ve kayıt sayfalarının UI'ını oluşturma.  
+  * \[ \] JWT token yönetimi için context/state yapısı kurma.  
+  * \[ \] Ana sayfa tasarım formunun temel yapısını oluşturma.  
+  * \[ \] Pencere/kapı konumu seçimi için interaktif harita komponenti.
 
-#### **🔗 Gün 5-7: Function Calling ve Entegrasyon Hazırlığı (27-29 Temmuz)**
+#### **🔗 Gün 5-7: AI Servisleri ve Function Calling (27-29 Temmuz)**
 
 * **Görevler (Backend \- Geliştirici 1):**  
+  * \[ \] Gemini API'ye metin ve görsel prompt gönderecek temel servis fonksiyonunu yazma.  
+  * \[ \] Imagen API'ye prompt gönderip görsel üretecek temel servis fonksiyonunu yazma.  
   * \[ \] **Function Calling:** urun\_bul fonksiyonunu tanımlama (products.json içinde arama yapacak).  
-  * \[ \] Gemini API isteğine bu fonksiyon tanımını ekleme ve konuşma geçmişini yönetme (in-memory dictionary yöntemi).  
-  * \[ \] Tüm AI mantığını tek bir servis/class altında birleştirerek temiz bir yapı oluşturma.  
+  * \[ \] Ürün bazlı güncelleme için AI'ya istek atma endpoint'i (/api/update-product).  
+  * \[ \] Gemini API isteğine fonksiyon tanımını ekleme ve konuşma geçmişini yönetme.  
+  * \[ \] Favori ekleme/çıkarma endpoint'lerini oluşturma (/api/favorites).  
 * **Görevler (Frontend \- Geliştirici 2):**  
-  * \[ \] axios kullanarak backend'e API isteği atma mantığını kurma.  
-  * \[ \] Yükleme (loading) ve hata (error) durumlarını yönetecek state'leri ekleme.  
-  * \[ \] Sonuçların (metin, resim, ürün linki) gösterileceği alanları dinamik hale getirme.
+  * \[ \] Tasarım sonuç sayfasının UI'ını oluşturma (mood board, ürün listesi).  
+  * \[ \] Favori ekleme butonları ve favori sayfası UI'ı.  
+  * \[ \] Ürün bazlı güncelleme için "Başka bir şey öner" butonları.  
+  * \[ \] Blog sayfası ve tasarım paylaşım UI'ı.
 
 #### **✅ Hafta 1 Sonu Değerlendirmesi (30 Temmuz Akşamı)**
 
-* **Hedef:** Backend ve Frontend'in temel entegrasyonu tamamlanmış olmalı. Frontend'den gönderilen bir istek, backend'de işlenip (henüz tam olmasa da) bir cevap döndürebilmeli.
+* **Hedef:** Backend kimlik doğrulama sistemi, temel UI sayfaları ve AI servislerinin çekirdek mantığı tamamlanmış olmalı. Kullanıcı girişi yapabilmeli, tasarım formu doldurabilmeli ve favori sistemi altyapısı hazır olmalı.
 
 ### **Hafta 2: Entegrasyon, İyileştirme ve Teslimat (31 Temmuz \- 6 Ağustos)**
 
 Bu haftanın ana hedefi, projeyi uçtan uca çalışır hale getirmek, kullanıcı deneyimini iyileştirmek, canlıya almak ve sunuma hazırlanmaktır.
 
-#### **🤝 Gün 8-9: Uçtan Uca Entegrasyon ve Test (31 Temmuz \- 1 Ağustos)**
+#### **🤝 Gün 8-9: Uçtan Uca Entegrasyon ve Veritabanı (31 Temmuz \- 1 Ağustos)**
 
 * **Görevler (Ortak Çalışma):**  
   * \[ \] Frontend ve Backend'i tam olarak birbirine bağlama.  
-  * \[ \] Kullanıcının girdiği verilerin backend'e doğru ulaştığından ve AI servislerine doğru iletildiğinden emin olma.  
-  * \[ \] Backend'den dönen (tasarım metni, mood board URL'i, ürün bilgisi) verilerin frontend'de doğru şekilde gösterilmesi.  
+  * \[ \] Kullanıcı girişi ve JWT token doğrulamasını test etme.  
+  * \[ \] Tasarım oluşturma, favori ekleme/çıkarma akışını uçtan uca test etme.  
+  * \[ \] Blog paylaşım sistemi entegrasyonu.  
+  * \[ \] Ürün güncelleme işlevselliğini test etme.  
+  * \[ \] Veritabanı bağlantısı ve veri kalıcılığını test etme.  
   * \[ \] İlk uçtan uca MVP testini gerçekleştirme ve çıkan hataları (bug) çözme.
 
-#### **✨ Gün 10-11: İyileştirme ve "Should-Have" Özellikler (2-3 Ağustos)**
+#### **✨ Gün 10-11: İyileştirme ve Kullanıcı Deneyimi (2-3 Ağustos)**
 
 * **Görevler:**  
-  * \[ \] **UI/UX (Geliştirici 2):** Arayüzde küçük iyileştirmeler yapma (geçişler, animasyonlar, mobil uyumluluk).  
+  * \[ \] **UI/UX (Geliştirici 2):** Tüm sayfalar arası geçişleri iyileştirme (animasyonlar, loading states).  
+  * \[ \] **UI/UX (Geliştirici 2):** Favori sayfası ve blog sayfası kullanıcı deneyimini optimize etme.  
+  * \[ \] **UI/UX (Geliştirici 2):** Mobil uyumluluk kontrolü ve düzenlemeler.  
   * \[ \] **Prompt Engineering (Geliştirici 1):** Gemini ve Imagen'den daha tutarlı ve kaliteli sonuçlar almak için prompt'ları iyileştirme.  
-  * \[ \] **Hata Yönetimi (Ortak):** API'den hata dönerse kullanıcıya anlamlı bir mesaj gösterme.  
+  * \[ \] **Backend (Geliştirici 1):** Veritabanı sorgu optimizasyonları ve performans iyileştirmeleri.  
+  * \[ \] **Hata Yönetimi (Ortak):** Tüm API endpoint'leri için hata durumları ve kullanıcı dostu mesajlar.  
   * \[ \] **F2.1:** "Yeniden Dene" butonunu ekleme.  
   * \[ \] **F2.2:** "Panoya Kopyala" butonunu ekleme.
 
-#### **🚀 Gün 12-13: Deployment ve Son Testler (4-5 Ağustos)**
+#### **🚀 Gün 12-13: Deployment ve Veritabanı Canlıya Alma (4-5 Ağustos)**
 
 * **Görevler:**  
-  * \[ \] **Backend Deployment (Geliştirici 1):** Projeyi DigitalOcean VDS'e deploy etme (Nginx \+ Gunicorn konfigürasyonu).  
-  * \[ \] **Frontend Deployment (Geliştirici 2):** Projeyi Vercel'e deploy etme ve backend API adresini doğru şekilde ayarlama.  
-  * \[ \] **Test (Ortak):** Canlı ortamda kapsamlı testler yapma (farklı tarayıcılar, mobil cihazlar). Olası CORS hatalarını çözme.
+  * \[ \] **Backend Deployment (Geliştirici 1):** PostgreSQL veritabanını cloud'a kurma (DigitalOcean Managed Database).  
+  * \[ \] **Backend Deployment (Geliştirici 1):** Backend uygulamasını DigitalOcean VDS'e deploy etme (Nginx \+ Gunicorn konfigürasyonu).  
+  * \[ \] **Frontend Deployment (Geliştirici 2):** Frontend'i Vercel'e deploy etme ve backend API adresini doğru şekilde ayarlama.  
+  * \[ \] **Database Migration (Geliştirici 1):** Production veritabanında tüm tabloları oluşturma ve test verilerini ekleme.  
+  * \[ \] **Test (Ortak):** Canlı ortamda kapsamlı testler yapma (kullanıcı kayıt/giriş, tasarım oluşturma, favori ekleme, blog paylaşım).  
+  * \[ \] **Test (Ortak):** Farklı tarayıcılar ve mobil cihazlarda test. CORS hatalarını çözme.
 
 #### **🏆 Gün 14: Sunum Hazırlığı ve TESLİM\! (6 Ağustos, 19:00'a kadar)**
 

@@ -30,49 +30,62 @@ Türkiye'de yaşayan, teknolojiye yatkın, evini/odasını yenilemek isteyen anc
 
 #### **V1.0 \- MVP (Olması Gerekenler / Must-Have)**
 
-* **F1.1: Kullanıcı Arayüzü:** Tek sayfadan oluşan, temiz ve basit bir web arayüzü.  
-* **F1.2: Yapısal Veri Girişi:** Odaklanmış bir form ile şu bilgilerin alınması: Oda Tipi, Tasarım Stili.  
-* **F1.3: Serbest Metin Girişi:** Kullanıcının özel istekleri için bir "Notlarınız" metin alanı.  
-* **F1.4: Görsel Yükleme:** Kullanıcının odasının fotoğrafını yükleyebileceği, isteğe bağlı bir alan.  
-* **F1.5: Backend API Endpoint'i:** Frontend'den gelen tüm verileri (multipart/form-data olarak) kabul eden ve Gemini API'sine gönderen tek bir /api/tasarim endpoint'i.  
-* **F1.6: Tasarım Metni Gösterimi:** Gemini'dan dönen detaylı tasarım önerisi metninin ekranda gösterilmesi.  
-* **F1.7: Mood Board Gösterimi:** Tasarım metnine uygun olarak Imagen API ile üretilen ilham panosu görselinin ekranda gösterilmesi.  
-* **F1.8: Ürün Önerisi (Function Calling):** Gemini'ın Function Calling ile statik products.json dosyası içinden tasarıma uygun **tek bir ürünü** bulup linkini "Öne Çıkan Ürün" olarak göstermesi.  
-* **F1.9: Yükleme Durumu (Loading State):** "Tasarla" butonuna basıldıktan sonra sonuçlar gelene kadar "DekoAsistan'ınız odanızı hayal ediyor..." gibi bir animasyon veya metin gösterilmesi.
+* **F1.1: Kullanıcı Arayüzü:** Çok sayfalı, temiz ve modern bir web arayüzü (Ana sayfa, Giriş, Favoriler, Blog).  
+* **F1.2: Kullanıcı Girişi ve Yetkilendirme:** Basit email/şifre tabanlı kullanıcı girişi ve kayıt sistemi.  
+* **F1.3: Yapısal Veri Girişi:** Odaklanmış bir form ile şu bilgilerin alınması: Oda Tipi, Tasarım Stili.  
+* **F1.4: Mekan Detayları:** Kullanıcının odanın pencere ve kapı konumlarını belirtebileceği interaktif alan seçimi.  
+* **F1.5: Serbest Metin Girişi:** Kullanıcının özel istekleri için bir "Notlarınız" metin alanı.  
+* **F1.6: Görsel Yükleme:** Kullanıcının odasının fotoğrafını yükleyebileceği, isteğe bağlı bir alan.  
+* **F1.7: Backend API Endpoint'leri:** Frontend'den gelen tüm verileri (multipart/form-data olarak) kabul eden ve Gemini API'sine gönderen tasarım endpoint'leri.  
+* **F1.8: Tasarım Metni Gösterimi:** Gemini'dan dönen detaylı tasarım önerisi metninin ekranda gösterilmesi.  
+* **F1.9: Mood Board Gösterimi:** Tasarım metnine uygun olarak Imagen API ile üretilen ilham panosu görselinin ekranda gösterilmesi.  
+* **F1.10: Ürün Önerileri (Function Calling):** Gemini'ın Function Calling ile statik products.json dosyası içinden tasarıma uygun **birden fazla ürünü** bulup linklerini göstermesi.  
+* **F1.11: Ürün Bazlı Güncelleme:** Kullanıcının belirli ürünler için AI'ya yeniden tasarım isteklerinde bulunabilmesi.  
+* **F1.12: Favori Sistemi:** Kullanıcının tekil ürünleri veya tüm tasarım setini (input+output) favorilerine ekleyebilmesi.  
+* **F1.13: Blog Paylaşım Sistemi:** Kullanıcının beğendiği tasarımları blog formatında paylaşabilmesi.  
+* **F1.14: Yükleme Durumu (Loading State):** "Tasarla" butonuna basıldıktan sonra sonuçlar gelene kadar "DekoAsistan'ınız odanızı hayal ediyor..." gibi bir animasyon veya metin gösterilmesi.
 
 #### **Olsa İyi Olur (Should-Have)**
 
 * **F2.1:** Kullanıcının aynı bilgilerle farklı bir öneri istemesi için "Yeniden Dene" butonu.  
-* **F2.2:** Üretilen tasarım metni için "Panoya Kopyala" butonu.
+* **F2.2:** Üretilen tasarım metni için "Panoya Kopyala" butonu.  
+* **F2.3:** Tasarım geçmişini görüntüleme özelliği.  
+* **F2.4:** Sosyal medya entegrasyonu ile tasarım paylaşımı.
 
 #### **Kapsam Dışı (Won't-Have)**
 
-* Kullanıcı girişi, üyelik veya profil sistemleri.  
-* Geçmiş tasarımların kaydedilmesi.  
-* Veritabanı entegrasyonu.  
 * Gerçek zamanlı web kazıma (scraping).  
-* Çoklu dil desteği.
+* Çoklu dil desteği.  
+* Üçüncü parti e-ticaret entegrasyonu.  
+* Mobil uygulama geliştirme.
 
 ### **6\. Kullanıcı Akışı (User Flow)**
 
 1. Kullanıcı web sitesine giriş yapar.  
-2. Formdaki alanları (Oda Tipi: Salon, Stil: Modern) doldurur.  
-3. Notlar kutusuna "Geniş bir kitaplık ve rahat bir okuma koltuğu istiyorum" yazar.  
-4. (İsteğe bağlı) Salonunun boş bir köşesinin fotoğrafını yükler.  
-5. "Hayal Et\!" butonuna tıklar.  
-6. Ekranda yükleme animasyonu belirir.  
-7. Yaklaşık 10-15 saniye sonra sayfa güncellenir ve sonuçlar gösterilir:  
+2. Kullanıcı hesabı yoksa kayıt olur, varsa giriş yapar.  
+3. Ana sayfada tasarım formunu görür ve alanları doldurur:  
+   * Oda Tipi: Salon, Stil: Modern  
+   * Pencere ve kapı konumlarını interaktif harita üzerinde işaretler  
+4. Notlar kutusuna "Geniş bir kitaplık ve rahat bir okuma koltuğu istiyorum" yazar.  
+5. (İsteğe bağlı) Salonunun boş bir köşesinin fotoğrafını yükler.  
+6. "Hayal Et\!" butonuna tıklar.  
+7. Ekranda yükleme animasyonu belirir.  
+8. Yaklaşık 10-15 saniye sonra sayfa güncellenir ve sonuçlar gösterilir:  
    * Başlık: "Modern ve Aydınlık Okuma Köşeniz"  
    * Detaylı açıklama metni.  
    * Üretilmiş Mood Board görseli.  
-   * Öne Çıkan Ürün: "İskandinav Tarzı Okuma Koltuğu \- \[Ürün Linki\]".
+   * Önerilen Ürünler listesi (3-5 adet).  
+9. Kullanıcı beğendiği ürünleri favoriye ekler veya tüm tasarımı favoriye alır.  
+10. İsterse belirli ürünler için "Bu ürün yerine başka bir şey öner" diyerek AI'dan güncelleme talep eder.  
+11. Tasarımından memnunsa blog sayfasında paylaşır.
 
 ### **7\. Teknik Yığın (Tech Stack)**
 
-* **Backend:** Python 3.11+, FastAPI  
-* **Frontend:** React (Vite), Tailwind CSS  
+* **Backend:** Python 3.11+, FastAPI, SQLAlchemy (ORM), PostgreSQL (Veritabanı)  
+* **Frontend:** React (Vite), Tailwind CSS, React Router (Sayfa yönlendirme)  
 * **AI API'leri:** Google Gemini API (Metin, Analiz, Function Calling), Google Imagen API (Görsel Üretme)  
-* **Veri:** products.json (Statik ürün veri seti)  
+* **Veri:** products.json (Statik ürün veri seti), PostgreSQL (Kullanıcı verileri, favoriler, blog yazıları)  
+* **Kimlik Doğrulama:** JWT (JSON Web Tokens)  
 * **Deployment:** Vercel (Frontend), DigitalOcean VDS \+ Nginx \+ Gunicorn (Backend)  
 * **Geliştirme Araçları:** Git, GitHub, VS Code, GitHub Copilot, Gemini
 

@@ -42,9 +42,41 @@ class Settings(BaseSettings):
     # Google Cloud Authentication
     GOOGLE_APPLICATION_CREDENTIALS: str = ""
     
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    # Database settings
+    DB_HOST: str = "localhost"
+    DB_PORT: int = 5432
+    DB_NAME: str = "dekodb"
+    DB_USER: str = "dekouser"
+    DB_PASSWORD: str = "REDACTED_DB_PASSWORD"
+    
+    # Authentication settings
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    @property
+    def db_user(self) -> str:
+        return self.DB_USER
+    
+    @property
+    def db_password(self) -> str:
+        return self.DB_PASSWORD
+    
+    @property
+    def db_host(self) -> str:
+        return self.DB_HOST
+    
+    @property
+    def db_port(self) -> int:
+        return self.DB_PORT
+    
+    @property
+    def db_name(self) -> str:
+        return self.DB_NAME
+    
+    @property
+    def debug(self) -> bool:
+        return self.ENVIRONMENT == "development"
     
     @property
     def host(self) -> str:
@@ -67,6 +99,13 @@ class Settings(BaseSettings):
     LOG_FILE: str
     LOG_BACKUP_COUNT: int
     LOG_ENCODING: str
+    
+    # Additional database settings from .env
+    DATABASE_URL: str = ""
+    SYNC_DATABASE_URL: str = ""
+    DB_POOL_SIZE: int = 20
+    DB_MAX_OVERFLOW: int = 0
+    DB_POOL_PRE_PING: bool = True
     
     class Config:
         env_file = ".env"
