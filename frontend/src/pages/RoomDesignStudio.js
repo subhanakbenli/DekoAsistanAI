@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useRoomDesign } from '../hooks/useRoomDesign';
+import { useAuth } from '../contexts/AuthContext';
 import { RoomDimensionsSection, RoomInfoSection, DesignResultSection } from '../components/sections';
 
 /**
@@ -8,6 +9,7 @@ import { RoomDimensionsSection, RoomInfoSection, DesignResultSection } from '../
  * AI-powered room design and visualization platform
  */
 const RoomDesignStudio = () => {
+  const { user, logout } = useAuth();
   const {
     form,
     newBlock,
@@ -47,6 +49,18 @@ const RoomDesignStudio = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <div className="text-right mr-4">
+                <div className="text-sm text-gray-300">Hoş geldiniz,</div>
+                <div className="font-semibold text-white">
+                  {user?.first_name} {user?.last_name}
+                </div>
+              </div>
+              <button
+                onClick={logout}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors text-sm"
+              >
+                Çıkış
+              </button>
               <div className="text-right">
                 <p className="text-xs text-gray-400">Beta Sürümü</p>
                 <p className="text-xs text-purple-300">Gemini AI ile Güçlendirildi</p>

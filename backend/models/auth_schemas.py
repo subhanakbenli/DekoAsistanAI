@@ -9,7 +9,7 @@ from datetime import datetime
 class UserRegisterRequest(BaseModel):
     """User registration request schema."""
     email: EmailStr = Field(..., description="Valid email address")
-    username: str = Field(..., min_length=3, max_length=50, description="Username (3-50 chars)")
+    username: Optional[str] = Field(None, min_length=3, max_length=50, description="Username (3-50 chars, optional)")
     password: str = Field(..., min_length=8, description="Password (min 8 chars)")
     first_name: Optional[str] = Field(None, max_length=100, description="First name")
     last_name: Optional[str] = Field(None, max_length=100, description="Last name")

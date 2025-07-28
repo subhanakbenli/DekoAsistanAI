@@ -65,12 +65,28 @@ def setup_exception_handlers(app: FastAPI):
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
         logger.warning(f"Validation Error: {exc.errors()}")
+        
+        # Convert any non-serializable objects to string
+        error_details = []
+        for error in exc.errors():
+            serializable_error = {}
+            for key, value in error.items():
+                try:
+                    # Test if value is JSON serializable
+                    import json
+                    json.dumps(value)
+                    serializable_error[key] = value
+                except (TypeError, ValueError):
+                    # Convert to string if not serializable
+                    serializable_error[key] = str(value)
+            error_details.append(serializable_error)
+        
         return JSONResponse(
             status_code=422,
             content={
                 "error": "Data Validation Error",
                 "message": "Submitted data is invalid",
-                "details": exc.errors(),
+                "details": error_details,
                 "status_code": 422
             }
         )

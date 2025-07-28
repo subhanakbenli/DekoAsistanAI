@@ -32,3 +32,6 @@ class Base(DeclarativeBase):
 async def get_async_session():
     async with async_session_maker() as session:
         yield session
+
+# Alias for compatibility
+get_db = get_async_session

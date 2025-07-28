@@ -2,8 +2,8 @@
 Authentication router for user management endpoints.
 """
 from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import APIRouter, Depends, HTTPException, status, Form
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -70,13 +70,30 @@ async def register_user(
                 detail="Password must be at least 8 characters and contain letters and numbers"
             )
         
+        # Generate username from email if not provided
+        username = user_data.username
+        if not username:
+            # Extract username part from email and make it unique
+            email_parts = user_data.email.split('@')
+            base_username = email_parts[0].lower()
+            
+            # Check if username exists and make it unique
+            counter = 1
+            username = base_username
+            while True:
+                result = await db.execute(select(User).where(User.username == username))
+                if result.scalar_one_or_none() is None:
+                    break
+                username = f"{base_username}{counter}"
+                counter += 1
+        
         # Hash password
         hashed_password = AuthService.get_password_hash(user_data.password)
         
         # Create user
         new_user = User(
             email=user_data.email,
-            username=user_data.username,
+            username=username,
             hashed_password=hashed_password,
             first_name=user_data.first_name,
             last_name=user_data.last_name
@@ -105,15 +122,15 @@ async def register_user(
 
 @router.post("/login", response_model=UserLoginResponse)
 async def login_user(
-    user_data: UserLoginRequest,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_async_session)
 ):
     """Login user and return access token."""
-    # Find user by email
-    result = await db.execute(select(User).where(User.email == user_data.email))
+    # Find user by email (username field contains email)
+    result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalar_one_or_none()
     
-    if not user or not AuthService.verify_password(user_data.password, user.hashed_password):
+    if not user or not AuthService.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password"

@@ -1,10 +1,16 @@
-from fastapi import APIRouter, Form, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Form, HTTPException, BackgroundTasks, Depends
 from fastapi.responses import FileResponse
 from config import logger
+from config.database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
 from models import DesignResponseModel
+from models.user_models import User
+from models.design_models_db import Design
 from services import GeminiService, DesignHistoryService, mood_board_service, mood_board_log_service
+from middleware.auth_middleware import OptionalAuth
 import os
 from datetime import datetime
+import uuid
 
 router = APIRouter()
 
@@ -18,13 +24,20 @@ async def design_request_endpoint(
     room_type: str = Form(...),
     design_style: str = Form(...),
     notes: str = Form(...),
-    connection_id: str = Form(None)  # WebSocket connection ID for mood board
+    connection_id: str = Form(None),  # WebSocket connection ID for mood board
+    db: AsyncSession = Depends(get_db),
+    auth_data: dict = Depends(OptionalAuth())
 ):
     """
     Main design request endpoint - processes data from frontend and generates design suggestions with Gemini AI.
     According to PRD, sends user-provided information to Gemini and gets detailed design suggestions.
+    Supports both guest users and authenticated users.
     """
-    logger.info("Design request received:")
+    user = auth_data.get("user")
+    user_id = user.id if user else None
+    user_email = user.email if user else "guest"
+    
+    logger.info(f"Design request received from {user_email}:")
     logger.info(f"Room Type: {room_type}")
     logger.info(f"Design Style: {design_style}")
     logger.info(f"Notes: {notes}")
@@ -37,22 +50,9 @@ async def design_request_endpoint(
             notes=notes
         )
         
-        logger.info(f"Design suggestion created successfully: {design_result['title']}")
+        logger.info(f"Design suggestion created successfully for {user_email}: {design_result['title']}")
         
-        # Start mood board generation in background if connection_id provided
-        # if connection_id:
-        #     logger.info(f"Starting mood board generation for connection: {connection_id}")
-        #     background_tasks.add_task(
-        #         mood_board_service.generate_mood_board,
-        #         connection_id,
-        #         room_type,
-        #         design_style, 
-        #         notes,
-        #         design_result["title"],
-        #         design_result["description"]
-        #     )
-        
-        # Save to history
+        # Save to history (existing JSON file method for now)
         request_id = history_service.save_design_request(
             room_type=room_type,
             design_style=design_style,
@@ -60,6 +60,38 @@ async def design_request_endpoint(
             design_result=design_result,
             success=True
         )
+        
+        # If user is authenticated, also save to database
+        if user_id:
+            try:
+                # Create a unique design ID
+                design_id = str(uuid.uuid4())
+                
+                # Save design to database
+                db_design = Design(
+                    id=design_id,
+                    user_id=user_id,
+                    title=design_result["title"],
+                    description=design_result["description"],
+                    room_type=room_type,
+                    design_style=design_style,
+                    notes=notes,
+                    product_suggestion=design_result["product_suggestion"],
+                    products=design_result.get("products", []),
+                    gemini_response=design_result,
+                    is_favorite=False
+                )
+                
+                db.add(db_design)
+                await db.commit()
+                await db.refresh(db_design)
+                
+                logger.info(f"Design saved to database for user {user_email} with ID: {design_id}")
+                
+            except Exception as db_error:
+                logger.error(f"Error saving design to database: {str(db_error)}")
+                await db.rollback()
+                # Continue with response even if database save fails
         
         return DesignResponseModel(
             room_type=room_type,
@@ -71,11 +103,12 @@ async def design_request_endpoint(
             products=design_result.get("products", []),
             success=True,
             message=f"Design suggestion created successfully (ID: {request_id})" + 
-                   (f" - Mood board generating for connection: {connection_id}" if connection_id else "")
+                   (f" - Mood board generating for connection: {connection_id}" if connection_id else "") +
+                   (f" - Saved to your account" if user_id else " - Sign in to save designs to your account")
         )
         
     except Exception as e:
-        logger.error(f"Error while creating design suggestion: {str(e)}")
+        logger.error(f"Error while creating design suggestion for {user_email}: {str(e)}")
         
         # Save error to history
         error_result = {
@@ -178,6 +211,87 @@ async def test_image_generation(prompt: str = Form(...)):
         }
 
 
+@router.get("/my-designs")
+async def get_my_designs(
+    limit: int = 20,
+    offset: int = 0,
+    db: AsyncSession = Depends(get_db),
+    auth_data: dict = Depends(OptionalAuth())
+):
+    """
+    Get authenticated user's designs from database.
+    Returns empty list if user is not authenticated.
+    """
+    user = auth_data.get("user")
+    
+    if not user:
+        return {
+            "success": True,
+            "data": [],
+            "count": 0,
+            "total": 0,
+            "message": "Please sign in to view your designs"
+        }
+    
+    try:
+        from sqlalchemy import select, func
+        
+        # Get total count
+        count_query = select(func.count(Design.id)).where(Design.user_id == user.id)
+        total_result = await db.execute(count_query)
+        total = total_result.scalar()
+        
+        # Get designs with pagination
+        query = (
+            select(Design)
+            .where(Design.user_id == user.id)
+            .order_by(Design.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+        
+        result = await db.execute(query)
+        designs = result.scalars().all()
+        
+        # Convert to list of dictionaries
+        designs_data = [
+            {
+                "id": design.id,
+                "title": design.title,
+                "description": design.description,
+                "room_type": design.room_type,
+                "design_style": design.design_style,
+                "notes": design.notes,
+                "product_suggestion": design.product_suggestion,
+                "products": design.products,
+                "is_favorite": design.is_favorite,
+                "created_at": design.created_at.isoformat(),
+                "updated_at": design.updated_at.isoformat()
+            }
+            for design in designs
+        ]
+        
+        return {
+            "success": True,
+            "data": designs_data,
+            "count": len(designs_data),
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "message": f"Found {len(designs_data)} designs"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error retrieving user designs: {str(e)}")
+        return {
+            "success": False,
+            "data": [],
+            "count": 0,
+            "total": 0,
+            "message": f"Error retrieving designs: {str(e)}"
+        }
+
+
 @router.get("/history")
 async def get_design_history(limit: int = 20):
     """
@@ -199,6 +313,62 @@ async def get_design_history(limit: int = 20):
             "count": 0,
             "message": f"Error retrieving history: {str(e)}"
         }
+
+
+@router.get("/my-designs/{design_id}")
+async def get_my_design_by_id(
+    design_id: str,
+    db: AsyncSession = Depends(get_db),
+    auth_data: dict = Depends(OptionalAuth())
+):
+    """
+    Get a specific design by ID for authenticated user.
+    """
+    user = auth_data.get("user")
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    try:
+        from sqlalchemy import select
+        
+        query = select(Design).where(
+            Design.id == design_id,
+            Design.user_id == user.id
+        )
+        
+        result = await db.execute(query)
+        design = result.scalar_one_or_none()
+        
+        if not design:
+            raise HTTPException(status_code=404, detail="Design not found")
+        
+        design_data = {
+            "id": design.id,
+            "title": design.title,
+            "description": design.description,
+            "room_type": design.room_type,
+            "design_style": design.design_style,
+            "notes": design.notes,
+            "product_suggestion": design.product_suggestion,
+            "products": design.products,
+            "is_favorite": design.is_favorite,
+            "gemini_response": design.gemini_response,
+            "created_at": design.created_at.isoformat(),
+            "updated_at": design.updated_at.isoformat()
+        }
+        
+        return {
+            "success": True,
+            "data": design_data,
+            "message": "Design found successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving design by ID: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving design")
 
 
 @router.get("/history/{request_id}")

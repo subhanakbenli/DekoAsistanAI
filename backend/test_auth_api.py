@@ -85,7 +85,8 @@ def test_health_check():
     """Test health check endpoint."""
     print("🔹 Testing Health Check...")
     
-    url = f"{BASE_URL}/health"
+    # Health router is mounted without prefix, so it's at root "/"
+    url = f"{BASE_URL}/"
     
     try:
         response = requests.get(url)
