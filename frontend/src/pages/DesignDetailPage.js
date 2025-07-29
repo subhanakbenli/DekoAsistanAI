@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import FavoriteButton from '../components/FavoriteButton';
+import HashtagDisplay from '../components/HashtagDisplay';
 import Navbar from '../components/Navbar';
 
 const DesignDetailPage = () => {
@@ -40,6 +41,7 @@ const DesignDetailPage = () => {
       }
 
       const data = await response.json();
+      console.log('DesignDetailPage - Received data:', data); // Debug
       setDesign(data);
     } catch (error) {
       console.error('Error fetching design details:', error);
@@ -142,6 +144,17 @@ const DesignDetailPage = () => {
               <span>📅 {new Date(design.created_at).toLocaleString('tr-TR')}</span>
             </div>
           </div>
+
+          {/* Hashtags - En üstte */}
+          {design.hashtags && (
+            <div className="bg-gray-700 p-4 rounded-lg">
+              <HashtagDisplay 
+                hashtags={design.hashtags} 
+                showAll={true}
+                copyEnabled={true}
+              />
+            </div>
+          )}
 
           {/* Room Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

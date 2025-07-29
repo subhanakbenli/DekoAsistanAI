@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ProductSuggestionSection from './ProductSuggestionSection';
 import FavoriteButton from '../FavoriteButton';
+import HashtagDisplay from '../HashtagDisplay';
 
 /**
  * Design suggestion result section with mood board support
@@ -88,6 +89,18 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
               <p className="text-sm font-medium text-yellow-300 mb-2">📝 Tasarım Açıklaması:</p>
               <p className="text-xs text-gray-300 leading-relaxed">{result.design_description}</p>
             </div>
+
+            {/* Hashtags */}
+            {result.hashtags && (
+              <div className="bg-gray-800 p-3 rounded">
+                <HashtagDisplay 
+                  hashtags={result.hashtags} 
+                  previewLimit={4}
+                  showAll={false}
+                  copyEnabled={true}
+                />
+              </div>
+            )}
 
             {/* Product Suggestions */}
             <ProductSuggestionSection result={result} />

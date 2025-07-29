@@ -4,9 +4,10 @@ from config import logger
 from config.database import get_db, get_async_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from models import DesignResponseModel
 from models.user_models import User
-from models.design_models_db import Design, MoodBoard
+from models.design_models_db import Design, MoodBoard, DesignHashtag
 from services import GeminiService, DesignHistoryService, mood_board_service, mood_board_log_service
 from middleware.auth_middleware import OptionalAuth, optional_auth
 import os
@@ -91,6 +92,16 @@ async def design_request_endpoint(
             
             logger.info(f"Design saved to database for {user_email} with ID: {design_id}")
             
+            # Save hashtags if they exist
+            hashtags = design_result.get("hashtags", {})
+            if hashtags and hashtags.get("en"):  # Check if English hashtags exist
+                try:
+                    await gemini_service.save_design_hashtags(db, design_id, hashtags)
+                    logger.info(f"Hashtags saved for design {design_id}: EN={hashtags.get('en', [])} TR={hashtags.get('tr', [])}")
+                except Exception as hashtag_error:
+                    logger.error(f"Error saving hashtags for design {design_id}: {str(hashtag_error)}")
+                    # Continue even if hashtag saving fails
+            
         except Exception as db_error:
             logger.error(f"Error saving design to database: {str(db_error)}")
             await db.rollback()
@@ -103,6 +114,7 @@ async def design_request_endpoint(
             notes=notes,
             design_title=design_result["title"],
             design_description=design_result["description"],
+            hashtags=design_result.get("hashtags", {"en": [], "tr": [], "display": []}),
             product_suggestion=design_result["product_suggestion"],
             products=design_result.get("products", []),
             success=True,
@@ -122,6 +134,7 @@ async def design_request_endpoint(
             notes=notes,
             design_title=f"Custom {design_style} {room_type} Design",
             design_description=f"We are preparing a custom design concept in {design_style.lower()} style for this {room_type.lower()}. Please try again later.",
+            hashtags={"en": [], "tr": [], "display": []},  # Empty hashtags structure for error case
             product_suggestion="Product suggestions suitable for this design will be added soon",
             products=[],
             success=False,
@@ -630,8 +643,12 @@ async def get_design_details(
     """Get design details by ID."""
     
     try:
-        # Query design from database
-        result = await db.execute(select(Design).where(Design.id == design_id))
+        # Query design from database with hashtags
+        result = await db.execute(
+            select(Design)
+            .options(selectinload(Design.hashtags).selectinload(DesignHashtag.hashtag))
+            .where(Design.id == design_id)
+        )
         design = result.scalar_one_or_none()
         
         if not design:
@@ -639,6 +656,17 @@ async def get_design_details(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Design not found"
             )
+        
+        # Get hashtags and translate them
+        hashtags_data = {"en": [], "tr": [], "display": []}
+        if design.hashtags:
+            # Sort hashtags by order_index to maintain general-to-specific ordering
+            sorted_hashtags = sorted(design.hashtags, key=lambda x: x.order_index)
+            english_hashtags = [dh.hashtag.name for dh in sorted_hashtags]
+            
+            # Use hashtag service to translate
+            hashtag_translations = gemini_service.hashtag_service.translate_hashtags(english_hashtags)
+            hashtags_data = hashtag_translations
         
         # Convert to response format
         design_data = {
@@ -650,6 +678,7 @@ async def get_design_details(
             "notes": design.notes,
             "product_suggestion": design.product_suggestion,
             "products": design.products or [],
+            "hashtags": hashtags_data,  # Add hashtags to response
             "created_at": design.created_at.isoformat() if design.created_at else None,
             "updated_at": design.updated_at.isoformat() if design.updated_at else None,
             "is_favorite": design.is_favorite,

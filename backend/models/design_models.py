@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 
 
 class ProductModel(BaseModel):
@@ -34,6 +34,7 @@ class DesignResponseModel(BaseModel):
     # AI response from Gemini
     design_title: str = Field(..., description="AI-generated design title")
     design_description: str = Field(..., description="Detailed design description")
+    hashtags: Union[List[str], Dict[str, List[str]]] = Field(default=[], description="AI-generated hashtags (can be list or dict with 'en'/'tr' keys)")
     product_suggestion: str = Field(..., description="Featured product suggestion (text format)")
     products: List[ProductModel] = Field(default=[], description="Structured product list")
     

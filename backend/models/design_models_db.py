@@ -1,8 +1,9 @@
 """
 Models for design system and favorites functionality.
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, JSON, Index
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from config.database import Base
 
 class Design(Base):
@@ -33,6 +34,9 @@ class Design(Base):
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    hashtags = relationship("DesignHashtag", back_populates="design", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Design(id={self.id}, title={self.title}, user_id={self.user_id})>"
@@ -95,3 +99,49 @@ class MoodBoard(Base):
     
     def __repr__(self):
         return f"<MoodBoard(id={self.id}, mood_board_id={self.mood_board_id}, user_id={self.user_id})>"
+
+
+class Hashtag(Base):
+    """Hashtags for design categorization and filtering."""
+    __tablename__ = "hashtags"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(50), unique=True, nullable=False, index=True)  # e.g., "#modern", "#living_room"
+    
+    # Usage statistics (optional, for future analytics)
+    usage_count = Column(Integer, default=0, nullable=False)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    def __repr__(self):
+        return f"<Hashtag(id={self.id}, name={self.name}, usage_count={self.usage_count})>"
+
+
+class DesignHashtag(Base):
+    """Many-to-many relationship between designs and hashtags."""
+    __tablename__ = "design_hashtags"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    design_id = Column(String(36), ForeignKey("designs.id", ondelete="CASCADE"), nullable=False)
+    hashtag_id = Column(Integer, ForeignKey("hashtags.id", ondelete="CASCADE"), nullable=False)
+    
+    # Order of hashtag in the design (for general-to-specific ordering)
+    order_index = Column(Integer, nullable=False, default=0)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    design = relationship("Design", back_populates="hashtags")
+    hashtag = relationship("Hashtag")
+    
+    # Composite index for performance
+    __table_args__ = (
+        Index('idx_design_hashtag', 'design_id', 'hashtag_id'),
+        Index('idx_design_order', 'design_id', 'order_index'),
+    )
+    
+    def __repr__(self):
+        return f"<DesignHashtag(design_id={self.design_id}, hashtag_id={self.hashtag_id}, order={self.order_index})>"

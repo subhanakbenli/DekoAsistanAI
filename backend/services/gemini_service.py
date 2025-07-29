@@ -4,6 +4,10 @@ from config import logger
 from typing import Dict, Any, Optional, List
 import json
 import os
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from models.design_models_db import Hashtag, DesignHashtag
+from .hashtag_service import HashtagService
 
 class GeminiService:
     """
@@ -27,6 +31,9 @@ class GeminiService:
                 "max_output_tokens": 8192,
             }
         )
+        
+        # Initialize hashtag service
+        self.hashtag_service = HashtagService()
         
         logger.info("Gemini Service initialized")
     
@@ -82,6 +89,7 @@ Sen bir uzman iç mimar ve dekorasyon danışmanısın. Türkiye'de yaşayan bir
 {{
   "title": "Tasarım başlığı (maksimum 60 karakter)",
   "description": "Bu tasarım hakkında detaylı açıklama. Renk paleti, atmosfer, stil özellikleri hakkında bilgi ver.",
+  "hashtags": ["#genel_kategori", "#stil", "#oda_tipi", "#renk", "#atmosfer", "#malzeme", "#ozellik1", "#ozellik2", "#detay1", "#detay2"],
   "products": [
     {{
       "category": "Kategori adı",
@@ -99,12 +107,29 @@ Sen bir uzman iç mimar ve dekorasyon danışmanısın. Türkiye'de yaşayan bir
 **Format Kuralları:**
 - "title": Kısa ve çekici başlık (maksimum 60 karakter)
 - "description": Tasarım konsepti hakkında kapsamlı açıklama (2-4 cümle)
+- "hashtags": TAM 10 ADET hashtag listesi - GENELDEN ÖZELE SIRALI
+  - # ile başlamalı (örn: "#modern", "#living_room")
+  - snake_case kullan (örn: "#living_room", "#neutral_colors")
+  - İngilizce kelimeler kullan, Türkçe karakter yok
+  - Sıralama: En genel kategoriden en spesifik detaya doğru
+  - Örnek sıralama: #interior_design, #modern, #living_room, #neutral_tones, #minimalist, #scandinavian, #cozy, #functional, #natural_light, #urban_style
 - "products": Ürün listesi array'i
   - "category": Ürün kategorisi (örn: "Mobilyalar", "Aydınlatma", "Tekstil", "Dekoratif Objeler" vs.)
   - "name": Ürün adı (maksimum 40 karakter)
   - "description": Ürün açıklaması (maksimum 120 karakter)
 
+**Hashtag Örnekleri:**
+- Genel: #interior_design, #home_decor, #room_design
+- Stil: #modern, #classic, #contemporary, #minimalist, #industrial, #scandinavian
+- Oda: #living_room, #bedroom, #kitchen, #bathroom, #office
+- Renk: #neutral_tones, #warm_colors, #cool_colors, #monochrome, #colorful
+- Atmosfer: #cozy, #elegant, #luxurious, #rustic, #urban, #vintage
+- Malzeme: #wood, #metal, #glass, #stone, #fabric, #leather
+- Özellikler: #spacious, #compact, #bright, #natural_light, #functional, #artistic
+
 **Önemli:**
+- TAM 10 adet hashtag oluştur, eksik veya fazla olmasın
+- Hashtag sıralaması çok önemli: en genel kategoriden başla, en spesifik detaylarla bitir
 - İstediğin kategorileri kullanabilirsin, sınırlama yok
 - Kaç ürün önereceğin sana kalmış (önerilen: 6-12 ürün)
 - Sadece JSON formatında cevap ver, başka hiçbir metin ekleme
@@ -142,12 +167,34 @@ Sen bir uzman iç mimar ve dekorasyon danışmanısın. Türkiye'de yaşayan bir
                         if 'type' not in product:
                             product['type'] = 'product'
                     
+                    # Handle hashtags
+                    hashtags = json_response.get('hashtags', [])
+                    
+                    # Validate hashtags format and count
+                    if hashtags and len(hashtags) == 10:
+                        # Ensure all hashtags start with # and are properly formatted
+                        validated_hashtags = []
+                        for i, tag in enumerate(hashtags):
+                            if not tag.startswith('#'):
+                                tag = '#' + tag
+                            # Clean up the tag (remove spaces, make lowercase, ensure snake_case)
+                            tag = tag.lower().replace(' ', '_').replace('-', '_')
+                            validated_hashtags.append(tag)
+                        
+                        # Translate hashtags from English to Turkish
+                        hashtag_translations = self.hashtag_service.translate_hashtags(validated_hashtags)
+                        hashtags = hashtag_translations  # This contains both 'en' and 'tr' versions
+                    else:
+                        logger.warning(f"Invalid hashtags received: {hashtags}. Expected 10 hashtags.")
+                        hashtags = {"en": [], "tr": [], "display": []}
+                    
                     # Create product_suggestion text for backward compatibility
                     product_suggestion = self._create_product_suggestion_text(products)
                     
                     return {
                         "title": json_response['title'],
                         "description": json_response['description'],
+                        "hashtags": hashtags,
                         "product_suggestion": product_suggestion,
                         "products": products,
                         "raw_response": response_text
@@ -165,6 +212,7 @@ Sen bir uzman iç mimar ve dekorasyon danışmanısın. Türkiye'de yaşayan bir
             return {
                 "title": parsed_content["title"] or f"Custom {design_style} {room_type} Design",
                 "description": parsed_content["description"] or response_text,
+                "hashtags": {"en": [], "tr": [], "display": []},  # Empty hashtags structure for fallback case
                 "product_suggestion": parsed_content["product_suggestion"] or "Furniture suggestions suitable for the design",
                 "products": products,
                 "raw_response": response_text
@@ -385,3 +433,55 @@ Sen bir uzman iç mimar ve dekorasyon danışmanısın. Türkiye'de yaşayan bir
                 "type": "product"
             }
         ]
+
+    async def save_design_hashtags(self, db: AsyncSession, design_id: str, hashtags: Dict[str, Any]) -> None:
+        """
+        Save hashtags for a design to database.
+        Creates hashtag records if they don't exist and links them to the design.
+        
+        Args:
+            db: Database session
+            design_id: Design UUID
+            hashtags: Dictionary containing 'en' and 'tr' hashtag lists
+        """
+        try:
+            # Use English hashtags for database storage (consistent and safe)
+            english_hashtags = hashtags.get("en", [])
+            
+            if not english_hashtags:
+                logger.warning(f"No English hashtags found for design {design_id}")
+                return
+            
+            for index, hashtag_name in enumerate(english_hashtags):
+                # Ensure hashtag starts with #
+                if not hashtag_name.startswith('#'):
+                    hashtag_name = '#' + hashtag_name
+                
+                # Check if hashtag exists
+                result = await db.execute(select(Hashtag).where(Hashtag.name == hashtag_name))
+                hashtag = result.scalar_one_or_none()
+                
+                # Create hashtag if it doesn't exist
+                if not hashtag:
+                    hashtag = Hashtag(name=hashtag_name, usage_count=1)
+                    db.add(hashtag)
+                    await db.flush()  # Flush to get the ID
+                else:
+                    # Increment usage count
+                    hashtag.usage_count += 1
+                
+                # Create design-hashtag relationship
+                design_hashtag = DesignHashtag(
+                    design_id=design_id,
+                    hashtag_id=hashtag.id,
+                    order_index=index  # Preserve the general-to-specific order from Gemini
+                )
+                db.add(design_hashtag)
+            
+            await db.commit()
+            logger.info(f"Successfully saved {len(english_hashtags)} hashtags for design {design_id}")
+            
+        except Exception as e:
+            await db.rollback()
+            logger.error(f"Error saving hashtags for design {design_id}: {str(e)}")
+            raise

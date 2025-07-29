@@ -3,6 +3,7 @@ from .design_history_service import DesignHistoryService
 from .mood_board_service import MoodBoardService, mood_board_service
 from .mood_board_log_service import MoodBoardLogService, mood_board_log_service
 from .websocket_manager import WebSocketManager, websocket_manager
+from .hashtag_service import HashtagService
 
 __all__ = [
     "GeminiService", 
@@ -12,5 +13,6 @@ __all__ = [
     "MoodBoardLogService",
     "mood_board_log_service",
     "WebSocketManager",
-    "websocket_manager"
+    "websocket_manager",
+    "HashtagService"
 ]

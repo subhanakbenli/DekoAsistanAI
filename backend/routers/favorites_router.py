@@ -4,13 +4,15 @@ Favorites management router for authenticated users.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
+from sqlalchemy.orm import selectinload
 from typing import List
 
 from config.database import get_async_session
 from models.user_models import User
-from models.design_models_db import Design, UserFavoriteDesign, UserFavoriteProduct
+from models.design_models_db import Design, UserFavoriteDesign, UserFavoriteProduct, DesignHashtag
 from models.auth_schemas import UserResponse
 from routers.auth_router import get_current_user
+from services.gemini_service import GeminiService
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/favorites", tags=["Favorites"])
@@ -127,10 +129,11 @@ async def get_my_favorites(
     This endpoint is safe - only returns the authenticated user's own favorites.
     """
     
-    # Single query for favorite designs with JOIN
+    # Single query for favorite designs with JOIN and hashtag relationships
     designs_result = await db.execute(
         select(UserFavoriteDesign, Design)
         .join(Design, UserFavoriteDesign.design_id == Design.id)
+        .options(selectinload(Design.hashtags).selectinload(DesignHashtag.hashtag))
         .where(UserFavoriteDesign.user_id == current_user.id)
         .order_by(UserFavoriteDesign.created_at.desc())
     )
@@ -160,6 +163,9 @@ async def get_my_favorites(
                 detail="Security violation: Access denied"
             )
     
+    # Initialize Gemini service for hashtag translation
+    gemini_service = GeminiService()
+    
     return {
         "success": True,
         "user_id": current_user.id,
@@ -174,6 +180,11 @@ async def get_my_favorites(
                 "design_style": fav.Design.design_style,
                 "product_suggestion": fav.Design.product_suggestion,
                 "products": fav.Design.products,
+                "hashtags": (
+                    gemini_service.hashtag_service.translate_hashtags([
+                        dh.hashtag.name for dh in sorted(fav.Design.hashtags, key=lambda x: x.order_index)
+                    ]) if fav.Design.hashtags else {"en": [], "tr": [], "display": []}
+                ),
                 "created_at": fav.UserFavoriteDesign.created_at.isoformat()
             }
             for fav in favorite_designs
@@ -204,9 +215,10 @@ async def get_favorite_designs(
     """Get user's favorite designs."""
     
     result = await db.execute(
-        select(UserFavoriteDesign, Design).join(
-            Design, UserFavoriteDesign.design_id == Design.id
-        ).where(UserFavoriteDesign.user_id == current_user.id)
+        select(UserFavoriteDesign, Design)
+        .join(Design, UserFavoriteDesign.design_id == Design.id)
+        .options(selectinload(Design.hashtags).selectinload(DesignHashtag.hashtag))
+        .where(UserFavoriteDesign.user_id == current_user.id)
     )
     
     favorites = result.all()

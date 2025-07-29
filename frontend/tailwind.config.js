@@ -4,7 +4,11 @@ module.exports = {
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontSize: {
+        '2xs': '0.625rem', // 10px for very small hashtags
+      },
+    },
   },
   plugins: [],
 }
