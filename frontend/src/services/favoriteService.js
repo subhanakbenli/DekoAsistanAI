@@ -60,17 +60,18 @@ export const favoriteService = {
   },
 
   /**
-   * Get user's favorite designs
+   * Get all user's favorites (designs and products) in a single optimized call
+   * This replaces separate calls to getUserFavoriteDesigns and getUserFavoriteProducts
    */
-  getUserFavoriteDesigns: async () => {
+  getUserFavorites: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/favorites/designs`, {
+      const response = await fetch(`${API_BASE_URL}/favorites/my-favorites`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
       return await handleResponse(response);
     } catch (error) {
-      console.error('Error fetching favorite designs:', error);
+      console.error('Error fetching user favorites:', error);
       throw error;
     }
   },
@@ -109,22 +110,6 @@ export const favoriteService = {
   },
 
   /**
-   * Get user's favorite products
-   */
-  getUserFavoriteProducts: async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/favorites/products`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-      });
-      return await handleResponse(response);
-    } catch (error) {
-      console.error('Error fetching favorite products:', error);
-      throw error;
-    }
-  },
-
-  /**
    * Check if design is in favorites
    */
   isDesignFavorited: async (designId, favoriteDesigns = null) => {
@@ -134,9 +119,9 @@ export const favoriteService = {
         return favoriteDesigns.some(fav => fav.design_id === designId);
       }
       
-      // Otherwise fetch from API
-      const favorites = await favoriteService.getUserFavoriteDesigns();
-      return favorites.some(fav => fav.design_id === designId);
+      // Use the new optimized endpoint to get all favorites
+      const favorites = await favoriteService.getUserFavorites();
+      return favorites.favorite_designs?.some(fav => fav.design_id === designId) || false;
     } catch (error) {
       console.error('Error checking if design is favorited:', error);
       return false;

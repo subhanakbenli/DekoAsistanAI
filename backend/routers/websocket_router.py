@@ -31,7 +31,7 @@ async def websocket_endpoint(websocket: WebSocket):
             }, connection_id)
             
     except WebSocketDisconnect:
-        logger.info(f"WebSocket connection disconnected: {connection_id}")
+        logger.debug(f"WebSocket connection disconnected: {connection_id}")
         if connection_id:
             websocket_manager.disconnect(connection_id)
             

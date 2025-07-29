@@ -9,12 +9,25 @@ from config.settings import settings
 # Database URL
 DATABASE_URL = f"postgresql+asyncpg://{settings.db_user}:{settings.db_password}@{settings.db_host}:{settings.db_port}/{settings.db_name}"
 
-# Create async engine
+# Create async engine with simple, proven settings for VDS
 engine = create_async_engine(
     DATABASE_URL,
-    echo=settings.debug,  # SQL query logging in debug mode
-    pool_pre_ping=True,
-    pool_recycle=300,
+    echo=False,  # No SQL logging
+    
+    # Basic pool settings
+    pool_size=5,  # Start with smaller pool
+    max_overflow=10,  # Reasonable overflow
+    pool_pre_ping=False,  # No pre-ping for VDS
+    pool_recycle=3600,  # 1 hour recycle
+    pool_timeout=30,  # Standard timeout
+    
+    # Minimal connection args for stability
+    connect_args={
+        "command_timeout": 30,
+        "server_settings": {
+            "application_name": "deko_assistant"
+        }
+    }
 )
 
 # Create async session factory

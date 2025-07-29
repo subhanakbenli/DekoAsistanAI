@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import favoriteService from '../services/favoriteService';
 
 /**
- * Custom hook for managing favorites
+ * Custom hook for managing favorites with optimized API calls
  */
 export const useFavorites = () => {
   const { user, isAuthenticated } = useAuth();
@@ -13,7 +13,38 @@ export const useFavorites = () => {
   const [error, setError] = useState(null);
 
   /**
-   * Fetch user's favorite designs
+   * Fetch all user's favorites (designs and products) in a single optimized call
+   */
+  const fetchAllFavorites = useCallback(async () => {
+    if (!isAuthenticated) {
+      setFavoriteDesigns([]);
+      setFavoriteProducts([]);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Single API call to get all favorites
+      const allFavorites = await favoriteService.getUserFavorites();
+      
+      setFavoriteDesigns(allFavorites.favorite_designs || []);
+      setFavoriteProducts(allFavorites.favorite_products || []);
+      
+    } catch (err) {
+      console.error('Error fetching favorites:', err);
+      setError(err.message);
+      setFavoriteDesigns([]);
+      setFavoriteProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated]);
+
+  /**
+   * Fetch user's favorite designs (legacy method - use fetchAllFavorites for better performance)
+   * @deprecated Use fetchAllFavorites() instead
    */
   const fetchFavoriteDesigns = useCallback(async () => {
     if (!isAuthenticated) {
@@ -36,7 +67,8 @@ export const useFavorites = () => {
   }, [isAuthenticated]);
 
   /**
-   * Fetch user's favorite products
+   * Fetch user's favorite products (legacy method - use fetchAllFavorites for better performance)
+   * @deprecated Use fetchAllFavorites() instead
    */
   const fetchFavoriteProducts = useCallback(async () => {
     if (!isAuthenticated) {
@@ -70,8 +102,8 @@ export const useFavorites = () => {
       setError(null);
       await favoriteService.addDesignToFavorites(designId);
       
-      // Refresh favorites list
-      await fetchFavoriteDesigns();
+      // Refresh all favorites with optimized call
+      await fetchAllFavorites();
       
       return { success: true, message: 'Tasarım favorilere eklendi!' };
     } catch (err) {
@@ -79,7 +111,7 @@ export const useFavorites = () => {
       setError(err.message);
       throw err;
     }
-  }, [isAuthenticated, fetchFavoriteDesigns]);
+  }, [isAuthenticated, fetchAllFavorites]);
 
   /**
    * Remove design from favorites
@@ -93,8 +125,8 @@ export const useFavorites = () => {
       setError(null);
       await favoriteService.removeDesignFromFavorites(designId);
       
-      // Refresh favorites list
-      await fetchFavoriteDesigns();
+      // Refresh all favorites with optimized call
+      await fetchAllFavorites();
       
       return { success: true, message: 'Tasarım favorilerden çıkarıldı!' };
     } catch (err) {
@@ -102,7 +134,7 @@ export const useFavorites = () => {
       setError(err.message);
       throw err;
     }
-  }, [isAuthenticated, fetchFavoriteDesigns]);
+  }, [isAuthenticated, fetchAllFavorites]);
 
   /**
    * Add product to favorites
@@ -116,8 +148,8 @@ export const useFavorites = () => {
       setError(null);
       await favoriteService.addProductToFavorites(productData);
       
-      // Refresh favorites list
-      await fetchFavoriteProducts();
+      // Refresh all favorites with optimized call
+      await fetchAllFavorites();
       
       return { success: true, message: 'Ürün favorilere eklendi!' };
     } catch (err) {
@@ -125,7 +157,7 @@ export const useFavorites = () => {
       setError(err.message);
       throw err;
     }
-  }, [isAuthenticated, fetchFavoriteProducts]);
+  }, [isAuthenticated, fetchAllFavorites]);
 
   /**
    * Remove product from favorites
@@ -139,8 +171,8 @@ export const useFavorites = () => {
       setError(null);
       await favoriteService.removeProductFromFavorites(productId);
       
-      // Refresh favorites list
-      await fetchFavoriteProducts();
+      // Refresh all favorites with optimized call
+      await fetchAllFavorites();
       
       return { success: true, message: 'Ürün favorilerden çıkarıldı!' };
     } catch (err) {
@@ -148,7 +180,7 @@ export const useFavorites = () => {
       setError(err.message);
       throw err;
     }
-  }, [isAuthenticated, fetchFavoriteProducts]);
+  }, [isAuthenticated, fetchAllFavorites]);
 
   /**
    * Check if design is in favorites
@@ -178,14 +210,11 @@ export const useFavorites = () => {
   }, [isDesignFavorited, addDesignToFavorites, removeDesignFromFavorites]);
 
   /**
-   * Refresh all favorites
+   * Refresh all favorites with optimized single API call
    */
   const refreshFavorites = useCallback(async () => {
-    await Promise.all([
-      fetchFavoriteDesigns(),
-      fetchFavoriteProducts()
-    ]);
-  }, [fetchFavoriteDesigns, fetchFavoriteProducts]);
+    await fetchAllFavorites();
+  }, [fetchAllFavorites]);
 
   // Load favorites when user authentication changes
   useEffect(() => {
@@ -217,8 +246,9 @@ export const useFavorites = () => {
     
     // Utils
     refreshFavorites,
-    fetchFavoriteDesigns,
-    fetchFavoriteProducts
+    fetchAllFavorites,        // New optimized method
+    fetchFavoriteDesigns,     // Legacy method
+    fetchFavoriteProducts     // Legacy method
   };
 };
 

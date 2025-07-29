@@ -26,7 +26,7 @@ class WebSocketManager:
         connection_id = str(uuid.uuid4())
         self.active_connections[connection_id] = websocket
         
-        logger.info(f"New WebSocket connection established: {connection_id}")
+        logger.debug(f"New WebSocket connection established: {connection_id}")
         
         # Send connection confirmation
         await self.send_personal_message({
@@ -48,7 +48,7 @@ class WebSocketManager:
         if connection_id in self.mood_board_progress:
             del self.mood_board_progress[connection_id]
             
-        logger.info(f"WebSocket connection removed: {connection_id}")
+        logger.debug(f"WebSocket connection removed: {connection_id}")
     
     async def send_personal_message(self, message: dict, connection_id: str):
         """

@@ -12,7 +12,8 @@ const FavoritesPage = () => {
     loading,
     error,
     removeDesignFromFavorites,
-    removeProductFromFavorites
+    removeProductFromFavorites,
+    fetchAllFavorites
   } = useFavorites();
 
   const [activeTab, setActiveTab] = useState('designs'); // 'designs' or 'products'

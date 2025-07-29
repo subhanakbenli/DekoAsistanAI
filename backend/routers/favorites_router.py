@@ -117,6 +117,85 @@ async def remove_design_from_favorites(
     await db.commit()
     return {"message": "Design removed from favorites", "design_id": design_id}
 
+@router.get("/my-favorites")
+async def get_my_favorites(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_session)
+):
+    """
+    Get current user's favorites (designs and products) in a single optimized query.
+    This endpoint is safe - only returns the authenticated user's own favorites.
+    """
+    
+    # Single query for favorite designs with JOIN
+    designs_result = await db.execute(
+        select(UserFavoriteDesign, Design)
+        .join(Design, UserFavoriteDesign.design_id == Design.id)
+        .where(UserFavoriteDesign.user_id == current_user.id)
+        .order_by(UserFavoriteDesign.created_at.desc())
+    )
+    
+    # Single query for favorite products
+    products_result = await db.execute(
+        select(UserFavoriteProduct)
+        .where(UserFavoriteProduct.user_id == current_user.id)
+        .order_by(UserFavoriteProduct.created_at.desc())
+    )
+    
+    favorite_designs = designs_result.all()
+    favorite_products = products_result.scalars().all()
+    
+    # Security: Double-check that all returned favorites belong to current user
+    for fav in favorite_designs:
+        if fav.UserFavoriteDesign.user_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Security violation: Access denied"
+            )
+    
+    for product in favorite_products:
+        if product.user_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, 
+                detail="Security violation: Access denied"
+            )
+    
+    return {
+        "success": True,
+        "user_id": current_user.id,
+        "message": f"Retrieved favorites for user {current_user.email}",
+        "favorite_designs": [
+            {
+                "id": fav.UserFavoriteDesign.id,
+                "design_id": fav.Design.id,
+                "title": fav.Design.title,
+                "description": fav.Design.description,
+                "room_type": fav.Design.room_type,
+                "design_style": fav.Design.design_style,
+                "product_suggestion": fav.Design.product_suggestion,
+                "products": fav.Design.products,
+                "created_at": fav.UserFavoriteDesign.created_at.isoformat()
+            }
+            for fav in favorite_designs
+        ],
+        "favorite_products": [
+            {
+                "id": product.id,
+                "product_name": product.product_name,
+                "product_description": product.product_description,
+                "product_link": product.product_link,
+                "product_category": product.product_category,
+                "design_id": product.design_id,
+                "created_at": product.created_at.isoformat()
+            }
+            for product in favorite_products
+        ],
+        "counts": {
+            "designs": len(favorite_designs),
+            "products": len(favorite_products)
+        }
+    }
+
 @router.get("/designs", response_model=List[FavoriteDesignResponse])
 async def get_favorite_designs(
     current_user: User = Depends(get_current_user),
