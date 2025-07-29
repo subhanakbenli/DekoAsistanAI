@@ -136,6 +136,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# Google Cloud Service Account Keys
+*.json
+dekoasistanai-vertex.json
+
 # Spyder project settings
 .spyderproject
 .spyproject

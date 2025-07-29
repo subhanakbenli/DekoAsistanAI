@@ -170,9 +170,15 @@ export const useRoomDesign = () => {
       // Backend'e istek gönder (connectionId ile birlikte)
       const response = await DesignService.submitDesignRequest(form, connectionId);
       
+      console.log('🔍 Frontend Response:', response);
+      console.log('🔍 Response Success:', response.success);
+      console.log('🔍 Response Data:', response.data);
+      
       if (response.success) {
         // Backend'den gelen veriyi direkt result'a set et
         setResult(response.data);
+        
+        console.log('✅ Result set to:', response.data);
         
         // Mood board loading başlat (eğer connection_id varsa)
         if (connectionId && response.data?.message?.includes('connection:')) {

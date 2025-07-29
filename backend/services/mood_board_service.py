@@ -79,19 +79,11 @@ class MoodBoardService:
                 room_type, design_style, notes, design_title, design_description
             )
             
-            # Stage 2: Optimizing prompt
-            await websocket_manager.update_mood_board_progress(connection_id, {
-                "stage": "optimizing_prompt", 
-                "progress_percentage": 25,
-                "message": "Görsel prompt'u optimize ediliyor...",
-                "mood_board_id": mood_board_id
-            })
-            
-            # Stage 3: Generating image with Imagen 4
+            # Stage 2: Generating image with Imagen 4
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "generating_image",
                 "progress_percentage": 50,
-                "message": "Imagen 4 ile mood board görseli oluşturuluyor...",
+                "message": "AI mood board oluşturuluyor...",
                 "mood_board_id": mood_board_id
             })
             
@@ -298,45 +290,88 @@ Sadece prompt'u döndür, açıklama yapma.
     
     async def _generate_image_with_imagen(self, prompt: str) -> Optional[Dict[str, Any]]:
         """
-        Generate image using Imagen 4 model.
+        Generate image using Vertex AI Imagen model.
         """
         
         try:
-            # Simulate Imagen 4 API processing time
+            # Import Google Cloud libraries
+            from google.cloud import aiplatform
+            from vertexai.preview.vision_models import ImageGenerationModel
+            import asyncio
+            import os
+            
+            logger.info(f"🎨 Generating mood board with Vertex AI...")
+            
+            # Set authentication explicitly
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = self.settings.GOOGLE_APPLICATION_CREDENTIALS
+            
+            # Initialize Vertex AI
+            aiplatform.init(
+                project=self.settings.GOOGLE_CLOUD_PROJECT_ID,
+                location="us-central1"
+            )
+            
+            # Load the Imagen model
+            generation_model = ImageGenerationModel.from_pretrained("imagegeneration@006")
+            
+            # Generate image with optimized parameters for speed
+            def generate_sync():
+                images = generation_model.generate_images(
+                    prompt=prompt,
+                    number_of_images=1,
+                    aspect_ratio="1:1",  # Square format for mood boards
+                    safety_filter_level="block_some",
+                    person_generation="dont_allow"  # Skip person generation for faster results
+                )
+                return images
+            
+            # Run in thread pool to avoid blocking
+            loop = asyncio.get_event_loop()
+            images = await loop.run_in_executor(None, generate_sync)
+            
+            if images and hasattr(images, 'images') and len(images.images) > 0:
+                # Convert image to base64
+                import io
+                import base64
+                
+                image = images.images[0]  # Get first image from images list
+                
+                # Save image to bytes
+                image_bytes = io.BytesIO()
+                image._pil_image.save(image_bytes, format='PNG')
+                image_bytes.seek(0)
+                
+                # Convert to base64
+                base64_string = base64.b64encode(image_bytes.getvalue()).decode('utf-8')
+                
+                logger.info("✅ Vertex AI mood board generated successfully")
+                return {
+                    "base64": base64_string,
+                    "success": True
+                }
+            else:
+                logger.warning("⚠️ No images generated from Vertex AI")
+                return None
+                
+        except ImportError as e:
+            logger.error(f"Google Cloud libraries not properly installed: {str(e)}")
+            return await self._generate_fallback_image(prompt)
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Vertex AI failed, using fallback: {str(e)}")
+            # Fall back to placeholder if real API fails
+            return await self._generate_fallback_image(prompt)
+    
+    async def _generate_fallback_image(self, prompt: str) -> Optional[Dict[str, Any]]:
+        """
+        Generate fallback placeholder image when Vertex AI fails.
+        """
+        try:
+            # Simulate processing time
             await asyncio.sleep(2)
             
-            # IMPORTANT: This is a placeholder implementation
-            # In production, replace with actual Imagen 4 API call:
-            #
-            # from google.cloud import aiplatform
-            # from google.cloud.aiplatform.v1 import PredictionServiceClient
-            # 
-            # client = PredictionServiceClient()
-            # endpoint = f"projects/{self.settings.GOOGLE_CLOUD_PROJECT_ID}/locations/us-central1/publishers/google/models/{self.settings.IMAGEN_MODEL_NAME}"
-            # 
-            # instance = {
-            #     "prompt": prompt,
-            #     "sampleCount": 1,
-            #     "aspectRatio": "1:1",
-            #     "outputImageFormat": "PNG",
-            #     "outputImageSize": "512x512",  # Medium resolution for faster generation
-            #     "safetyFilterLevel": "block_some",
-            #     "personGeneration": "dont_allow"
-            # }
-            # 
-            # response = client.predict(
-            #     endpoint=endpoint,
-            #     instances=[instance]
-            # )
-            # 
-            # if response.predictions:
-            #     image_base64 = response.predictions[0]["bytesBase64Encoded"]
-            #     return {"base64": image_base64, "success": True}
-            
-            # Placeholder response for development
-            # Creating a more realistic placeholder (still fake but bigger)
+            # Create a more realistic placeholder (still fake but bigger)
             import random
-            import time
             
             # Create a larger fake base64 string to simulate a real image
             fake_png_header = "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAABHNCSVQICAgIfAhkiAAAAAlwSFlz"
@@ -356,11 +391,11 @@ Sadece prompt'u döndür, açıklama yapma.
                 "success": True
             }
             
-            logger.info("Imagen 4 image generated successfully (placeholder - replace with actual API)")
+            logger.info("Fallback placeholder image generated")
             return placeholder_image_data
             
         except Exception as e:
-            logger.error(f"Error generating image with Imagen: {str(e)}")
+            logger.error(f"Error generating fallback image: {str(e)}")
             return None
     
     def _create_error_mood_board(

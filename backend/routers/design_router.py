@@ -38,20 +38,7 @@ async def design_request_endpoint(
     user_id = user.id if user else None
     user_email = user.email if user else "guest"
     
-    # ÖNEMLI DEBUG - Bu çalışıyor mu kontrol edelim
-    print(f"=== DESIGN REQUEST DEBUG ===")
-    print(f"Auth data: {auth_data}")
-    print(f"User: {user}")
-    print(f"User ID: {user_id}")
-    print(f"User email: {user_email}")
-    print("=============================")
-    
-    logger.info(f"Design request received from {user_email}:")
-    logger.info(f"User ID: {user_id}")
-    logger.info(f"Auth data: {auth_data}")
-    logger.info(f"Room Type: {room_type}")
-    logger.info(f"Design Style: {design_style}")
-    logger.info(f"Notes: {notes}")
+    logger.info(f"Design request from {user_email}: {room_type} - {design_style}")
     
     try:
         # Generate design suggestion using Gemini service
@@ -65,6 +52,19 @@ async def design_request_endpoint(
         
         # Generate design ID for response
         design_id = str(uuid.uuid4())
+        
+        # Start mood board generation in background if connection_id is provided
+        if connection_id:
+            logger.info(f"Starting background mood board generation for connection: {connection_id}")
+            background_tasks.add_task(
+                mood_board_service.generate_mood_board,
+                connection_id=connection_id,
+                room_type=room_type,
+                design_style=design_style,
+                notes=notes,
+                design_title=design_result["title"],
+                design_description=design_result["description"]
+            )
         
         # If user is authenticated, save to database
         # Save design to database for all users (guest and authenticated)
