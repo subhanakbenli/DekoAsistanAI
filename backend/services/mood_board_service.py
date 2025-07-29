@@ -2,9 +2,13 @@ import google.generativeai as genai
 from google.cloud import aiplatform
 from config.settings import Settings
 from config import logger
+from config.database import get_async_session
+from models.design_models_db import MoodBoard, Design
 from services.websocket_manager import websocket_manager
 from services.mood_board_log_service import mood_board_log_service
 from typing import Dict, Any, Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, update
 import json
 import base64
 import asyncio
@@ -46,7 +50,9 @@ class MoodBoardService:
         design_style: str, 
         notes: str,
         design_title: str,
-        design_description: str
+        design_description: str,
+        design_id: str = None,
+        user_id: int = None
     ) -> Dict[str, Any]:
         """
         Generate mood board asynchronously with real-time progress tracking.
@@ -58,6 +64,8 @@ class MoodBoardService:
             notes: User notes
             design_title: Generated design title from Gemini
             design_description: Generated design description from Gemini
+            design_id: Design ID to link mood board with design (optional)
+            user_id: User ID for database record (optional)
             
         Returns:
             Dict containing mood board data
@@ -171,6 +179,20 @@ class MoodBoardService:
                 },
                 success=True
             )
+            
+            # Save mood board to database and update design
+            try:
+                await self._save_mood_board_to_database(
+                    mood_board_id=mood_board_id,
+                    user_id=user_id,
+                    design_id=design_id,
+                    image_file_path=image_file_path,
+                    prompt_used=enhanced_prompt
+                )
+                logger.info(f"Mood board saved to database: {mood_board_id}")
+            except Exception as db_error:
+                logger.error(f"Error saving mood board to database: {str(db_error)}")
+                # Continue even if database save fails
             
             logger.info(f"Mood board generated successfully: {mood_board_id}")
             return mood_board_data
@@ -425,6 +447,56 @@ Sadece prompt'u döndür, açıklama yapma.
                 "success": False
             }
         }
+
+    async def _save_mood_board_to_database(
+        self,
+        mood_board_id: str,
+        user_id: int = None,
+        design_id: str = None,
+        image_file_path: str = None,
+        prompt_used: str = None
+    ):
+        """
+        Save mood board to database and update design record.
+        
+        Args:
+            mood_board_id: Unique mood board identifier
+            user_id: User ID (optional, for guest users)
+            design_id: Design ID to link with mood board
+            image_file_path: Path to saved image file
+            prompt_used: AI prompt used for generation
+        """
+        async for db in get_async_session():
+            try:
+                # Create mood board record
+                db_mood_board = MoodBoard(
+                    user_id=user_id,
+                    design_id=design_id,
+                    mood_board_id=mood_board_id,
+                    image_path=image_file_path or "",
+                    prompt_used=prompt_used or ""
+                )
+                
+                db.add(db_mood_board)
+                await db.flush()  # Flush to get the ID
+                
+                # Update design record if design_id is provided
+                if design_id:
+                    await db.execute(
+                        update(Design)
+                        .where(Design.id == design_id)
+                        .values(mood_board_id=mood_board_id)
+                    )
+                
+                await db.commit()
+                logger.info(f"Mood board {mood_board_id} saved to database and linked to design {design_id}")
+                
+            except Exception as e:
+                await db.rollback()
+                logger.error(f"Database error saving mood board: {str(e)}")
+                raise
+            finally:
+                await db.close()
 
 
 # Global mood board service instance

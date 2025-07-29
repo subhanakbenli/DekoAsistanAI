@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from models import DesignResponseModel
 from models.user_models import User
-from models.design_models_db import Design
+from models.design_models_db import Design, MoodBoard
 from services import GeminiService, DesignHistoryService, mood_board_service, mood_board_log_service
 from middleware.auth_middleware import OptionalAuth, optional_auth
 import os
@@ -63,7 +63,9 @@ async def design_request_endpoint(
                 design_style=design_style,
                 notes=notes,
                 design_title=design_result["title"],
-                design_description=design_result["description"]
+                design_description=design_result["description"],
+                design_id=design_id,  # Pass design_id to link mood board
+                user_id=user_id      # Pass user_id for database record
             )
         
         # If user is authenticated, save to database
@@ -169,6 +171,7 @@ async def get_design_history(
                 "product_suggestion": design.product_suggestion,
                 "products": design.products,
                 "is_favorite": design.is_favorite,
+                "mood_board_id": design.mood_board_id,  # Include mood board ID
                 "created_at": design.created_at.isoformat()
             })
         
@@ -663,5 +666,108 @@ async def get_design_details(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
+        )
+
+
+@router.get("/mood-board/database/{mood_board_id}")
+async def get_mood_board_from_database(
+    mood_board_id: str,
+    db: AsyncSession = Depends(get_async_session)
+):
+    """
+    Get mood board data from database by mood_board_id.
+    """
+    try:
+        # Get mood board from database
+        result = await db.execute(
+            select(MoodBoard)
+            .where(MoodBoard.mood_board_id == mood_board_id)
+        )
+        
+        mood_board = result.scalar_one_or_none()
+        
+        if not mood_board:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Mood board not found in database"
+            )
+        
+        # Convert to response format
+        mood_board_data = {
+            "id": mood_board.id,
+            "user_id": mood_board.user_id,
+            "design_id": mood_board.design_id,
+            "mood_board_id": mood_board.mood_board_id,
+            "image_path": mood_board.image_path,
+            "prompt_used": mood_board.prompt_used,
+            "generation_time_seconds": mood_board.generation_time_seconds,
+            "image_size": mood_board.image_size,
+            "created_at": mood_board.created_at.isoformat() if mood_board.created_at else None
+        }
+        
+        return {
+            "success": True,
+            "data": mood_board_data,
+            "message": "Mood board retrieved from database successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving mood board from database: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error retrieving mood board from database"
+        )
+
+
+@router.get("/mood-board/by-design/{design_id}")
+async def get_mood_board_by_design_id(
+    design_id: str,
+    db: AsyncSession = Depends(get_async_session)
+):
+    """
+    Get mood board data by design_id.
+    """
+    try:
+        # Get mood board from database by design_id
+        result = await db.execute(
+            select(MoodBoard)
+            .where(MoodBoard.design_id == design_id)
+        )
+        
+        mood_board = result.scalar_one_or_none()
+        
+        if not mood_board:
+            return {
+                "success": False,
+                "data": None,
+                "message": "No mood board found for this design"
+            }
+        
+        # Convert to response format
+        mood_board_data = {
+            "id": mood_board.id,
+            "user_id": mood_board.user_id,
+            "design_id": mood_board.design_id,
+            "mood_board_id": mood_board.mood_board_id,
+            "image_path": mood_board.image_path,
+            "prompt_used": mood_board.prompt_used,
+            "generation_time_seconds": mood_board.generation_time_seconds,
+            "image_size": mood_board.image_size,
+            "created_at": mood_board.created_at.isoformat() if mood_board.created_at else None
+        }
+        
+        return {
+            "success": True,
+            "data": mood_board_data,
+            "message": "Mood board retrieved by design ID successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error retrieving mood board by design ID: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error retrieving mood board by design ID"
         )
     
