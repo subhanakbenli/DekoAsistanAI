@@ -1,7 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { useRoomDesign } from '../hooks/useRoomDesign';
-import { useAuth } from '../contexts/AuthContext';
 import { RoomDimensionsSection, RoomInfoSection, DesignResultSection } from '../components/sections';
 import Navbar from '../components/Navbar';
 
@@ -10,7 +8,6 @@ import Navbar from '../components/Navbar';
  * AI-powered room design and visualization platform
  */
 const RoomDesignStudio = () => {
-  const { user, logout } = useAuth();
   const {
     form,
     newBlock,
@@ -31,70 +28,32 @@ const RoomDesignStudio = () => {
     <div className="min-h-screen bg-gray-900 text-white font-sans">
       <Navbar />
       <div className="pt-16">
-      {/* Professional Header */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-700 border-b border-gray-600 shadow-lg">
-        <div className="max-w-7xl mx-auto px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link 
-                to="/" 
-                className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors duration-200 mr-4"
-              >
-                <span className="text-xl">←</span>
-                <span className="text-sm">Ana Sayfa</span>
-              </Link>
-              <div className="bg-purple-600 p-2 rounded-lg">
-                <span className="text-xl">🏠</span>
+        {/* Main Workspace */}
+        <div className="max-w-7xl mx-auto p-8">
+          {/* Compact Header Badge */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg">
+                <span className="text-lg">🏠</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Oda Tasarım Stüdyosu</h1>
-                <p className="text-sm text-gray-300">AI Destekli İç Mekan Tasarım Platformu</p>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                  Tasarım Stüdyosu
+                </h1>
+                <p className="text-xs text-gray-400">AI destekli iç mekan tasarımı</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right mr-4">
-                <div className="text-sm text-gray-300">Hoş geldiniz,</div>
-                <div className="font-semibold text-white">
-                  {user?.first_name} {user?.last_name}
-                </div>
-              </div>
-              <button
-                onClick={logout}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors text-sm"
-              >
-                Çıkış
-              </button>
-              <div className="text-right">
-                <p className="text-xs text-gray-400">Beta Sürümü</p>
-                <p className="text-xs text-purple-300">Gemini AI ile Güçlendirildi</p>
-              </div>
+            <div className="text-right hidden md:block">
+              <p className="text-xs text-gray-400">Beta Sürümü</p>
+              <p className="text-xs text-purple-300">Gemini AI</p>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Main Workspace */}
-      <div className="max-w-7xl mx-auto p-8">
-        {/* Workspace Header */}
-        <div className="mb-8 text-center">
-          <h2 className="text-lg font-semibold text-gray-200 mb-2">
-            Mükemmel Oda Tasarımınızı Oluşturun
-          </h2>
-          <p className="text-sm text-gray-400 max-w-2xl mx-auto">
-            AI destekli aracımız ile mekanınızı tasarlayın. Kişiselleştirilmiş öneriler, 
-            mood board'lar ve profesyonel iç mekan tasarım önerileri alın.
-          </p>
-        </div>
 
         {/* Design Grid - Dynamic layout based on result with smooth transitions */}
-        <div className={`grid gap-8 transition-all duration-700 ease-in-out ${
-          result ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1 lg:grid-cols-3'
-        }`}>
+        <div className="grid gap-8 transition-all duration-700 ease-in-out grid-cols-1 lg:grid-cols-3">
           
           {/* LEFT SIDE - Combined sections when result exists, separate when no result */}
-          <div className={`transition-all duration-700 ease-in-out ${
-            result ? 'lg:col-span-1' : 'lg:col-span-1'
-          }`}>
+          <div className="transition-all duration-700 ease-in-out lg:col-span-1">
             {result ? (
               // Combined Section 1 & 2 when result exists - Compact vertical layout
               <div className="space-y-4 animate-fadeIn">
@@ -137,9 +96,14 @@ const RoomDesignStudio = () => {
               <div className="space-y-4">
                 {/* SECTION 1 - Room Dimensions & Visualization */}
                 <div className="space-y-4 transition-all duration-500">
-                  <div className="flex items-center space-x-2 mb-4">
-                    <div className="bg-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">1</div>
-                    <h3 className="text-lg font-semibold text-blue-300">Oda Kurulumu</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-blue-300">Oda Kurulumu</h3>
+                        <p className="text-xs text-gray-400">Mekanınızın ölçülerini belirleyin</p>
+                      </div>
+                    </div>
                   </div>
                   <RoomDimensionsSection
                     form={form}
@@ -157,9 +121,17 @@ const RoomDesignStudio = () => {
           {/* MIDDLE SECTION - Only visible when no result */}
           {!result && (
             <div className="space-y-4 transition-all duration-500">
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="bg-green-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">2</div>
-                <h3 className="text-lg font-semibold text-green-300">Tasarım Tercihleri</h3>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-green-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-green-300">Tasarım Tercihleri</h3>
+                    <p className="text-xs text-gray-400">Stilinizi ve tercihlerinizi seçin</p>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500">
+                  💡 Kişiselleştirilmiş öneriler
+                </div>
               </div>
               <RoomInfoSection
                 form={form}
@@ -174,18 +146,25 @@ const RoomDesignStudio = () => {
           <div className={`space-y-4 transition-all duration-700 ease-in-out ${
             result ? 'lg:col-span-2 animate-expandRight' : 'lg:col-span-1'
           }`}>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="bg-purple-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">3</div>
-              <h3 className={`font-semibold text-purple-300 transition-all duration-500 ${
-                result ? 'text-2xl' : 'text-lg'
-              }`}>
-                AI Önerileri
-                {result && (
-                  <span className="text-sm font-normal text-gray-400 ml-3 animate-fadeIn">
-                    - Detaylı Sonuçlar
-                  </span>
-                )}
-              </h3>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="bg-purple-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                <div>
+                  <h3 className={`font-semibold text-purple-300 transition-all duration-500 ${
+                    result ? 'text-xl' : 'text-lg'
+                  }`}>
+                    AI Önerileri
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    {result ? 'Mood board ve ürün önerileri' : 'Yapay zeka destekli tasarım önerileri'}
+                  </p>
+                </div>
+              </div>
+              {!result && (
+                <div className="text-xs text-gray-500">
+                  🤖 Gemini AI
+                </div>
+              )}
             </div>
             <div className={`transition-all duration-500 ${result ? 'animate-fadeIn' : ''}`}>
               <DesignResultSection 
@@ -212,18 +191,6 @@ const RoomDesignStudio = () => {
             </div>
           </div>
         )}
-
-        {/* Footer */}
-        <div className="mt-16 pt-8 border-t border-gray-700">
-          <div className="text-center">
-            <p className="text-gray-400 text-sm mb-2">
-              🤖 Yapay Zeka ile Profesyonel İç Mekan Tasarımı
-            </p>
-            <p className="text-gray-500 text-xs">
-              Gemini AI ile Güçlendirildi • DALL-E Entegrasyonu • Gerçek Zamanlı Tasarım Üretimi
-            </p>
-          </div>
-        </div>
       </div>
       </div>
     </div>

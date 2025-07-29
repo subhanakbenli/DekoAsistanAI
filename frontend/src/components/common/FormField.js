@@ -8,9 +8,12 @@ const FormField = ({
   onChange, 
   placeholder, 
   options = [], 
-  className = '' 
+  className = '',
+  readOnly = false
 }) => {
-  const baseInputClasses = "w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:border-purple-500 focus:outline-none";
+  const baseInputClasses = readOnly 
+    ? "w-full p-3 rounded-lg bg-gray-700/50 border border-gray-600 text-gray-300 cursor-not-allowed"
+    : "w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:border-purple-500 focus:outline-none text-white";
 
   const renderField = () => {
     switch (type) {
@@ -37,7 +40,9 @@ const FormField = ({
             value={value}
             onChange={onChange}
             placeholder={placeholder}
-            className={`${baseInputClasses} h-24`}
+            className={`${baseInputClasses} h-24 resize-none`}
+            readOnly={readOnly}
+            rows={4}
           />
         );
       
@@ -50,6 +55,7 @@ const FormField = ({
             onChange={onChange}
             placeholder={placeholder}
             className={baseInputClasses}
+            readOnly={readOnly}
           />
         );
     }

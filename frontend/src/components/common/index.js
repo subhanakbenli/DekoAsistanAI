@@ -3,8 +3,6 @@ export { default as Card } from './Card';
 export { default as FeatureCard } from './FeatureCard';
 export { default as FormField } from './FormField';
 export { default as RoomBuilderTabs } from './RoomBuilderTabs';
-export { default as DesignForm } from './DesignForm';
-export { default as DesignResults } from './DesignResults';
 export { default as Tooltip } from './Tooltip';
 export { default as ExtraBlock } from './ExtraBlock';
 export { default as RoomVisualization } from './RoomVisualization';

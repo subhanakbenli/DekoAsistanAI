@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { HomePage, RoomDesignStudio, LoginPage, RegisterPage, DesignDetailPage } from './pages';
+import { HomePage, RoomDesignStudio, LoginPage, RegisterPage, DesignDetailPage, ProfilePage } from './pages';
 import FavoritesPage from './pages/FavoritesPage';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './components/Toast';
@@ -35,9 +35,15 @@ function App() {
               />
               {/* Design detail page */}
               <Route path="/design/:designId" element={<DesignDetailPage />} />
-              {/* Placeholder routes */}
-              <Route path="/profile" element={<div className="p-8 text-center">Profil sayfası yakında...</div>} />
-              <Route path="/settings" element={<div className="p-8 text-center">Ayarlar sayfası yakında...</div>} />
+              {/* Profile page */}
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                } 
+              />
             </Routes>
           </Router>
         </ToastProvider>
