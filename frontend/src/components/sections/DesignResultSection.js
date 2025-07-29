@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ProductSuggestionSection from './ProductSuggestionSection';
+import FavoriteButton from '../FavoriteButton';
 
 /**
  * Design suggestion result section with mood board support
@@ -58,7 +59,16 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
           {/* Design Content */}
           <div className="bg-gray-700 p-4 rounded space-y-3">
             <div className="border-b border-gray-600 pb-2">
-              <h3 className="text-lg font-semibold text-blue-300">{result.design_title}</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-blue-300">{result.design_title}</h3>
+                {result.design_id && (
+                  <FavoriteButton 
+                    designId={result.design_id}
+                    variant="icon"
+                    size="md"
+                  />
+                )}
+              </div>
             </div>
             
             {/* Room Info */}

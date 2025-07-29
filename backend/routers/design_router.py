@@ -1,18 +1,19 @@
-from fastapi import APIRouter, Form, HTTPException, BackgroundTasks, Depends
+from fastapi import APIRouter, Form, HTTPException, BackgroundTasks, Depends, Query, status
 from fastapi.responses import FileResponse
 from config import logger
-from config.database import get_db
+from config.database import get_db, get_async_session
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from models import DesignResponseModel
 from models.user_models import User
 from models.design_models_db import Design
 from services import GeminiService, DesignHistoryService, mood_board_service, mood_board_log_service
-from middleware.auth_middleware import OptionalAuth
+from middleware.auth_middleware import OptionalAuth, optional_auth
 import os
 from datetime import datetime
 import uuid
 
-router = APIRouter()
+router = APIRouter(prefix="/design")
 
 # Initialize services
 gemini_service = GeminiService()
@@ -37,7 +38,17 @@ async def design_request_endpoint(
     user_id = user.id if user else None
     user_email = user.email if user else "guest"
     
+    # ÖNEMLI DEBUG - Bu çalışıyor mu kontrol edelim
+    print(f"=== DESIGN REQUEST DEBUG ===")
+    print(f"Auth data: {auth_data}")
+    print(f"User: {user}")
+    print(f"User ID: {user_id}")
+    print(f"User email: {user_email}")
+    print("=============================")
+    
     logger.info(f"Design request received from {user_email}:")
+    logger.info(f"User ID: {user_id}")
+    logger.info(f"Auth data: {auth_data}")
     logger.info(f"Room Type: {room_type}")
     logger.info(f"Design Style: {design_style}")
     logger.info(f"Notes: {notes}")
@@ -52,48 +63,39 @@ async def design_request_endpoint(
         
         logger.info(f"Design suggestion created successfully for {user_email}: {design_result['title']}")
         
-        # Save to history (existing JSON file method for now)
-        request_id = history_service.save_design_request(
-            room_type=room_type,
-            design_style=design_style,
-            notes=notes,
-            design_result=design_result,
-            success=True
-        )
+        # Generate design ID for response
+        design_id = str(uuid.uuid4())
         
-        # If user is authenticated, also save to database
-        if user_id:
-            try:
-                # Create a unique design ID
-                design_id = str(uuid.uuid4())
-                
-                # Save design to database
-                db_design = Design(
-                    id=design_id,
-                    user_id=user_id,
-                    title=design_result["title"],
-                    description=design_result["description"],
-                    room_type=room_type,
-                    design_style=design_style,
-                    notes=notes,
-                    product_suggestion=design_result["product_suggestion"],
-                    products=design_result.get("products", []),
-                    gemini_response=design_result,
-                    is_favorite=False
-                )
-                
-                db.add(db_design)
-                await db.commit()
-                await db.refresh(db_design)
-                
-                logger.info(f"Design saved to database for user {user_email} with ID: {design_id}")
-                
-            except Exception as db_error:
-                logger.error(f"Error saving design to database: {str(db_error)}")
-                await db.rollback()
-                # Continue with response even if database save fails
+        # If user is authenticated, save to database
+        # Save design to database for all users (guest and authenticated)
+        try:
+            db_design = Design(
+                id=design_id,
+                user_id=user_id,  # Will be None for guests
+                title=design_result["title"],
+                description=design_result["description"],
+                room_type=room_type,
+                design_style=design_style,
+                notes=notes,
+                product_suggestion=design_result["product_suggestion"],
+                products=design_result.get("products", []),
+                gemini_response=design_result,
+                is_favorite=False
+            )
+            
+            db.add(db_design)
+            await db.commit()
+            await db.refresh(db_design)
+            
+            logger.info(f"Design saved to database for {user_email} with ID: {design_id}")
+            
+        except Exception as db_error:
+            logger.error(f"Error saving design to database: {str(db_error)}")
+            await db.rollback()
+            # Continue with response even if database save fails
         
         return DesignResponseModel(
+            design_id=design_id,  # Always provide design_id for favorites UI
             room_type=room_type,
             design_style=design_style,
             notes=notes,
@@ -102,7 +104,7 @@ async def design_request_endpoint(
             product_suggestion=design_result["product_suggestion"],
             products=design_result.get("products", []),
             success=True,
-            message=f"Design suggestion created successfully (ID: {request_id})" + 
+            message=f"Design suggestion created successfully" + 
                    (f" - Mood board generating for connection: {connection_id}" if connection_id else "") +
                    (f" - Saved to your account" if user_id else " - Sign in to save designs to your account")
         )
@@ -110,25 +112,9 @@ async def design_request_endpoint(
     except Exception as e:
         logger.error(f"Error while creating design suggestion for {user_email}: {str(e)}")
         
-        # Save error to history
-        error_result = {
-            "title": f"Custom {design_style} {room_type} Design",
-            "description": f"We are preparing a custom design concept in {design_style.lower()} style for this {room_type.lower()}. Please try again later.",
-            "product_suggestion": "Product suggestions suitable for this design will be added soon",
-            "products": []
-        }
-        
-        request_id = history_service.save_design_request(
-            room_type=room_type,
-            design_style=design_style,
-            notes=notes,
-            design_result=error_result,
-            success=False,
-            error_message=str(e)
-        )
-        
         # Fallback response in case of error
         return DesignResponseModel(
+            design_id=None,
             room_type=room_type,
             design_style=design_style,
             notes=notes,
@@ -137,7 +123,66 @@ async def design_request_endpoint(
             product_suggestion="Product suggestions suitable for this design will be added soon",
             products=[],
             success=False,
-            message=f"A temporary error occurred: {str(e)} (ID: {request_id})"
+            message=f"A temporary error occurred: {str(e)}"
+        )
+
+
+@router.get("/history")
+async def get_design_history(
+    limit: int = Query(20, description="Number of designs to return"),
+    user_auth: dict = Depends(optional_auth),
+    db: AsyncSession = Depends(get_async_session)
+):
+    """
+    Get user's design history from database.
+    Requires authentication.
+    """
+    user = user_auth.get("user")
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to view design history"
+        )
+    
+    try:
+        # Get user's designs from database
+        result = await db.execute(
+            select(Design)
+            .where(Design.user_id == user.id)
+            .order_by(Design.created_at.desc())
+            .limit(limit)
+        )
+        
+        designs = result.scalars().all()
+        
+        # Convert to response format
+        design_history = []
+        for design in designs:
+            design_history.append({
+                "design_id": design.id,
+                "title": design.title,
+                "description": design.description,
+                "room_type": design.room_type,
+                "design_style": design.design_style,
+                "notes": design.notes,
+                "product_suggestion": design.product_suggestion,
+                "products": design.products,
+                "is_favorite": design.is_favorite,
+                "created_at": design.created_at.isoformat()
+            })
+        
+        return {
+            "designs": design_history,
+            "total": len(design_history),
+            "message": f"Retrieved {len(design_history)} designs from your history"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching design history for user {user.email}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error retrieving design history"
         )
 
 
@@ -572,4 +617,51 @@ async def list_mood_board_files():
             "count": 0,
             "message": f"Error listing mood board files: {str(e)}"
         }
+
+@router.get("/{design_id}")
+async def get_design_details(
+    design_id: str,
+    db: AsyncSession = Depends(get_async_session),
+    auth_data: dict = Depends(OptionalAuth())
+):
+    """Get design details by ID."""
+    
+    try:
+        # Query design from database
+        result = await db.execute(select(Design).where(Design.id == design_id))
+        design = result.scalar_one_or_none()
+        
+        if not design:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Design not found"
+            )
+        
+        # Convert to response format
+        design_data = {
+            "design_id": design.id,
+            "design_title": design.title,
+            "design_description": design.description,
+            "room_type": design.room_type,
+            "design_style": design.design_style,
+            "notes": design.notes,
+            "product_suggestion": design.product_suggestion,
+            "products": design.products or [],
+            "created_at": design.created_at.isoformat() if design.created_at else None,
+            "updated_at": design.updated_at.isoformat() if design.updated_at else None,
+            "is_favorite": design.is_favorite,
+            "mood_board_id": design.mood_board_id
+        }
+        
+        logger.info(f"Design details retrieved for ID: {design_id}")
+        return design_data
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving design details: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
     

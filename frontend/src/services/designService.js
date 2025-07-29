@@ -19,8 +19,21 @@ export class DesignService {
         formDataObj.append('connection_id', connectionId);
       }
 
-      const response = await fetch(`${API_CONFIG.BASE_URL}/api/test`, {
+      // Authentication token ekle
+      const token = localStorage.getItem('token');
+      console.log('🔐 Design Service - Token check:', token ? 'Token exists' : 'No token');
+      
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        console.log('🔐 Design Service - Added Authorization header');
+      } else {
+        console.log('🔐 Design Service - No token, sending as guest');
+      }
+
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/design/test`, {
         method: 'POST',
+        headers,
         body: formDataObj,
       });
 

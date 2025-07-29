@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Button from '../common/Button';
 import FeatureCard from '../common/FeatureCard';
+import Navbar from '../Navbar';
 import { featuresData } from '../../data/featuresData';
 import { scrollToElement } from '../../utils/scrollUtils';
 
@@ -12,8 +13,10 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="max-w-4xl mx-auto text-center">
+    <>
+      <Navbar />
+      <div className="min-h-screen flex items-center justify-center px-4 pt-16">
+        <div className="max-w-4xl mx-auto text-center">
         <div className="mb-8">
           <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-blue-400 bg-clip-text text-transparent mb-6">
             DekoAsistan.AI
@@ -42,8 +45,9 @@ const HeroSection = () => {
             />
           ))}
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

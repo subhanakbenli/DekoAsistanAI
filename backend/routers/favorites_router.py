@@ -19,7 +19,7 @@ router = APIRouter(prefix="/favorites", tags=["Favorites"])
 class FavoriteDesignResponse(BaseModel):
     """Response for favorite design."""
     id: int
-    design_id: int
+    design_id: str
     design_title: str
     room_type: str
     design_style: str
@@ -34,7 +34,7 @@ class FavoriteProductRequest(BaseModel):
     product_description: str = None
     product_link: str = None
     product_category: str = None
-    design_id: int = None
+    design_id: str = None
 
 class FavoriteProductResponse(BaseModel):
     """Response for favorite product."""
@@ -43,7 +43,7 @@ class FavoriteProductResponse(BaseModel):
     product_description: str = None
     product_link: str = None
     product_category: str = None
-    design_id: int = None
+    design_id: str = None
     created_at: str
     
     class Config:
@@ -51,7 +51,7 @@ class FavoriteProductResponse(BaseModel):
 
 @router.post("/design/{design_id}")
 async def add_design_to_favorites(
-    design_id: int,
+    design_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session)
 ):
@@ -95,7 +95,7 @@ async def add_design_to_favorites(
 
 @router.delete("/design/{design_id}")
 async def remove_design_from_favorites(
-    design_id: int,
+    design_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session)
 ):

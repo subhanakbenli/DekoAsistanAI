@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useRoomDesign } from '../hooks/useRoomDesign';
 import { useAuth } from '../contexts/AuthContext';
 import { RoomDimensionsSection, RoomInfoSection, DesignResultSection } from '../components/sections';
+import Navbar from '../components/Navbar';
 
 /**
  * Room Design Studio - Professional Interior Design Tool
@@ -28,6 +29,8 @@ const RoomDesignStudio = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white font-sans">
+      <Navbar />
+      <div className="pt-16">
       {/* Professional Header */}
       <div className="bg-gradient-to-r from-gray-800 to-gray-700 border-b border-gray-600 shadow-lg">
         <div className="max-w-7xl mx-auto px-8 py-6">
@@ -221,6 +224,7 @@ const RoomDesignStudio = () => {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

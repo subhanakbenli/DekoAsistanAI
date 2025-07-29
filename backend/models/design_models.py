@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 
 class ProductModel(BaseModel):
@@ -26,6 +26,7 @@ class DesignResponseModel(BaseModel):
     Extended model for design response from Gemini.
     According to PRD, includes design title, description and product suggestion.
     """
+    design_id: Optional[str] = Field(None, description="Unique design identifier for favorites")
     room_type: str = Field(..., description="User's selected room type")
     design_style: str = Field(..., description="User's selected design style")
     notes: str = Field(..., description="User's special requests")
