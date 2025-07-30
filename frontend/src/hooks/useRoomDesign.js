@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { validateForm, validateBlock, generateDesignSuggestion } from '../utils/roomDesignUtils';
-import { DesignService } from '../services/designService';
+import { designService } from '../services/designService';
 
 /**
  * Oda tasarımı hook'u - Ana business logic
@@ -168,7 +168,7 @@ export const useRoomDesign = () => {
     
     try {
       // Backend'e istek gönder (connectionId ile birlikte)
-      const response = await DesignService.submitDesignRequest(form, connectionId);
+      const response = await designService.submitDesignRequest(form, connectionId);
       
       if (response.success) {
         // Backend'den gelen veriyi direkt result'a set et

@@ -1,94 +1,116 @@
-import axios from 'axios';
+import { BaseService } from './BaseService';
 
-const API_BASE_URL = 'http://localhost:8000/api';
-
-class AuthService {
+/**
+ * AuthService - Authentication and user management service
+ * Extends BaseService to provide authentication-specific functionality
+ */
+class AuthService extends BaseService {
   constructor() {
-    // Create axios instance with base configuration
-    this.api = axios.create({
-      baseURL: API_BASE_URL,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    // Add request interceptor to include auth token
-    this.api.interceptors.request.use(
-      (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      (error) => {
-        return Promise.reject(error);
-      }
-    );
-
-    // Add response interceptor to handle token expiry
-    this.api.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
-          // Token expired, clear it
-          localStorage.removeItem('token');
-          window.location.href = '/login';
-        }
-        return Promise.reject(error);
-      }
-    );
+    super(); // Call BaseService constructor
+    this.endpoints = {
+      REGISTER: '/auth/register',
+      LOGIN: '/auth/login',
+      USER_INFO: '/auth/me',
+      PROFILE: '/auth/profile'
+    };
   }
 
+  /**
+   * Register a new user
+   * @param {string} email - User email
+   * @param {string} password - User password 
+   * @param {string} firstName - User first name
+   * @param {string} lastName - User last name
+   * @returns {Promise<Object>} Registration response
+   */
   async register(email, password, firstName, lastName) {
-    const response = await this.api.post('/auth/register', {
-      email,
-      username: email, // Backend expects username field
-      password,
-      first_name: firstName,
-      last_name: lastName
-    });
-    return response.data;
-  }
+    try {
+      const userData = {
+        email,
+        username: email, // Backend expects username field
+        password,
+        first_name: firstName,
+        last_name: lastName
+      };
 
-  async login(email, password) {
-    const formData = new FormData();
-    formData.append('username', email);
-    formData.append('password', password);
-
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      const error = new Error('Login failed');
-      error.response = { data: errorData, status: response.status };
-      throw error;
+      return await this.post(this.endpoints.REGISTER, userData);
+    } catch (error) {
+      throw this.handleError(error);
     }
-
-    return await response.json();
   }
 
+  /**
+   * Login user with credentials
+   * @param {string} email - User email
+   * @param {string} password - User password
+   * @returns {Promise<Object>} Login response with token
+   */
+  async login(email, password) {
+    try {
+      const formData = new FormData();
+      formData.append('username', email);
+      formData.append('password', password);
+
+      // Use fetch for FormData (axios has issues with FormData in some cases)
+      const response = await fetch(`${this.baseURL}${this.endpoints.LOGIN}`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const error = new Error('Login failed');
+        error.response = { data: errorData, status: response.status };
+        throw error;
+      }
+
+      return await response.json();
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get current user information
+   * @returns {Promise<Object>} User data
+   */
   async getUserInfo() {
-    const response = await this.api.get('/auth/me');
-    return response.data;
+    try {
+      return await this.get(this.endpoints.USER_INFO);
+    } catch (error) {
+      throw this.handleError(error);
+    }
   }
 
+  /**
+   * Update user profile
+   * @param {Object} profileData - Profile data to update
+   * @returns {Promise<Object>} Updated profile data
+   */
   async updateProfile(profileData) {
-    const response = await this.api.put('/auth/profile', profileData);
-    return response.data;
+    try {
+      return await this.put(this.endpoints.PROFILE, profileData);
+    } catch (error) {
+      throw this.handleError(error);
+    }
   }
 
-  getAuthHeaders() {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
+  /**
+   * Logout user (clear token)
+   */
+  logout() {
+    localStorage.removeItem('token');
   }
 
-  isAuthenticated() {
-    return !!localStorage.getItem('token');
+  /**
+   * Store authentication token
+   * @param {string} token - JWT token
+   */
+  setAuthToken(token) {
+    localStorage.setItem('token', token);
   }
 }
 
+// Create and export singleton instance
 export const authService = new AuthService();
+export default authService;

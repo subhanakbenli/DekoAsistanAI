@@ -1,35 +1,47 @@
+import { BaseService } from './BaseService';
 import { API_CONFIG } from '../config/api';
 
 /**
- * Design service - Backend API communication
+ * DesignService - Interior design and AI-powered room design service
+ * Extends BaseService to provide design-specific functionality
  */
-export class DesignService {
-  static async submitDesignRequest(formData, connectionId = null) {
+class DesignService extends BaseService {
+  constructor() {
+    super();
+    this.endpoints = {
+      DESIGN_TEST: '/design/test',
+      DESIGN_HISTORY: '/design/history',
+      DESIGN_DETAIL: '/design'
+    };
+  }
+
+  /**
+   * Submit design request to backend with WebSocket support
+   * @param {Object} formData - Design form data
+   * @param {string|null} connectionId - WebSocket connection ID
+   * @returns {Promise<Object>} Design response with success/error status
+   */
+  async submitDesignRequest(formData, connectionId = null) {
     try {
       const formDataObj = new FormData();
       
+      // Add form fields
       formDataObj.append('room_type', formData.roomType);
       formDataObj.append('design_style', formData.designStyle);
       
+      // Create comprehensive notes
       const fullNotes = this.createFullNotes(formData);
       formDataObj.append('notes', fullNotes);
 
-      // WebSocket connection ID ekle (eğer varsa)
+      // Add WebSocket connection ID if available
       if (connectionId) {
         formDataObj.append('connection_id', connectionId);
       }
 
-      // Authentication token ekle
-      const token = localStorage.getItem('token');
-      
-      const headers = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      const response = await fetch(`${API_CONFIG.BASE_URL}/api/design/test`, {
+      // Use fetch for FormData (better compatibility)
+      const response = await fetch(`${this.baseURL}${this.endpoints.DESIGN_TEST}`, {
         method: 'POST',
-        headers,
+        headers: this.getAuthHeaders(),
         body: formDataObj,
       });
 
@@ -44,7 +56,7 @@ export class DesignService {
       
       return {
         success: true,
-        data: actualData  // Use actualData instead of result
+        data: actualData
       };
 
     } catch (error) {
@@ -58,8 +70,11 @@ export class DesignService {
 
   /**
    * Converts form data into comprehensive notes for AI processing
+   * @private
+   * @param {Object} formData - Form data object
+   * @returns {string} Formatted notes string
    */
-  static createFullNotes(formData) {
+  createFullNotes(formData) {
     let notes = [];
     
     // Room dimensions
@@ -87,4 +102,33 @@ export class DesignService {
 
     return notes.join('\n');
   }
+
+  /**
+   * Get design history for authenticated user
+   * @returns {Promise<Array>} Design history
+   */
+  async getDesignHistory() {
+    try {
+      return await this.get(this.endpoints.DESIGN_HISTORY);
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Get design details by ID
+   * @param {string} designId - Design ID
+   * @returns {Promise<Object>} Design details
+   */
+  async getDesignDetails(designId) {
+    try {
+      return await this.get(`${this.endpoints.DESIGN_DETAIL}/${designId}`);
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
 }
+
+// Create and export singleton instance
+export const designService = new DesignService();
+export default designService;
