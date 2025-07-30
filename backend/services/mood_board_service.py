@@ -41,7 +41,7 @@ class MoodBoardService:
         self.mood_boards_dir = os.path.join("data", "mood_boards")
         os.makedirs(self.mood_boards_dir, exist_ok=True)
         
-        logger.info("Mood Board Service initialized with Imagen 4")
+        logger.debug("Mood Board Service initialized with Imagen 4")
     
     async def generate_mood_board(
         self, 

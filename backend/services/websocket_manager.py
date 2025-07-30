@@ -16,7 +16,7 @@ class WebSocketManager:
         # Track mood board generation progress
         self.mood_board_progress: Dict[str, Dict] = {}
         
-        logger.info("WebSocket Manager initialized")
+        logger.debug("WebSocket Manager initialized")
     
     async def connect(self, websocket: WebSocket) -> str:
         """

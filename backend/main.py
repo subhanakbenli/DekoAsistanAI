@@ -43,7 +43,7 @@ setup_exception_handlers(app)
 static_path = os.path.join(os.path.dirname(__file__), "data", "mood_boards")
 if os.path.exists(static_path):
     app.mount("/static/mood_boards", StaticFiles(directory=static_path), name="mood_boards")
-    logger.info(f"Static files mounted: /static/mood_boards -> {static_path}")
+    logger.debug(f"Static files mounted: /static/mood_boards -> {static_path}")
 else:
     logger.warning(f"Static files directory not found: {static_path}")
 

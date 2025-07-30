@@ -720,7 +720,7 @@ async def get_design_details(
             "mood_board_id": design.mood_board_id
         }
         
-        logger.info(f"Design details retrieved for ID: {design_id}")
+        logger.debug(f"Design details retrieved for ID: {design_id}")
         return design_data
         
     except HTTPException:

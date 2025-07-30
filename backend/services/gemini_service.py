@@ -35,7 +35,7 @@ class GeminiService:
         # Initialize hashtag service
         self.hashtag_service = HashtagService()
         
-        logger.info("Gemini Service initialized")
+        logger.debug("Gemini Service initialized")
     
     def generate_design_suggestion(self, room_type: str, design_style: str, notes: str) -> Dict[str, Any]:
         """

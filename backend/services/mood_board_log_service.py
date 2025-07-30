@@ -12,7 +12,7 @@ class MoodBoardLogService:
     def __init__(self):
         self.mood_board_log_file = "data/mood_board_history.json"
         self._ensure_log_file_exists()
-        logger.info("Mood Board Log Service initialized")
+        logger.debug("Mood Board Log Service initialized")
     
     def _ensure_log_file_exists(self):
         """Ensure the mood board log file exists."""

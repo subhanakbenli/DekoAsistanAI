@@ -154,10 +154,10 @@ class HashtagService:
             
             turkish_hashtags.append(turkish_version)
         
-        # Log unknown hashtags for future mapping
+        # Log unknown hashtags for future mapping (only in debug mode)
         if unknown_hashtags:
-            logger.info(f"Unknown hashtags found (kept as English): {unknown_hashtags}")
-            logger.info(f"Consider adding these to HASHTAG_TRANSLATIONS mapping")
+            logger.debug(f"Unknown hashtags found (kept as English): {unknown_hashtags}")
+            logger.debug(f"Consider adding these to HASHTAG_TRANSLATIONS mapping")
         
         return {
             "en": english_hashtags,
