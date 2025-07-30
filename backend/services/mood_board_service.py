@@ -18,8 +18,9 @@ from datetime import datetime
 
 class MoodBoardService:
     """
-    Service for generating mood boards using Imagen 4 model.
+    Service for generating room visualizations using Imagen 4 model.
     Provides real-time progress tracking via WebSocket.
+    Creates photo-realistic room images instead of mood boards.
     """
     
     def __init__(self):
@@ -41,7 +42,7 @@ class MoodBoardService:
         self.mood_boards_dir = os.path.join("data", "mood_boards")
         os.makedirs(self.mood_boards_dir, exist_ok=True)
         
-        logger.debug("Mood Board Service initialized with Imagen 4")
+        logger.info("Mood Board Service initialized with Imagen 4 for room visualization")
     
     async def generate_mood_board(
         self, 
@@ -51,11 +52,12 @@ class MoodBoardService:
         notes: str,
         design_title: str,
         design_description: str,
+        products: list = None,
         design_id: str = None,
         user_id: int = None
     ) -> Dict[str, Any]:
         """
-        Generate mood board asynchronously with real-time progress tracking.
+        Generate room visualization asynchronously with real-time progress tracking.
         
         Args:
             connection_id: WebSocket connection ID for progress updates
@@ -64,34 +66,35 @@ class MoodBoardService:
             notes: User notes
             design_title: Generated design title from Gemini
             design_description: Generated design description from Gemini
+            products: List of suggested products to include in the room visualization
             design_id: Design ID to link mood board with design (optional)
             user_id: User ID for database record (optional)
             
         Returns:
-            Dict containing mood board data
+            Dict containing room visualization data
         """
         
         mood_board_id = str(uuid.uuid4())
         
         try:
-            # Stage 1: Preparing mood board prompt
+            # Stage 1: Preparing room visualization prompt
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "preparing_prompt",
                 "progress_percentage": 10,
-                "message": "Mood board konsepti hazırlanıyor...",
+                "message": "Oda görseli konsepti hazırlanıyor...",
                 "mood_board_id": mood_board_id
             })
             
             # Create enhanced prompt for Imagen
             enhanced_prompt = self._create_imagen_prompt(
-                room_type, design_style, notes, design_title, design_description
+                room_type, design_style, notes, design_title, design_description, products
             )
             
             # Stage 2: Generating image with Imagen 4
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "generating_image",
                 "progress_percentage": 50,
-                "message": "AI mood board oluşturuluyor...",
+                "message": "AI oda görseli oluşturuluyor...",
                 "mood_board_id": mood_board_id
             })
             
@@ -111,11 +114,11 @@ class MoodBoardService:
                 "mood_board_id": mood_board_id
             })
             
-            # Stage 5: Finalizing mood board
+            # Stage 5: Finalizing room visualization
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "finalizing",
                 "progress_percentage": 90,
-                "message": "Mood board tamamlanıyor...",
+                "message": "Oda görseli tamamlanıyor...",
                 "mood_board_id": mood_board_id
             })
             
@@ -150,11 +153,11 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "completed",
                 "progress_percentage": 100,
-                "message": "Mood board başarıyla tamamlandı!",
+                "message": "Oda görseli başarıyla tamamlandı!",
                 "mood_board_id": mood_board_id
             })
             
-            # Send completed mood board
+            # Send completed room visualization
             await websocket_manager.send_mood_board_completed(connection_id, mood_board_data)
             
             # Save mood board log
@@ -194,14 +197,14 @@ class MoodBoardService:
                 logger.error(f"Error saving mood board to database: {str(db_error)}")
                 # Continue even if database save fails
             
-            logger.info(f"Mood board generated successfully: {mood_board_id}")
+            logger.info(f"Room visualization generated successfully: {mood_board_id}")
             return mood_board_data
             
         except Exception as e:
-            logger.error(f"Error generating mood board: {str(e)}")
+            logger.error(f"Error generating room visualization: {str(e)}")
             await websocket_manager.send_mood_board_error(
                 connection_id, 
-                f"Mood board oluşturulurken hata oluştu: {str(e)}"
+                f"Oda görseli oluşturulurken hata oluştu: {str(e)}"
             )
             
             # Save error log
@@ -236,11 +239,26 @@ class MoodBoardService:
         design_style: str, 
         notes: str,
         design_title: str,
-        design_description: str
+        design_description: str,
+        products: list = None
     ) -> str:
         """
-        Create optimized prompt for Imagen 4 using Gemini.
+        Create optimized prompt for Imagen 4 using Gemini for room visualization.
         """
+        
+        # Ürün listesini formatla
+        products_text = ""
+        if products and len(products) > 0:
+            products_by_category = {}
+            for product in products:
+                category = product.get('category', 'Genel')
+                if category not in products_by_category:
+                    products_by_category[category] = []
+                products_by_category[category].append(product['name'])
+            
+            products_text = "Kullanılacak Ürünler:\n"
+            for category, product_names in products_by_category.items():
+                products_text += f"- {category}: {', '.join(product_names)}\n"
         
         prompt_enhancement_request = f"""
 Sen bir AI görsel üretim uzmanısın. Aşağıdaki iç mekan tasarım bilgilerini kullanarak Imagen 4 modeli için optimize edilmiş bir prompt oluştur.
@@ -252,16 +270,23 @@ Sen bir AI görsel üretim uzmanısın. Aşağıdaki iç mekan tasarım bilgiler
 - Tasarım Başlığı: {design_title}
 - Tasarım Açıklaması: {design_description}
 
+{products_text}
+
 **Görevin:**
-Bu bilgileri kullanarak Imagen 4 için optimize edilmiş bir mood board prompt'u oluştur. Prompt:
+Bu bilgileri kullanarak Imagen 4 için optimize edilmiş bir oda görseli prompt'u oluştur. Prompt:
 
-1. **Görsel Stil**: Modern mood board layout with clean composition
-2. **İçerik**: Interior design mood board featuring {design_style.lower()} style {room_type.lower()}
-3. **Detaylar**: Specific colors, materials, furniture pieces, lighting, textures
-4. **Kalite**: Medium resolution, professional interior design presentation, optimized for speed
-5. **Kompozisyon**: Well-organized layout with multiple design elements
+1. **Görsel Stil**: Photo-realistic interior room visualization  
+2. **İçerik**: A complete {design_style.lower()} style {room_type.lower()} interior room
+3. **Ürünler**: Include the suggested products naturally in the room scene
+4. **Detaylar**: Specific colors, materials, furniture pieces, lighting, textures from design description
+5. **Kalite**: High-quality, professional interior photography style, realistic lighting
+6. **Kompozisyon**: Well-furnished room with proper perspective and natural arrangement
 
-**Önemli**: Prompt'u İngilizce olarak yaz ve Imagen 4'ün anlayabileceği şekilde düzenle. Maksimum 500 karakter olsun.
+**Önemli**: 
+- Mood board DEĞİL, gerçekçi oda görseli oluştur
+- Önerilen ürünleri odada doğal şekilde yerleştir
+- Prompt'u İngilizce olarak yaz ve Imagen 4'ün anlayabileceği şekilde düzenle
+- Maksimum 500 karakter olsun
 
 Sadece prompt'u döndür, açıklama yapma.
 """
@@ -272,18 +297,18 @@ Sadece prompt'u döndür, açıklama yapma.
             
             # Fallback if Gemini response is too long or empty
             if not enhanced_prompt or len(enhanced_prompt) > 500:
-                enhanced_prompt = f"Professional interior design mood board, {design_style.lower()} style {room_type.lower()}, modern layout, medium resolution, clean composition, furniture and decor elements, color palette, materials showcase"
+                enhanced_prompt = f"Photo-realistic {design_style.lower()} style {room_type.lower()} interior, complete furnished room, professional photography, natural lighting, modern composition"
             
-            logger.info(f"Enhanced Imagen prompt created: {enhanced_prompt[:100]}...")
+            logger.info(f"Enhanced Imagen prompt created for room visualization: {enhanced_prompt[:100]}...")
             return enhanced_prompt
             
         except Exception as e:
             logger.error(f"Error creating enhanced prompt: {str(e)}")
-            return f"Interior design mood board, {design_style} style {room_type}, professional presentation, modern layout"
+            return f"Interior {design_style} style {room_type}, realistic room photography, fully furnished space, professional quality"
     
     def _save_mood_board_image(self, mood_board_id: str, base64_image: str) -> Optional[str]:
         """
-        Save mood board image to data/mood_boards directory.
+        Save room visualization image to data/mood_boards directory.
         
         Args:
             mood_board_id: Unique mood board identifier
@@ -295,7 +320,7 @@ Sadece prompt'u döndür, açıklama yapma.
         try:
             # Create filename with timestamp and mood board ID
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"mood_board_{timestamp}_{mood_board_id[:8]}.png"
+            filename = f"room_visual_{timestamp}_{mood_board_id[:8]}.png"
             file_path = os.path.join(self.mood_boards_dir, filename)
             
             # Decode base64 and save to file
@@ -303,11 +328,11 @@ Sadece prompt'u döndür, açıklama yapma.
             with open(file_path, 'wb') as f:
                 f.write(image_bytes)
             
-            logger.info(f"Mood board image saved: {file_path}")
+            logger.info(f"Room visualization image saved: {file_path}")
             return file_path
             
         except Exception as e:
-            logger.error(f"Error saving mood board image: {str(e)}")
+            logger.error(f"Error saving room visualization image: {str(e)}")
             return None
     
     async def _generate_image_with_imagen(self, prompt: str) -> Optional[Dict[str, Any]]:
@@ -322,7 +347,7 @@ Sadece prompt'u döndür, açıklama yapma.
             import asyncio
             import os
             
-            logger.info(f"🎨 Generating mood board with Vertex AI...")
+            logger.info(f"🎨 Generating room visualization with Vertex AI...")
             
             # Set authentication explicitly
             os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = self.settings.GOOGLE_APPLICATION_CREDENTIALS
@@ -366,7 +391,7 @@ Sadece prompt'u döndür, açıklama yapma.
                 # Convert to base64
                 base64_string = base64.b64encode(image_bytes.getvalue()).decode('utf-8')
                 
-                logger.info("✅ Vertex AI mood board generated successfully")
+                logger.info("✅ Vertex AI room visualization generated successfully")
                 return {
                     "base64": base64_string,
                     "success": True
@@ -428,7 +453,7 @@ Sadece prompt'u döndür, açıklama yapma.
         error_message: str
     ) -> Dict[str, Any]:
         """
-        Create error mood board when generation fails.
+        Create error response when room visualization generation fails.
         """
         
         return {
@@ -440,7 +465,7 @@ Sadece prompt'u döndür, açıklama yapma.
             },
             "error": True,
             "error_message": error_message,
-            "fallback_message": "Mood board oluşturulamadı. Lütfen tekrar deneyin.",
+            "fallback_message": "Oda görseli oluşturulamadı. Lütfen tekrar deneyin.",
             "generation_metadata": {
                 "model": self.settings.IMAGEN_MODEL_NAME,
                 "generated_at": datetime.now().isoformat(),

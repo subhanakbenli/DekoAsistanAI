@@ -89,6 +89,7 @@ async def design_request_endpoint(
                 notes=notes,
                 design_title=design_result["title"],
                 design_description=design_result["description"],
+                products=design_result.get("products", []),  # Pass products list for room visualization
                 design_id=design_id,  # Pass design_id to link mood board
                 user_id=user_id      # Pass user_id for database record
             )
