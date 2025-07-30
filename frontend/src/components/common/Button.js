@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-const Button = ({ 
+/**
+ * Button Component - Optimized with React.memo
+ * Prevents unnecessary re-renders when props haven't changed
+ */
+const Button = memo(({ 
   children, 
   onClick, 
   variant = 'primary', 
