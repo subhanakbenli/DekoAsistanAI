@@ -249,7 +249,7 @@ export class ValidationUtils {
   }
 
   /**
-   * Validate notes field
+   * Validate notes field (allows spaces)
    * @private
    * @param {string} notes - Notes to validate
    * @returns {boolean} Whether notes are valid
@@ -259,13 +259,23 @@ export class ValidationUtils {
   }
 
   /**
-   * Sanitize input string
+   * Sanitize input string for regular input fields
    * @param {string} input - Input to sanitize
    * @returns {string} Sanitized input
    */
   static sanitizeInput(input) {
     if (typeof input !== 'string') return '';
     return input.trim().replace(/[<>]/g, '');
+  }
+
+  /**
+   * Sanitize textarea input (preserves internal spaces)
+   * @param {string} input - Textarea input to sanitize
+   * @returns {string} Sanitized input
+   */
+  static sanitizeTextarea(input) {
+    if (typeof input !== 'string') return '';
+    return input.replace(/[<>]/g, '');
   }
 
   /**

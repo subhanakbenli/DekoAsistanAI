@@ -1,5 +1,4 @@
 import { BaseService } from './BaseService';
-import { API_CONFIG } from '../config/api';
 
 /**
  * DesignService - Interior design and AI-powered room design service

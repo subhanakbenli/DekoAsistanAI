@@ -173,14 +173,10 @@ export class ErrorHandler {
    * @returns {Promise} Operation result or error
    */
   static async withRetry(operation, maxRetries = 3, context = 'Operation') {
-    let lastError;
-    
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         return await operation();
       } catch (error) {
-        lastError = error;
-        
         if (attempt === maxRetries) {
           throw this.handle(error, `${context} (Final Attempt)`, {
             logToConsole: true,
