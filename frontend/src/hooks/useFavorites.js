@@ -29,8 +29,6 @@ export const useFavorites = () => {
       // Single API call to get all favorites
       const allFavorites = await favoriteService.getUserFavorites();
       
-      console.log('useFavorites - Received favorites data:', allFavorites); // Debug
-      
       setFavoriteDesigns(allFavorites.favorite_designs || []);
       setFavoriteProducts(allFavorites.favorite_products || []);
       

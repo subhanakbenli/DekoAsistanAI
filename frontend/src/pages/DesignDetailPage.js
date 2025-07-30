@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import FavoriteButton from '../components/FavoriteButton';
@@ -14,11 +14,7 @@ const DesignDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchDesignDetails();
-  }, [designId]);
-
-  const fetchDesignDetails = async () => {
+  const fetchDesignDetails = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -41,7 +37,6 @@ const DesignDetailPage = () => {
       }
 
       const data = await response.json();
-      console.log('DesignDetailPage - Received data:', data); // Debug
       setDesign(data);
     } catch (error) {
       console.error('Error fetching design details:', error);
@@ -51,7 +46,11 @@ const DesignDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [designId]);
+
+  useEffect(() => {
+    fetchDesignDetails();
+  }, [fetchDesignDetails]);
 
   if (loading) {
     return (

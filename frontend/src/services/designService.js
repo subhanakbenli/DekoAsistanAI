@@ -21,14 +21,10 @@ export class DesignService {
 
       // Authentication token ekle
       const token = localStorage.getItem('token');
-      console.log('🔐 Design Service - Token check:', token ? 'Token exists' : 'No token');
       
       const headers = {};
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-        console.log('🔐 Design Service - Added Authorization header');
-      } else {
-        console.log('🔐 Design Service - No token, sending as guest');
       }
 
       const response = await fetch(`${API_CONFIG.BASE_URL}/api/design/test`, {
@@ -42,9 +38,6 @@ export class DesignService {
       }
 
       const result = await response.json();
-      
-      // Backend Response - Single log to show API response
-      console.log('� Backend API Response:', result);
       
       // Backend response structure check - actual data is in 'output' field
       const actualData = result.output || result;

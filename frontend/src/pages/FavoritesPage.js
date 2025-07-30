@@ -14,8 +14,7 @@ const FavoritesPage = () => {
     loading,
     error,
     removeDesignFromFavorites,
-    removeProductFromFavorites,
-    fetchAllFavorites
+    removeProductFromFavorites
   } = useFavorites();
 
   const [activeTab, setActiveTab] = useState('designs'); // 'designs' or 'products'
@@ -206,8 +205,6 @@ const FavoritesPage = () => {
               hashtagsToShow = design.hashtags.en;
             }
           }
-          
-          console.log('Hashtags for', design.title, ':', hashtagsToShow);
           
           return hashtagsToShow.length > 0 ? (
             <div className="mb-4">

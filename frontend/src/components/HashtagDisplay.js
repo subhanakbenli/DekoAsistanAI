@@ -21,11 +21,6 @@ const HashtagDisplay = ({
   // Safe access to hashtags with fallback
   const displayTags = hashtags?.display || hashtags?.tr || hashtags?.en || [];
   
-  // Debug: Check hashtag format
-  if (hashtags && Object.keys(hashtags).length > 0) {
-    console.log('HashtagDisplay received:', hashtags);
-  }
-  
   if (!displayTags || displayTags.length === 0) {
     return null;
   }
@@ -51,7 +46,6 @@ const HashtagDisplay = ({
   // Handle hashtag click (placeholder for future functionality)
   const handleHashtagClick = (hashtag) => {
     // TODO: Implement hashtag click functionality (search/filter)
-    console.log('Hashtag clicked:', hashtag);
   };
 
   // Truncate long hashtags for display
