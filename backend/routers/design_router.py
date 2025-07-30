@@ -16,6 +16,30 @@ import uuid
 
 router = APIRouter(prefix="/design")
 
+def get_clean_image_filename(image_path):
+    """Extract clean filename from image path, handling various path formats."""
+    if not image_path:
+        return None
+    
+    # Remove any leading/trailing whitespace
+    path = image_path.strip()
+    
+    # Handle different path separators and formats
+    if '\\' in path:
+        filename = path.split('\\')[-1]
+    elif '/' in path:
+        filename = path.split('/')[-1]
+    else:
+        filename = path
+    
+    # Remove any remaining path prefixes
+    if filename.startswith('data/mood_boards/'):
+        filename = filename.replace('data/mood_boards/', '')
+    elif filename.startswith('data\\mood_boards\\'):
+        filename = filename.replace('data\\mood_boards\\', '')
+    
+    return filename
+
 # Initialize services
 gemini_service = GeminiService()
 history_service = DesignHistoryService()
@@ -643,19 +667,23 @@ async def get_design_details(
     """Get design details by ID."""
     
     try:
-        # Query design from database with hashtags
+        # Query design from database with hashtags and mood board
         result = await db.execute(
-            select(Design)
+            select(Design, MoodBoard)
+            .outerjoin(MoodBoard, Design.id == MoodBoard.design_id)
             .options(selectinload(Design.hashtags).selectinload(DesignHashtag.hashtag))
             .where(Design.id == design_id)
         )
-        design = result.scalar_one_or_none()
+        design_with_mood_board = result.first()
         
-        if not design:
+        if not design_with_mood_board or not design_with_mood_board.Design:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Design not found"
             )
+        
+        design = design_with_mood_board.Design
+        mood_board = design_with_mood_board.MoodBoard
         
         # Get hashtags and translate them
         hashtags_data = {"en": [], "tr": [], "display": []}
@@ -679,6 +707,13 @@ async def get_design_details(
             "product_suggestion": design.product_suggestion,
             "products": design.products or [],
             "hashtags": hashtags_data,  # Add hashtags to response
+            "image": {
+                "has_image": mood_board is not None,
+                "image_url": f"/static/mood_boards/{get_clean_image_filename(mood_board.image_path)}" if mood_board and mood_board.image_path else None,
+                "mood_board_id": mood_board.mood_board_id if mood_board else None,
+                "generation_time": mood_board.generation_time_seconds if mood_board else None,
+                "debug_original_path": mood_board.image_path if mood_board else None  # Debug için
+            },
             "created_at": design.created_at.isoformat() if design.created_at else None,
             "updated_at": design.updated_at.isoformat() if design.updated_at else None,
             "is_favorite": design.is_favorite,

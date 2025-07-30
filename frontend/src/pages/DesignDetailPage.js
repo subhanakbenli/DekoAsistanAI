@@ -134,7 +134,74 @@ const DesignDetailPage = () => {
         </div>
 
         {/* Design Details */}
-        <div className="bg-gray-800 rounded-lg shadow-lg p-6 space-y-6">
+        <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+          
+          {/* Görsel Kısmı - En Üst */}
+          {design.image && design.image.has_image ? (
+            <div className="relative h-96 bg-gray-700">
+              <img 
+                src={`http://localhost:8000${design.image.image_url}`}
+                alt={design.design_title || design.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+              
+              {/* Fallback placeholder */}
+              <div className="absolute inset-0 hidden items-center justify-center bg-gray-700">
+                <div className="text-center text-gray-400">
+                  <div className="text-red-400 mb-2">
+                    <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <p>Tasarım görseli yüklenemedi</p>
+                </div>
+              </div>
+              
+              {/* Overlay bilgileri */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                <div className="flex space-x-3">
+                  <span className="bg-purple-600/80 backdrop-blur-sm text-purple-100 px-3 py-1 rounded-md text-sm font-medium">
+                    {design.room_type}
+                  </span>
+                  <span className="bg-blue-600/80 backdrop-blur-sm text-blue-100 px-3 py-1 rounded-md text-sm font-medium">
+                    {design.design_style}
+                  </span>
+                  {design.image.generation_time && (
+                    <span className="bg-green-600/80 backdrop-blur-sm text-green-100 px-3 py-1 rounded-md text-sm font-medium">
+                      {design.image.generation_time}s
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Görsel yoksa placeholder */
+            <div className="h-64 bg-gray-700 flex items-center justify-center">
+              <div className="text-center text-gray-400">
+                <div className="text-red-400 mb-3">
+                  <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <p>Tasarım görseli bulunamadı</p>
+                <div className="flex justify-center space-x-3 mt-4">
+                  <span className="bg-purple-600/20 text-purple-300 px-3 py-1 rounded-md text-sm">
+                    {design.room_type}
+                  </span>
+                  <span className="bg-blue-600/20 text-blue-300 px-3 py-1 rounded-md text-sm">
+                    {design.design_style}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* İçerik Kısmı */}
+          <div className="p-6 space-y-6">
           {/* Title */}
           <div className="border-b border-gray-700 pb-4">
             <h1 className="text-3xl font-bold text-blue-300 mb-2">
@@ -235,6 +302,7 @@ const DesignDetailPage = () => {
             >
               Favorilerime Dön
             </button>
+          </div>
           </div>
         </div>
       </div>

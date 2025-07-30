@@ -103,10 +103,15 @@ const FavoritesPage = () => {
             {/* Loading Skeleton */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, index) => (
-                <div key={index} className="bg-gray-800 border border-gray-700 rounded-xl p-6 animate-pulse">
-                  <div className="h-48 bg-gray-700 rounded-lg mb-4"></div>
-                  <div className="h-4 bg-gray-700 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+                <div key={index} className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden animate-pulse">
+                  {/* Görsel placeholder */}
+                  <div className="h-48 bg-gray-700"></div>
+                  {/* İçerik placeholder */}
+                  <div className="p-6">
+                    <div className="h-4 bg-gray-700 rounded mb-3"></div>
+                    <div className="h-4 bg-gray-700 rounded w-3/4 mb-4"></div>
+                    <div className="h-8 bg-gray-700 rounded"></div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -118,25 +123,56 @@ const FavoritesPage = () => {
 
   const DesignCard = ({ design }) => (
     <div className="bg-gray-800 border border-gray-700 rounded-xl overflow-hidden hover:border-purple-500 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10">
+      
+      {/* Görsel Kısmı - Üst */}
+      <div className="relative h-48 bg-gray-700">
+        {design.image && design.image.has_image ? (
+          <img 
+            src={`http://localhost:8000${design.image.image_url}`}
+            alt={design.design_title}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+        ) : null}
+        
+        {/* Placeholder - Görsel yoksa */}
+        <div className={`absolute inset-0 flex items-center justify-center ${design.image && design.image.has_image ? 'hidden' : 'flex'}`}>
+          <div className="text-center text-gray-400">
+            <div className="text-red-400 mb-2">
+              <svg className="w-8 h-8 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <p className="text-xs">Tasarım görseli bulunamadı</p>
+          </div>
+        </div>
+        
+        {/* Kart üzerinde tasarım türü badge'i */}
+        <div className="absolute top-3 left-3 flex space-x-2">
+          <span className="bg-purple-600/80 backdrop-blur-sm text-purple-100 px-2 py-1 rounded-md text-xs font-medium">
+            {design.room_type}
+          </span>
+          <span className="bg-blue-600/80 backdrop-blur-sm text-blue-100 px-2 py-1 rounded-md text-xs font-medium">
+            {design.design_style}
+          </span>
+        </div>
+      </div>
+
+      {/* İçerik Kısmı - Alt */}
       <div className="p-6">
         <div className="flex justify-between items-start mb-4">
-          <div>
+          <div className="flex-1">
             <h3 className="text-lg font-semibold text-white mb-3">
-              {design.design_title}
+              {design.title || design.design_title || 'Tasarım Başlığı'}
             </h3>
-            <div className="flex items-center space-x-3 text-sm">
-              <span className="bg-purple-600/20 text-purple-300 px-3 py-1 rounded-full border border-purple-500/30">
-                {design.room_type}
-              </span>
-              <span className="bg-blue-600/20 text-blue-300 px-3 py-1 rounded-full border border-blue-500/30">
-                {design.design_style}
-              </span>
-            </div>
           </div>
           <button
             onClick={() => handleRemoveDesign(design.design_id)}
             disabled={removing === design.design_id}
-            className="text-red-400 hover:text-red-300 p-2 rounded-full hover:bg-red-500/10 transition-colors border border-transparent hover:border-red-500/30"
+            className="text-red-400 hover:text-red-300 p-2 rounded-full hover:bg-red-500/10 transition-colors border border-transparent hover:border-red-500/30 ml-2"
             title="Favorilerden çıkar"
           >
             {removing === design.design_id ? (
@@ -150,6 +186,46 @@ const FavoritesPage = () => {
           </button>
         </div>
         
+        {/* Hashtags - Başlık altında */}
+        {(() => {
+          // Hashtag verisini normalize et
+          let hashtagsToShow = [];
+          
+          if (design.hashtags) {
+            if (Array.isArray(design.hashtags)) {
+              // Eğer direkt array ise
+              hashtagsToShow = design.hashtags;
+            } else if (design.hashtags.display && Array.isArray(design.hashtags.display)) {
+              // Eğer display property'si varsa
+              hashtagsToShow = design.hashtags.display;
+            } else if (design.hashtags.tr && Array.isArray(design.hashtags.tr)) {
+              // Eğer tr property'si varsa
+              hashtagsToShow = design.hashtags.tr;
+            } else if (design.hashtags.en && Array.isArray(design.hashtags.en)) {
+              // Eğer en property'si varsa
+              hashtagsToShow = design.hashtags.en;
+            }
+          }
+          
+          console.log('Hashtags for', design.title, ':', hashtagsToShow);
+          
+          return hashtagsToShow.length > 0 ? (
+            <div className="mb-4">
+              <HashtagDisplay 
+                hashtags={{ display: hashtagsToShow }}
+                previewLimit={3}
+                showAll={false}
+                copyEnabled={false}
+                className="text-xs"
+              />
+            </div>
+          ) : (
+            <div className="mb-4 text-purple-300 text-xs">
+              Hashtag bulunamadı
+            </div>
+          );
+        })()}
+        
         <div className="text-sm text-gray-400 mb-4 border-t border-gray-700 pt-4">
           <span className="flex items-center">
             <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -158,19 +234,6 @@ const FavoritesPage = () => {
             {new Date(design.created_at).toLocaleDateString('tr-TR')}
           </span>
         </div>
-
-        {/* Hashtags - Kart altında */}
-        {design.hashtags && (
-          <div className="mb-4">
-            <HashtagDisplay 
-              hashtags={design.hashtags} 
-              previewLimit={3}
-              showAll={false}
-              copyEnabled={false}
-              className="text-xs"
-            />
-          </div>
-        )}
         
         <button 
           onClick={() => navigate(`/design/${design.design_id}`)}

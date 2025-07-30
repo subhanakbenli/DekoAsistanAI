@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 from config import settings, setup_logging, logger
 from models import DesignRequestModel, DesignResponseModel
 from exceptions import setup_exception_handlers
@@ -36,6 +38,14 @@ app.add_middleware(
 
 # Setup exception handlers
 setup_exception_handlers(app)
+
+# Mount static files for mood board images
+static_path = os.path.join(os.path.dirname(__file__), "data", "mood_boards")
+if os.path.exists(static_path):
+    app.mount("/static/mood_boards", StaticFiles(directory=static_path), name="mood_boards")
+    logger.info(f"Static files mounted: /static/mood_boards -> {static_path}")
+else:
+    logger.warning(f"Static files directory not found: {static_path}")
 
 # Include routers
 app.include_router(health_router, tags=["Health"])

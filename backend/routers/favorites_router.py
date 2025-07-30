@@ -6,16 +6,41 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload
 from typing import List
+import os
 
 from config.database import get_async_session
 from models.user_models import User
-from models.design_models_db import Design, UserFavoriteDesign, UserFavoriteProduct, DesignHashtag
+from models.design_models_db import Design, UserFavoriteDesign, UserFavoriteProduct, DesignHashtag, MoodBoard
 from models.auth_schemas import UserResponse
 from routers.auth_router import get_current_user
 from services.gemini_service import GeminiService
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/favorites", tags=["Favorites"])
+
+def get_clean_image_filename(image_path):
+    """Extract clean filename from image path, handling various path formats."""
+    if not image_path:
+        return None
+    
+    # Remove any leading/trailing whitespace
+    path = image_path.strip()
+    
+    # Handle different path separators and formats
+    if '\\' in path:
+        filename = path.split('\\')[-1]
+    elif '/' in path:
+        filename = path.split('/')[-1]
+    else:
+        filename = path
+    
+    # Remove any remaining path prefixes
+    if filename.startswith('data/mood_boards/'):
+        filename = filename.replace('data/mood_boards/', '')
+    elif filename.startswith('data\\mood_boards\\'):
+        filename = filename.replace('data\\mood_boards\\', '')
+    
+    return filename
 
 # Pydantic models for request/response
 class FavoriteDesignResponse(BaseModel):
@@ -129,11 +154,14 @@ async def get_my_favorites(
     This endpoint is safe - only returns the authenticated user's own favorites.
     """
     
-    # Single query for favorite designs with JOIN and hashtag relationships
+    # Single query for favorite designs with JOIN, hashtag and mood board relationships
     designs_result = await db.execute(
-        select(UserFavoriteDesign, Design)
+        select(UserFavoriteDesign, Design, MoodBoard)
         .join(Design, UserFavoriteDesign.design_id == Design.id)
-        .options(selectinload(Design.hashtags).selectinload(DesignHashtag.hashtag))
+        .outerjoin(MoodBoard, Design.id == MoodBoard.design_id)
+        .options(
+            selectinload(Design.hashtags).selectinload(DesignHashtag.hashtag)
+        )
         .where(UserFavoriteDesign.user_id == current_user.id)
         .order_by(UserFavoriteDesign.created_at.desc())
     )
@@ -185,6 +213,13 @@ async def get_my_favorites(
                         dh.hashtag.name for dh in sorted(fav.Design.hashtags, key=lambda x: x.order_index)
                     ]) if fav.Design.hashtags else {"en": [], "tr": [], "display": []}
                 ),
+                "image": {
+                    "has_image": fav.MoodBoard is not None,
+                    "image_url": f"/static/mood_boards/{get_clean_image_filename(fav.MoodBoard.image_path)}" if fav.MoodBoard and fav.MoodBoard.image_path else None,
+                    "mood_board_id": fav.MoodBoard.mood_board_id if fav.MoodBoard else None,
+                    "generation_time": fav.MoodBoard.generation_time_seconds if fav.MoodBoard else None,
+                    "debug_original_path": fav.MoodBoard.image_path if fav.MoodBoard else None  # Debug için
+                },
                 "created_at": fav.UserFavoriteDesign.created_at.isoformat()
             }
             for fav in favorite_designs
