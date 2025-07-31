@@ -91,7 +91,7 @@ class WebSocketManager:
         
         # Send progress update to client
         progress_message = {
-            "type": "mood_board_progress",
+            "type": "room_visualization_progress",
             "connection_id": connection_id,
             "progress": progress_data,
             "timestamp": datetime.now().isoformat()
@@ -105,9 +105,9 @@ class WebSocketManager:
         Send completed mood board data to client.
         """
         completion_message = {
-            "type": "mood_board_completed",
+            "type": "room_visualization_completed",
             "connection_id": connection_id,
-            "mood_board": mood_board_data,
+            "room_visualization": mood_board_data,
             "timestamp": datetime.now().isoformat()
         }
         
@@ -124,7 +124,7 @@ class WebSocketManager:
         Send mood board generation error to client.
         """
         error_response = {
-            "type": "mood_board_error",
+            "type": "room_visualization_error",
             "connection_id": connection_id,
             "error": error_message,
             "timestamp": datetime.now().isoformat()

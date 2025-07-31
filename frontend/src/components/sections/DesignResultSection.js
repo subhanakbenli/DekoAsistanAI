@@ -313,7 +313,7 @@ const MoodBoardSection = ({
           
           <div className="bg-pink-950/30 rounded-lg p-4 border border-pink-500/10">
             <p className="text-pink-200 text-sm italic text-center">
-              ✨ AI tasarımınız için özel hayal dünyası oluşturuyor...
+              ✨ AI tasarımınız için gerçekçi oda görseli oluşturuyor...
             </p>
           </div>
         </div>
@@ -326,7 +326,7 @@ const MoodBoardSection = ({
             <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-xl filter blur-lg opacity-50 group-hover:opacity-70 transition-opacity"></div>
             <img 
               src={`data:image/png;base64,${moodBoard.image_data.base64}`}
-              alt="Design Mood Board"
+              alt="Oda Görselleştirmesi"
               className="relative w-full rounded-xl shadow-2xl border border-white/10 hover:border-white/20 transition-all duration-300"
               onError={(e) => {
                 e.target.style.display = 'none';
@@ -366,7 +366,7 @@ const MoodBoardSection = ({
       )}
 
       {/* Error State */}
-      {progress && progress.type === 'mood_board_error' && (
+      {progress && (progress.type === 'room_visualization_error' || progress.type === 'mood_board_error') && (
         <div className="bg-red-900/40 backdrop-blur-sm border border-red-500/30 p-6 rounded-xl">
           <div className="flex items-center space-x-3 mb-3">
             <div className="bg-red-500/20 p-2 rounded-lg">

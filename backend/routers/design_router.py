@@ -13,6 +13,7 @@ from models.design_models_db import Design, MoodBoard, DesignHashtag
 from services import GeminiService, DesignHistoryService, mood_board_service, mood_board_log_service
 from middleware.auth_middleware import OptionalAuth, optional_auth
 import os
+import time
 from datetime import datetime
 import uuid
 
@@ -62,14 +63,28 @@ async def design_request_endpoint(
     room_type: str = Form(...),
     design_style: str = Form(...),
     notes: str = Form(...),
-    connection_id: str = Form(None),  # WebSocket connection ID for mood board
+    connection_id: str = Form(None),  # WebSocket connection ID for real-time room visualization
+    color_info: str = Form(""),  # Renk paleti bilgisi (frontend'den formatlanmış)
+    dimensions_info: str = Form(""),  # Oda boyutları bilgisi (frontend'den formatlanmış)
     db: AsyncSession = Depends(get_db),
     auth_data: dict = Depends(OptionalAuth())
 ):
     """
-    Main design request endpoint - processes data from frontend and generates design suggestions with Gemini AI.
-    According to PRD, sends user-provided information to Gemini and gets detailed design suggestions.
-    Supports both guest users and authenticated users.
+    Main design request endpoint - Enhanced room visualization generation.
+    
+    Processes user preferences and generates comprehensive design suggestions with Gemini AI.
+    When connection_id is provided, automatically starts background room visualization generation
+    using Imagen 4 with 19+ step progress tracking via WebSocket.
+    
+    Features:
+    - AI-powered design suggestions with Turkish language support
+    - Real-time room visualization with enhanced progress tracking  
+    - Background task processing for non-blocking user experience
+    - Guest and authenticated user support
+    - Database persistence for design history
+    
+    According to PRD: Sends user-provided information to Gemini and returns detailed 
+    design suggestions with optional room visualization generation.
     """
     user = auth_data.get("user")
     user_id = user.id if user else None
@@ -90,9 +105,9 @@ async def design_request_endpoint(
         # Generate design ID for response
         design_id = str(uuid.uuid4())
         
-        # Start mood board generation in background if connection_id is provided
+        # Start room visualization generation in background if connection_id is provided
         if connection_id:
-            logger.info(f"Starting background mood board generation for connection: {connection_id}")
+            logger.info(f"Starting background room visualization generation for connection: {connection_id}")
             background_tasks.add_task(
                 mood_board_service.generate_mood_board,
                 connection_id=connection_id,
@@ -101,9 +116,11 @@ async def design_request_endpoint(
                 notes=notes,
                 design_title=design_result["title"],
                 design_description=design_result["description"],
-                products=design_result.get("products", []),  # Pass products list for room visualization
-                design_id=design_id,  # Pass design_id to link mood board
-                user_id=user_id      # Pass user_id for database record
+                products=design_result.get("products", []),  # Pass products for room visualization
+                design_id=design_id,  # Link visualization to design record
+                user_id=user_id,      # User ID for database tracking
+                color_info=color_info,  # Frontend'den gelen renk bilgisi
+                dimensions_info=dimensions_info  # Frontend'den gelen boyut bilgisi
             )
         
         # If user is authenticated, save to database
@@ -156,7 +173,7 @@ async def design_request_endpoint(
             products=design_result.get("products", []),
             success=True,
             message=DESIGN_CREATED_SUCCESS + 
-                   (f" - Mood board generating for connection: {connection_id}" if connection_id else "") +
+                   (f" - Room visualization generating for connection: {connection_id}" if connection_id else "") +
                    (" - Saved to your account" if user_id else " - Sign in to save designs to your account")
         )
         
@@ -245,7 +262,6 @@ async def test_image_generation(prompt: str = Form(...)):
     Test endpoint for Imagen API - generates image from prompt and measures execution time.
     For testing purposes only.
     """
-    import time
     
     logger.info(f"Test image generation requested with prompt: {prompt}")
     
@@ -253,7 +269,7 @@ async def test_image_generation(prompt: str = Form(...)):
         # Start timing
         start_time = time.time()
         
-        # Generate image using mood board service's imagen method
+        # Generate image using mood board service's imagen method (without progress tracking for test)
         image_result = await mood_board_service._generate_image_with_imagen(prompt)
         
         # Calculate execution time

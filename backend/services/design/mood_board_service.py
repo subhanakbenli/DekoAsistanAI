@@ -21,9 +21,20 @@ from datetime import datetime
 
 class MoodBoardService:
     """
-    Service for generating room visualizations using Imagen 4 model.
-    Provides real-time progress tracking via WebSocket.
-    Creates photo-realistic room images instead of mood boards.
+    Room Visualization Service using Imagen 4 model.
+    
+    This service generates realistic room visualizations (not mood boards) 
+    based on user design preferences. It provides real-time progress tracking 
+    via WebSocket and creates photo-realistic interior design images.
+    
+    Key Features:
+    - Real-time progress tracking with 19+ steps
+    - Vertex AI Imagen 4 integration for high-quality images
+    - Fallback system for reliable operation
+    - Background progress simulation during AI processing
+    
+    Note: Despite the class name "MoodBoardService", this service actually 
+    generates room visualizations. The name is kept for backward compatibility.
     """
     
     def __init__(self):
@@ -48,7 +59,7 @@ class MoodBoardService:
         self.mood_boards_dir = os.path.join("data", "mood_boards")
         os.makedirs(self.mood_boards_dir, exist_ok=True)
         
-        logger.info("Mood Board Service initialized with Imagen 4 for room visualization")
+        logger.info("Room Visualization Service initialized with Imagen 4 - Enhanced 19+ step progress tracking enabled")
     
     async def generate_mood_board(
         self, 
@@ -60,70 +71,111 @@ class MoodBoardService:
         design_description: str,
         products: list = None,
         design_id: str = None,
-        user_id: int = None
+        user_id: int = None,
+        color_info: str = "",  # Frontend'den gelen formatlanmış renk bilgisi
+        dimensions_info: str = ""  # Frontend'den gelen formatlanmış boyut bilgisi
     ) -> Dict[str, Any]:
         """
-        Generate room visualization asynchronously with real-time progress tracking.
+        Generate realistic room visualization with enhanced progress tracking.
+        
+        This is the main method for creating room visualizations. Despite the method name 
+        'generate_mood_board', it actually generates realistic room images using AI.
+        The name is kept for backward compatibility with existing API endpoints.
+        
+        Features:
+        - 19+ step progress tracking (5% → 100%)
+        - Background progress simulation during AI processing
+        - Real-time WebSocket updates
+        - Fallback system for reliability
+        - Turkish language progress messages
         
         Args:
-            connection_id: WebSocket connection ID for progress updates
-            room_type: Type of room
-            design_style: Design style
-            notes: User notes (includes room dimensions, color palette, product categories)
-            design_title: Generated design title from Gemini
-            design_description: Generated design description from Gemini
-            products: List of suggested products to include in the room visualization
-            design_id: Design ID to link mood board with design (optional)
-            user_id: User ID for database record (optional)
+            connection_id: WebSocket connection ID for real-time progress updates
+            room_type: Type of room (living_room, bedroom, kitchen, etc.)
+            design_style: Interior design style (modern, minimalist, scandinavian, etc.)
+            notes: User preferences including dimensions, colors, and product categories
+            design_title: AI-generated design title from Gemini
+            design_description: AI-generated design description from Gemini
+            products: List of suggested products to include in visualization
+            design_id: Optional design ID to link visualization with design record
+            user_id: Optional user ID for database tracking
             
         Returns:
-            Dict containing room visualization data
+            Dict containing complete room visualization data:
+            - mood_board_id: Unique identifier for the visualization
+            - image_data: Base64 encoded PNG image
+            - generation_metadata: AI model and processing information
+            - created_at: Timestamp of generation
         """
         
         mood_board_id = str(uuid.uuid4())
         
         try:
-            # Stage 1: Preparing room visualization prompt
+            # Stage 1: Preparing room visualization prompt (0-15%)
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "preparing_prompt",
-                "progress_percentage": 10,
+                "progress_percentage": 5,
                 "message": "Oda görseli konsepti hazırlanıyor...",
                 "mood_board_id": mood_board_id
             })
             
             # Parse notes to extract structured information
-            parsed_info = self.notes_parser.parse_notes(notes)
-            
-            # Create enhanced prompt for Imagen
-            enhanced_prompt = self._create_imagen_prompt(
-                room_type, design_style, notes, design_title, design_description, products, parsed_info
-            )
-            
-            # Stage 2: Generating image with Imagen 4
+            await asyncio.sleep(0.5)  # Small delay for realistic progress
             await websocket_manager.update_mood_board_progress(connection_id, {
-                "stage": "generating_image",
-                "progress_percentage": 50,
-                "message": "AI oda görseli oluşturuluyor...",
+                "stage": "preparing_prompt",
+                "progress_percentage": 10,
+                "message": "Notlar analiz ediliyor...",
                 "mood_board_id": mood_board_id
             })
             
-            # Generate image using Imagen 4
-            image_data = await self._generate_image_with_imagen(enhanced_prompt)
+            # Parse notes only for info not provided by frontend (extra areas, door/windows, etc.)
+            # Color and dimensions are now provided separately by frontend
+            parsed_info = self.notes_parser.parse_notes(notes) if notes.strip() else {}
+            
+            await websocket_manager.update_mood_board_progress(connection_id, {
+                "stage": "preparing_prompt", 
+                "progress_percentage": 15,
+                "message": "AI prompt hazırlanıyor...",
+                "mood_board_id": mood_board_id
+            })
+            
+            # Create enhanced prompt for Imagen
+            enhanced_prompt = self._create_imagen_prompt(
+                room_type, design_style, notes, design_title, design_description, 
+                products, parsed_info, color_info, dimensions_info
+            )
+            
+            # Stage 2: Generating image with Imagen 4 (15-70%)
+            await websocket_manager.update_mood_board_progress(connection_id, {
+                "stage": "generating_image",
+                "progress_percentage": 20,
+                "message": "AI görsel oluşturma modeli başlatılıyor...",
+                "mood_board_id": mood_board_id
+            })
+            
+            # Generate image using Imagen 4 with progress updates
+            image_data = await self._generate_image_with_imagen(enhanced_prompt, connection_id, mood_board_id)
+            
+            # Stage 3: Processing image (70-85%)
+            await websocket_manager.update_mood_board_progress(connection_id, {
+                "stage": "processing_image",
+                "progress_percentage": 75,
+                "message": "Görsel işleniyor...",
+                "mood_board_id": mood_board_id
+            })
             
             # Save image to file if generated successfully
             image_file_path = None
             if image_data and image_data.get("base64"):
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "processing_image",
+                    "progress_percentage": 80,
+                    "message": "Görsel dosyaya kaydediliyor...",
+                    "mood_board_id": mood_board_id
+                })
                 image_file_path = self._save_mood_board_image(mood_board_id, image_data["base64"])
             
-            # Stage 4: Processing image
-            await websocket_manager.update_mood_board_progress(connection_id, {
-                "stage": "processing_image",
-                "progress_percentage": 75,
-                "message": "Görsel işleniyor ve dosyaya kaydediliyor...",
-                "mood_board_id": mood_board_id
-            })
-            
-            # Stage 5: Finalizing room visualization
+            # Stage 4: Finalizing room visualization (85-95%)
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "finalizing",
                 "progress_percentage": 90,
@@ -131,7 +183,7 @@ class MoodBoardService:
                 "mood_board_id": mood_board_id
             })
             
-            # Create final mood board data
+            # Create final room visualization data
             mood_board_data = {
                 "mood_board_id": mood_board_id,
                 "created_at": datetime.now().isoformat(),
@@ -169,7 +221,7 @@ class MoodBoardService:
             # Send completed room visualization
             await websocket_manager.send_mood_board_completed(connection_id, mood_board_data)
             
-            # Save mood board log
+            # Save room visualization log
             mood_board_log_service.save_mood_board_log(
                 mood_board_id=mood_board_id,
                 connection_id=connection_id,
@@ -192,7 +244,7 @@ class MoodBoardService:
                 success=True
             )
             
-            # Save mood board to database and update design
+            # Save room visualization to database and update design
             try:
                 await self._save_mood_board_to_database(
                     mood_board_id=mood_board_id,
@@ -237,7 +289,7 @@ class MoodBoardService:
                 error_message=str(e)
             )
             
-            # Return error mood board
+            # Return error room visualization
             return self._create_error_mood_board(
                 mood_board_id, room_type, design_style, str(e)
             )
@@ -250,19 +302,23 @@ class MoodBoardService:
         design_title: str,
         design_description: str,
         products: list = None,
-        parsed_info: Dict[str, Any] = None
+        parsed_info: Dict[str, Any] = None,
+        color_info: str = "",  # Frontend'den gelen formatlanmış renk bilgisi
+        dimensions_info: str = ""  # Frontend'den gelen formatlanmış boyut bilgisi
     ) -> str:
         """
         Create optimized prompt for Imagen 4 using Gemini for room visualization.
-        Now uses centralized prompt management.
+        Now uses centralized prompt management with frontend parameters.
         """
         
         # Format products using centralized utility
         products_text = PromptUtils.format_products_for_imagen(products)
         
-        # Extract color and dimensions info using centralized utilities
-        color_info = PromptUtils.extract_color_info_for_imagen(parsed_info)
-        dimensions_info = PromptUtils.extract_dimensions_info_for_imagen(parsed_info)
+        # Renk bilgisi: Frontend'den geleni öncelik ver, yoksa parse edilmişten al
+        final_color_info = color_info if color_info.strip() else PromptUtils.extract_color_info_for_imagen(parsed_info)
+        
+        # Boyut bilgisi: Frontend'den geleni öncelik ver, yoksa parse edilmişten al  
+        final_dimensions_info = dimensions_info if dimensions_info.strip() else PromptUtils.extract_dimensions_info_for_imagen(parsed_info)
         
         # Use centralized prompt template
         prompt_enhancement_request = GeminiPrompts.get_imagen_prompt_enhancement_request(
@@ -272,8 +328,8 @@ class MoodBoardService:
             design_title=design_title,
             design_description=design_description,
             products_text=products_text,
-            dimensions_info=dimensions_info,
-            color_info=color_info
+            dimensions_info=final_dimensions_info,
+            color_info=final_color_info
         )
         
         try:
@@ -291,6 +347,52 @@ class MoodBoardService:
             logger.error(f"Error creating enhanced prompt: {str(e)}")
             return GeminiPrompts.get_fallback_imagen_prompt(room_type, design_style)
     
+    async def _simulate_image_generation_progress(self, connection_id: str, mood_board_id: str):
+        """
+        Enhanced progress simulation for smooth user experience.
+        
+        This method runs as a background task during actual AI image generation,
+        providing users with detailed progress updates every 1.5 seconds.
+        This creates a much smoother experience than the original 5-step system.
+        
+        Progress Steps:
+        - 58%: Visual composition preparation
+        - 61%: Color palette application  
+        - 64%: Room detail creation
+        - 67%: Decorative element addition
+        - 68%: Light and shadow calculation
+        - 69%: Visual quality optimization
+        
+        The simulation automatically cancels when real image generation completes,
+        ensuring seamless transition to actual progress updates.
+        """
+        try:
+            progress_steps = [
+                (58, "Görsel kompozisyonu hazırlanıyor..."),
+                (61, "Renk paleti uygulanıyor..."),
+                (64, "Mekan detayları oluşturuluyor..."),
+                (67, "Dekoratif öğeler ekleniyor..."),
+                (68, "Işık ve gölge efektleri hesaplanıyor..."),
+                (69, "Görsel kalitesi optimize ediliyor...")
+            ]
+            
+            for progress, message in progress_steps:
+                await asyncio.sleep(1.5)  # Wait 1.5 seconds between updates
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": progress,
+                    "message": message,
+                    "mood_board_id": mood_board_id
+                })
+                
+        except asyncio.CancelledError:
+            # Progress simulation was cancelled (image generation completed)
+            logger.debug("Image generation progress simulation cancelled")
+            # Re-raise to properly handle cancellation
+            raise
+        except Exception as e:
+            logger.error(f"Error in progress simulation: {str(e)}")
+
     def _save_mood_board_image(self, mood_board_id: str, base64_image: str) -> Optional[str]:
         """
         Save room visualization image to data/mood_boards directory.
@@ -320,9 +422,28 @@ class MoodBoardService:
             logger.error(f"Error saving room visualization image: {str(e)}")
             return None
     
-    async def _generate_image_with_imagen(self, prompt: str) -> Optional[Dict[str, Any]]:
+    async def _generate_image_with_imagen(self, prompt: str, connection_id: str = None, mood_board_id: str = None) -> Optional[Dict[str, Any]]:
         """
-        Generate image using Vertex AI Imagen model.
+        Generate high-quality room visualization using Vertex AI Imagen 4.
+        
+        This method handles the core AI image generation with sophisticated progress tracking.
+        It includes background progress simulation, proper error handling, and fallback mechanisms.
+        
+        Process:
+        1. Initialize Vertex AI with proper authentication
+        2. Load Imagen 4 model (imagegeneration@006)  
+        3. Start background progress simulation task
+        4. Generate image with optimized parameters
+        5. Convert result to base64 for frontend display
+        6. Clean up simulation task and return result
+        
+        Parameters optimized for speed and quality:
+        - aspect_ratio: "1:1" for consistent room displays
+        - safety_filter_level: "block_some" for balanced filtering
+        - person_generation: "dont_allow" for faster processing
+        
+        Returns:
+            Dict with base64 image data and success status, or None if failed
         """
         
         try:
@@ -334,6 +455,15 @@ class MoodBoardService:
             
             logger.info("🎨 Generating room visualization with Vertex AI...")
             
+            # Progress update: Initializing AI model (25%)
+            if connection_id and mood_board_id:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": 25,
+                    "message": "AI modeli başlatılıyor...",
+                    "mood_board_id": mood_board_id
+                })
+            
             # Set authentication explicitly
             os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = self.settings.GOOGLE_APPLICATION_CREDENTIALS
             
@@ -343,23 +473,76 @@ class MoodBoardService:
                 location="us-central1"
             )
             
+            # Progress update: Loading model (35%)
+            if connection_id and mood_board_id:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": 35,
+                    "message": "Görsel oluşturma modeli yükleniyor...",
+                    "mood_board_id": mood_board_id
+                })
+            
             # Load the Imagen model
             generation_model = ImageGenerationModel.from_pretrained("imagegeneration@006")
+            
+            # Progress update: Starting generation (45%)
+            if connection_id and mood_board_id:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": 45,
+                    "message": "AI görsel oluşturmaya başlıyor...",
+                    "mood_board_id": mood_board_id
+                })
             
             # Generate image with optimized parameters for speed
             def generate_sync():
                 images = generation_model.generate_images(
                     prompt=prompt,
                     number_of_images=1,
-                    aspect_ratio="1:1",  # Square format for mood boards
+                    aspect_ratio="1:1",  # Square format for room visualizations
                     safety_filter_level="block_some",
                     person_generation="dont_allow"  # Skip person generation for faster results
                 )
                 return images
             
+            # Progress update: Generation in progress (55%)
+            if connection_id and mood_board_id:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": 55,
+                    "message": "Görsel oluşturuluyor... (Bu işlem birkaç saniye sürebilir)",
+                    "mood_board_id": mood_board_id
+                })
+            
+            # Create a background task for progress simulation during image generation
+            progress_task = None
+            if connection_id and mood_board_id:
+                progress_task = asyncio.create_task(
+                    self._simulate_image_generation_progress(connection_id, mood_board_id)
+                )
+            
             # Run in thread pool to avoid blocking
             loop = asyncio.get_event_loop()
             images = await loop.run_in_executor(None, generate_sync)
+            
+            # Cancel progress simulation if it's still running
+            if progress_task and not progress_task.done():
+                progress_task.cancel()
+                try:
+                    await progress_task
+                except asyncio.CancelledError:
+                    # Expected cancellation when image generation completes, continue with processing
+                    logger.debug("Progress simulation cancelled as expected")
+                    # No need to re-raise here as this is expected cleanup
+            
+            # Progress update: Processing result (65%)
+            if connection_id and mood_board_id:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": 65,
+                    "message": "Görsel sonucu işleniyor...",
+                    "mood_board_id": mood_board_id
+                })
             
             if images and hasattr(images, 'images') and len(images.images) > 0:
                 # Convert image to base64
@@ -367,6 +550,15 @@ class MoodBoardService:
                 import base64
                 
                 image = images.images[0]  # Get first image from images list
+                
+                # Progress update: Converting image (70%)
+                if connection_id and mood_board_id:
+                    await websocket_manager.update_mood_board_progress(connection_id, {
+                        "stage": "generating_image",
+                        "progress_percentage": 70,
+                        "message": "Görsel dönüştürülüyor...",
+                        "mood_board_id": mood_board_id
+                    })
                 
                 # Save image to bytes
                 image_bytes = io.BytesIO()
@@ -387,20 +579,58 @@ class MoodBoardService:
                 
         except ImportError as e:
             logger.error(f"Google Cloud libraries not properly installed: {str(e)}")
-            return await self._generate_fallback_image(prompt)
+            return await self._generate_fallback_image(prompt, connection_id, mood_board_id)
             
         except Exception as e:
             logger.warning(f"⚠️ Vertex AI failed, using fallback: {str(e)}")
             # Fall back to placeholder if real API fails
-            return await self._generate_fallback_image(prompt)
+            return await self._generate_fallback_image(prompt, connection_id, mood_board_id)
     
-    async def _generate_fallback_image(self, prompt: str) -> Optional[Dict[str, Any]]:
+    async def _generate_fallback_image(self, prompt: str, connection_id: str = None, mood_board_id: str = None) -> Optional[Dict[str, Any]]:
         """
-        Generate fallback placeholder image when Vertex AI fails.
+        Reliable fallback system for room visualization generation.
+        
+        When Vertex AI Imagen is unavailable or fails, this method provides
+        a graceful fallback that maintains user experience continuity.
+        
+        Features:
+        - Maintains progress tracking consistency
+        - Creates realistic placeholder with proper dimensions
+        - Uses shorter delay intervals (0.8s vs 1.5s) for faster completion
+        - Provides informative user messages in Turkish
+        - Returns properly formatted base64 image data
+        
+        This ensures the application remains functional even when cloud AI services
+        experience issues, following the principle of graceful degradation.
         """
         try:
-            # Simulate processing time
-            await asyncio.sleep(2)
+            # Progress update: Starting fallback generation (50%)
+            if connection_id and mood_board_id:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": 50,
+                    "message": "Yedek görsel sistemi kullanılıyor...",
+                    "mood_board_id": mood_board_id
+                })
+            
+            # Create more detailed progress simulation for fallback
+            fallback_steps = [
+                (52, "Placeholder görsel hazırlanıyor..."),
+                (55, "Temel görsel yapısı oluşturuluyor..."),
+                (58, "Görsel formatı belirleniyor..."),
+                (62, "Demo içeriği ekleniyor..."),
+                (66, "Görsel son haline getiriliyor...")
+            ]
+            
+            for progress, message in fallback_steps:
+                await asyncio.sleep(0.8)  # Shorter delays for fallback
+                if connection_id and mood_board_id:
+                    await websocket_manager.update_mood_board_progress(connection_id, {
+                        "stage": "generating_image",
+                        "progress_percentage": progress,
+                        "message": message,
+                        "mood_board_id": mood_board_id
+                    })
             
             # Create a more realistic placeholder (still fake but bigger)
             import random
@@ -417,6 +647,15 @@ class MoodBoardService:
             
             # Add proper PNG ending
             fake_image_data += "AAAAASUVORK5CYII="
+            
+            # Final progress for fallback
+            if connection_id and mood_board_id:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": 70,
+                    "message": "Yedek görsel hazırlandı",
+                    "mood_board_id": mood_board_id
+                })
             
             placeholder_image_data = {
                 "base64": fake_image_data,
@@ -438,7 +677,13 @@ class MoodBoardService:
         error_message: str
     ) -> Dict[str, Any]:
         """
-        Create error response when room visualization generation fails.
+        Create comprehensive error response for failed room visualization generation.
+        
+        This method ensures that even when all generation methods fail,
+        the API returns a properly structured response with useful error information.
+        
+        Returns a complete error object that maintains API consistency
+        and provides debugging information for development and monitoring.
         """
         
         return {
@@ -509,5 +754,5 @@ class MoodBoardService:
                 await db.close()
 
 
-# Global mood board service instance
+# Global room visualization service instance
 mood_board_service = MoodBoardService()

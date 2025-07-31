@@ -95,7 +95,7 @@ class TestDesignEndpoints:
             assert response.status_code == 404
 
     def test_create_mood_board(self, client: TestClient):
-        """Test mood board creation."""
+        """Test room visualization creation."""
         mood_board_request = {
             "room_type": "Living Room",
             "design_style": "Modern",

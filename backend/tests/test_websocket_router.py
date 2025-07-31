@@ -55,14 +55,14 @@ class TestWebSocketEndpoints:
                     pass
 
     def test_websocket_mood_board_updates(self, client: TestClient):
-        """Test WebSocket mood board generation updates."""
+        """Test WebSocket room visualization generation updates."""
         with client.websocket_connect("/ws") as websocket:
-            # Simulate mood board generation update
+            # Simulate room visualization generation update
             update_message = {
                 "type": "mood_board_update",
                 "mood_board_id": "mb123",
                 "status": "processing",
-                "message": "Creating mood board..."
+                "message": "Creating room visualization..."
             }
             
             websocket.send_json(update_message)

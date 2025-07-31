@@ -63,23 +63,26 @@ export const useWebSocket = () => {
         console.log('✅ WebSocket connection ID received:', data.connection_id);
         break;
 
-      case 'mood_board_progress':
+      case 'room_visualization_progress':
+      case 'mood_board_progress': // Backward compatibility
         setProgress(data.progress);
         setIsMoodBoardLoading(true);
-        console.log('📊 Mood board progress:', data.progress);
+        console.log('📊 Room visualization progress:', data.progress);
         break;
 
-      case 'mood_board_completed':
-        setMoodBoard(data.mood_board);
+      case 'room_visualization_completed':
+      case 'mood_board_completed': // Backward compatibility
+        setMoodBoard(data.room_visualization || data.mood_board);
         setProgress(null);
         setIsMoodBoardLoading(false);
-        console.log('🎨 Mood board completed');
+        console.log('🎨 Room visualization completed');
         break;
 
-      case 'mood_board_error':
-        setProgress({ type: 'mood_board_error', error: data.error });
+      case 'room_visualization_error':
+      case 'mood_board_error': // Backward compatibility
+        setProgress({ type: 'room_visualization_error', error: data.error });
         setIsMoodBoardLoading(false);
-        console.error('❌ Mood board error:', data.error);
+        console.error('❌ Room visualization error:', data.error);
         break;
 
       default:

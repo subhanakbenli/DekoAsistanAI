@@ -39,8 +39,8 @@ const HomePage = () => {
               
               <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-600">
                 <div className="text-2xl mb-2">🎨</div>
-                <h3 className="font-semibold text-white mb-2">Mood Board</h3>
-                <p className="text-sm text-gray-400">AI ile oluşturulan görsel tasarımlar</p>
+                <h3 className="font-semibold text-white mb-2">Oda Görselleştirmesi</h3>
+                <p className="text-sm text-gray-400">AI ile oluşturulan gerçekçi oda görselleri</p>
               </div>
               
               <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-600">

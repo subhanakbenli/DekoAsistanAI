@@ -45,8 +45,9 @@ class GeminiService(BaseService):
         try:
             logger.info(f"Generating design suggestion: {room_type} - {design_style}")
             
-            # Step 1: Parse notes into structured information
-            parsed_info = self.notes_parser.parse_notes(notes)
+            # Step 1: Parse notes for additional info (excluding color/dimensions - they come from frontend now)
+            # Only parse for extra areas, product categories, door/windows, user notes
+            parsed_info = self.notes_parser.parse_notes(notes) if notes.strip() else {}
             logger.debug(f"Parsed notes: {parsed_info}")
             
             # Step 2: Create prompt

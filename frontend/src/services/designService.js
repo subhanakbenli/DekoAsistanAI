@@ -28,9 +28,21 @@ class DesignService extends BaseService {
       formDataObj.append('room_type', formData.roomType);
       formDataObj.append('design_style', formData.designStyle);
       
-      // Create comprehensive notes
+      // Create comprehensive notes (excluding color and dimensions - they're separate now)
       const fullNotes = this.createFullNotes(formData);
       formDataObj.append('notes', fullNotes);
+
+      // Add color info as separate parameter (professional approach)
+      const colorInfo = this.formatColorInfo(formData.colorPalette);
+      if (colorInfo) {
+        formDataObj.append('color_info', colorInfo);
+      }
+
+      // Add dimensions info as separate parameter (professional approach)  
+      const dimensionsInfo = this.formatDimensionsInfo(formData);
+      if (dimensionsInfo) {
+        formDataObj.append('dimensions_info', dimensionsInfo);
+      }
 
       // Add WebSocket connection ID if available
       if (connectionId) {
@@ -76,33 +88,12 @@ class DesignService extends BaseService {
   createFullNotes(formData) {
     let notes = [];
     
-    // Room dimensions
-    if (formData.width && formData.length && formData.height) {
-      notes.push(`Oda Boyutları: ${formData.width}cm x ${formData.length}cm x ${formData.height}cm (G x U x Y)`);
-    } else if (formData.width && formData.length) {
-      notes.push(`Oda Boyutları: ${formData.width}cm x ${formData.length}cm (Genişlik x Uzunluk)`);
-      if (formData.height) {
-        notes.push(`Tavan Yüksekliği: ${formData.height}cm`);
-      }
-    }
-
-    // Extra areas (protrusions)
+    // Extra areas (protrusions) - dimensions and colors are sent separately now
     if (formData.extras && formData.extras.length > 0) {
       notes.push(`Ekstra Alanlar:`);
       formData.extras.forEach((extra, index) => {
         notes.push(`  ${index + 1}. ${extra.width}cm x ${extra.length}cm (Konum: x:${extra.x}cm, y:${extra.y}cm)`);
       });
-    }
-
-    // Color palette information - YENİ EKLENEN!
-    if (formData.colorPalette) {
-      if (formData.colorPalette.type === 'palette') {
-        const palette = formData.colorPalette.palette;
-        notes.push(`Renk Paleti: ${palette.name} - ${palette.description}`);
-        notes.push(`Renk Kodları: ${palette.colors.join(', ')}`);
-      } else if (formData.colorPalette.type === 'custom') {
-        notes.push(`Özel Renk Açıklaması: ${formData.colorPalette.description}`);
-      }
     }
 
     // Product categories information - YENİ EKLENEN!
@@ -156,6 +147,49 @@ class DesignService extends BaseService {
     } catch (error) {
       throw this.handleError(error);
     }
+  }
+
+  /**
+   * Format color palette information for backend
+   * @private
+   * @param {Object} colorPalette - Color palette data
+   * @returns {string} Formatted color information
+   */
+  formatColorInfo(colorPalette) {
+    if (!colorPalette) return '';
+
+    if (colorPalette.type === 'palette' && colorPalette.palette) {
+      const palette = colorPalette.palette;
+      let colorInfo = `Renk Paleti: ${palette.name} - ${palette.description}\n`;
+      if (palette.colors && palette.colors.length > 0) {
+        colorInfo += `Renk Kodları: ${palette.colors.join(', ')}`;
+      }
+      return colorInfo;
+    } else if (colorPalette.type === 'custom' && colorPalette.description) {
+      return `Özel Renk Tercihi: ${colorPalette.description}`;
+    }
+
+    return '';
+  }
+
+  /**
+   * Format dimensions information for backend
+   * @private
+   * @param {Object} formData - Form data containing dimensions
+   * @returns {string} Formatted dimensions information
+   */
+  formatDimensionsInfo(formData) {
+    if (!formData.width || !formData.length) return '';
+
+    let dimensionsInfo = `Oda Boyutları: ${formData.width}cm x ${formData.length}cm`;
+    
+    if (formData.height) {
+      dimensionsInfo += ` x ${formData.height}cm (G x U x Y)`;
+    } else {
+      dimensionsInfo += ' (Genişlik x Uzunluk)';
+    }
+
+    return dimensionsInfo;
   }
 }
 

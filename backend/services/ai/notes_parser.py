@@ -19,6 +19,10 @@ class NotesParser:
         """
         Parse notes to extract structured information.
         
+        NOTE: Color palette and room dimensions are now provided separately 
+        by frontend, but we still parse them for backwards compatibility.
+        Main focus is now on: extra areas, product categories, door/windows, user notes.
+        
         Args:
             notes: Raw notes string
             
