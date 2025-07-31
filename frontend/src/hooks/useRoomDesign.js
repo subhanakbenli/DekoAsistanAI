@@ -1,11 +1,13 @@
 import { useWebSocket } from './useWebSocket';
 import { useFormState } from './useFormState';
 import { useDesignSubmission } from './useDesignSubmission';
+import { useDebounce, useOptimizedCallback } from './usePerformance';
 import { ErrorHandler } from '../utils/ErrorHandler';
 
 /**
  * Composed room design hook - Orchestrates all design-related functionality
  * Combines WebSocket, form state, and design submission hooks
+ * Optimized with performance hooks
  * 
  * @returns {Object} Complete room design interface
  */
@@ -17,8 +19,9 @@ export const useRoomDesign = () => {
 
   /**
    * Submit design with full validation and error handling
+   * Optimized with useOptimizedCallback
    */
-  const handleSubmit = async () => {
+  const handleSubmit = useOptimizedCallback(async () => {
     try {
       // Validate form first
       const validation = formState.validateForm();
@@ -54,16 +57,25 @@ export const useRoomDesign = () => {
       });
       return false;
     }
-  };
+  }, [formState, webSocket, designSubmission]);
 
   /**
    * Reset all states to initial values
    */
-  const resetAll = () => {
+  const resetAll = useOptimizedCallback(() => {
     formState.resetForm();
     designSubmission.clearResult();
     webSocket.resetMoodBoardState();
-  };
+  }, [formState, designSubmission, webSocket]);
+
+  /**
+   * Debounced input handler for better performance
+   */
+  const debouncedHandleChange = useDebounce(
+    formState.handleFormChange, 
+    300, 
+    [formState.handleFormChange]
+  );
 
   /**
    * Check if submit is possible
@@ -85,7 +97,7 @@ export const useRoomDesign = () => {
     isDirty: formState.isDirty,
     
     // Form Actions
-    handleChange: formState.handleFormChange,
+    handleChange: debouncedHandleChange,
     handleExtraChange: formState.handleBlockChange,
     addBlock: formState.addBlock,
     removeBlock: formState.removeBlock,

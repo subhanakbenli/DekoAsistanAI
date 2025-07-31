@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-const Card = ({ 
+/**
+ * Card Component - Optimized with React.memo
+ * Prevents unnecessary re-renders when props haven't changed
+ */
+const Card = memo(({ 
   children, 
   className = '', 
   variant = 'default',
@@ -24,6 +28,8 @@ const Card = ({
       {children}
     </div>
   );
-};
+});
+
+Card.displayName = 'Card';
 
 export default Card;

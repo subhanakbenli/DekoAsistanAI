@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 /**
  * StudioHeader - Header component for Room Design Studio
  * Shows title, description, and version info
+ * Optimized with React.memo for better performance
  */
-const StudioHeader = () => {
+const StudioHeader = memo(() => {
   return (
     <div className="flex items-center justify-between mb-6">
       <div className="flex items-center space-x-3">
@@ -24,6 +25,8 @@ const StudioHeader = () => {
       </div>
     </div>
   );
-};
+});
+
+StudioHeader.displayName = 'StudioHeader';
 
 export default StudioHeader;

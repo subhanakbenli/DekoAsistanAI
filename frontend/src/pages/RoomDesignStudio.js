@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { useRoomDesign } from '../hooks/useRoomDesign';
 import { StudioHeader, StudioSidebar, StudioDesignForm, StudioResultPanel } from '../components/studio';
 import Navbar from '../components/Navbar';
+import { usePerformanceTracker } from '../hooks/usePerformance';
 
 /**
  * Room Design Studio - Professional Interior Design Tool
  * AI-powered room design and visualization platform
  * 
  * Refactored for better component composition and separation of concerns
+ * Optimized with React.memo and performance tracking
  */
-const RoomDesignStudio = () => {
+const RoomDesignStudio = memo(() => {
+  // Performance tracking in development
+  usePerformanceTracker('RoomDesignStudio');
+
   const {
     form,
     newBlock,
@@ -26,6 +31,12 @@ const RoomDesignStudio = () => {
     handleSubmit
   } = useRoomDesign();
 
+  // Memoize grid classes for better performance
+  const gridClasses = useMemo(() => 
+    "grid gap-8 transition-all duration-700 ease-in-out grid-cols-1 lg:grid-cols-3", 
+    []
+  );
+
   return (
     <div className="min-h-screen bg-gray-900 text-white font-sans">
       <Navbar />
@@ -37,7 +48,7 @@ const RoomDesignStudio = () => {
           <StudioHeader />
 
           {/* Design Grid - Dynamic layout based on result */}
-          <div className="grid gap-8 transition-all duration-700 ease-in-out grid-cols-1 lg:grid-cols-3">
+          <div className={gridClasses}>
             
             {/* LEFT SIDE - Form Sections */}
             <StudioSidebar
@@ -75,6 +86,8 @@ const RoomDesignStudio = () => {
       </div>
     </div>
   );
-};
+});
+
+RoomDesignStudio.displayName = 'RoomDesignStudio';
 
 export default RoomDesignStudio;

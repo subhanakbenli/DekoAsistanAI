@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-const FormField = ({ 
+/**
+ * FormField Component - Optimized with React.memo
+ * Prevents unnecessary re-renders when props haven't changed
+ */
+const FormField = memo(({ 
   label, 
   type = 'text', 
   name, 
@@ -71,6 +75,8 @@ const FormField = ({
       {renderField()}
     </div>
   );
-};
+});
+
+FormField.displayName = 'FormField';
 
 export default FormField;

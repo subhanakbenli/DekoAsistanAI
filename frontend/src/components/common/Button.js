@@ -45,6 +45,8 @@ const Button = memo(({
       {children}
     </button>
   );
-};
+});
+
+Button.displayName = 'Button';
 
 export default Button;

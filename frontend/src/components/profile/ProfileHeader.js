@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Button } from '../common';
 
 /**
  * ProfileHeader - Profile page header with edit functionality
  * Displays profile title and edit button
+ * Optimized with React.memo for better performance
  * 
  * @param {Function} onEdit - Callback function to enable edit mode
  * @param {boolean} isEditing - Current editing state
  */
-const ProfileHeader = ({ onEdit, isEditing }) => (
+const ProfileHeader = memo(({ onEdit, isEditing }) => (
   <div className="flex items-center justify-between mb-6">
     <div className="flex items-center space-x-3">
       <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg">
@@ -27,6 +28,8 @@ const ProfileHeader = ({ onEdit, isEditing }) => (
       </Button>
     )}
   </div>
-);
+));
+
+ProfileHeader.displayName = 'ProfileHeader';
 
 export default ProfileHeader;
