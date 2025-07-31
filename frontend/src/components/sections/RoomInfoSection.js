@@ -48,6 +48,9 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
           <option value="salon">🛋️ Salon</option>
           <option value="yatak">🛏️ Yatak Odası</option>
           <option value="çocuk">🧸 Çocuk Odası</option>
+          <option value="mutfak">🍳 Mutfak</option>
+          <option value="banyo">🛁 Banyo</option>
+          <option value="calisma">💻 Çalışma Odası</option>
         </select>
       </div>
 
@@ -66,6 +69,8 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
           <option value="modern">✨ Modern</option>
           <option value="minimal">🎯 Minimal</option>
           <option value="klasik">🏛️ Klasik</option>
+          <option value="endüstriyel">🏭 Endüstriyel</option>
+          <option value="iskandinav">🌲 İskandinav</option>
         </select>
       </div>
 
