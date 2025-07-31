@@ -1,8 +1,12 @@
 export { default as Button } from './Button';
 export { default as Card } from './Card';
+export { default as ColorPalette } from './ColorPalette';
+export { default as DoorWindowSelector } from './DoorWindowSelector';
 export { default as FeatureCard } from './FeatureCard';
 export { default as FormField } from './FormField';
+export { default as ProductCategorySelector } from './ProductCategorySelector';
 export { default as RoomBuilderTabs } from './RoomBuilderTabs';
+export { default as ShareToBlog } from './ShareToBlog';
 export { default as Tooltip } from './Tooltip';
 export { default as ExtraBlock } from './ExtraBlock';
 export { default as RoomVisualization } from './RoomVisualization';

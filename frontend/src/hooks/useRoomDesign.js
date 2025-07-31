@@ -1,7 +1,7 @@
 import { useWebSocket } from './useWebSocket';
 import { useFormState } from './useFormState';
 import { useDesignSubmission } from './useDesignSubmission';
-import { useDebounce, useOptimizedCallback } from './usePerformance';
+import { useOptimizedCallback } from './usePerformance';
 import { ErrorHandler } from '../utils/ErrorHandler';
 
 /**

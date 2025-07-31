@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ProductSuggestionSection from './ProductSuggestionSection';
 import FavoriteButton from '../FavoriteButton';
 import HashtagDisplay from '../HashtagDisplay';
+import ShareToBlog from '../common/ShareToBlog';
 
 /**
  * Design suggestion result section with mood board support
@@ -237,6 +238,37 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
                     WebSocket bağlantısı kuruldu - Mood board oluşturuluyor...
                   </span>
                 </div>
+              </div>
+            )}
+
+            {/* Blog Paylaşımı */}
+            {result.design_id && (
+              <div className="pt-4 border-t border-gray-600">
+                <ShareToBlog
+                  designData={{
+                    designId: result.design_id,
+                    roomType: result.room_type,
+                    designStyle: result.design_style,
+                    width: result.width,
+                    length: result.length,
+                    height: result.height,
+                    notes: result.notes,
+                    designTitle: result.design_title,
+                    designDescription: result.design_description,
+                    hashtags: result.hashtags,
+                    imageUrl: moodBoard ? `data:image/png;base64,${moodBoard.image_data.base64}` : null
+                  }}
+                  designId={result.design_id}
+                  variant="card"
+                  onPublishSuccess={(publishedPost) => {
+                    // Toast notification could be added here
+                    console.log('Design published to blog:', publishedPost);
+                  }}
+                  onPublishError={(error) => {
+                    // Error handling could be added here
+                    console.error('Failed to publish to blog:', error);
+                  }}
+                />
               </div>
             )}
           </div>

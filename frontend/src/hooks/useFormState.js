@@ -14,7 +14,10 @@ export const useFormState = () => {
     width: '',
     length: '',
     height: '',
-    extras: []
+    extras: [],
+    colorPalette: null, // Renk paleti bilgisi için
+    productCategories: null, // Ürün kategorileri bilgisi için
+    doorWindow: null // Kapı/pencere konumu bilgisi için
   });
 
   const [newBlock, setNewBlock] = useState({
@@ -146,7 +149,10 @@ export const useFormState = () => {
       width: '',
       length: '', 
       height: '',
-      extras: []
+      extras: [],
+      colorPalette: null,
+      productCategories: null,
+      doorWindow: null
     });
     setNewBlock({ width: '', length: '', x: '', y: '' });
   };

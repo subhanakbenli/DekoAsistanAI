@@ -52,6 +52,24 @@ export class ValidationUtils {
       errors.push('Tasarım notları gerekli');
     }
     
+    // Color palette validation (optional but recommended)
+    if (!form.colorPalette) {
+      // This is a warning, not an error
+      console.warn('Color palette not selected');
+    }
+
+    // Product categories validation (optional but recommended)
+    if (!form.productCategories) {
+      // This is a warning, not an error
+      console.warn('Product categories not selected');
+    }
+
+    // Door/window validation (check for conflicts)
+    if (form.doorWindow) {
+      const doorWindowError = this.validateDoorWindow(form.doorWindow);
+      if (doorWindowError) errors.push(doorWindowError);
+    }
+    
     return {
       isValid: errors.length === 0,
       errors
@@ -293,6 +311,68 @@ export class ValidationUtils {
     }
     
     return { isValid: true };
+  }
+
+  /**
+   * Validate door/window configuration
+   * @param {Object} doorWindow - Door/window configuration
+   * @returns {string|null} Error message or null
+   */
+  static validateDoorWindow(doorWindow) {
+    if (!doorWindow) return null;
+
+    const { door, window } = doorWindow;
+
+    // Check if both door and window are positioned on the same wall
+    if (door && window && door.hasDoor && window.hasWindow) {
+      if (door.position === window.position) {
+        return 'Kapı ve pencere aynı duvarda olamaz';
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Validate color palette selection
+   * @param {Object} colorPalette - Color palette data
+   * @returns {string|null} Error message or null
+   */
+  static validateColorPalette(colorPalette) {
+    if (!colorPalette) return null;
+
+    if (colorPalette.type === 'custom') {
+      if (!colorPalette.description || colorPalette.description.trim().length < 10) {
+        return 'Özel renk açıklaması en az 10 karakter olmalıdır';
+      }
+    } else if (colorPalette.type === 'palette') {
+      if (!colorPalette.palette || !colorPalette.palette.id) {
+        return 'Geçersiz renk paleti seçimi';
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Validate product categories selection  
+   * @param {Object} productCategories - Product categories data
+   * @returns {string|null} Error message or null
+   */
+  static validateProductCategories(productCategories) {
+    if (!productCategories) return null;
+
+    if (productCategories.type === 'custom') {
+      if (!productCategories.description || productCategories.description.trim().length < 10) {
+        return 'Özel ürün açıklaması en az 10 karakter olmalıdır';
+      }
+    } else if (productCategories.type === 'categories') {
+      if (!productCategories.productIds || productCategories.productIds.length === 0) {
+        return 'En az bir ürün kategorisi seçmelisiniz';
+      }
+    }
+
+    return null;
   }
 }
 

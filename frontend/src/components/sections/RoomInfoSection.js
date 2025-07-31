@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { memo } from 'react';
 import Tooltip from '../common/Tooltip';
+import ColorPalette from '../common/ColorPalette';
+import ProductCategorySelector from '../common/ProductCategorySelector';
+import DoorWindowSelector from '../common/DoorWindowSelector';
 
 /**
- * Oda bilgileri section'ı
+ * Oda bilgileri section'ı - React.memo ile optimize edilmiş
  * @param {Object} form - Form state'i
  * @param {Function} handleChange - Form değişiklik handler'ı
  * @param {Function} handleSubmit - Form gönderme handler'ı
  * @param {boolean} isLoading - Yükleme durumu
  */
-const RoomInfoSection = ({ form, handleChange, handleSubmit, isLoading }) => {
+const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) => {
   // Boyut sınırları
   const MAX_HEIGHT = 2000; // 20m
   const MAX_WIDTH = 5000;  // 50m
@@ -67,6 +70,27 @@ const RoomInfoSection = ({ form, handleChange, handleSubmit, isLoading }) => {
         </select>
       </div>
 
+      {/* Renk Paleti Seçimi - Compact */}
+      <div className="pt-2">
+        <ColorPalette 
+          className="compact-palette"
+          onSelectionChange={(colorData) => {
+            // Form state'e renk bilgisini ekle
+            if (colorData.isValid) {
+              const colorInfo = colorData.selection;
+              // handleChange kullanarak form'a renk bilgisini ekle
+              const event = {
+                target: {
+                  name: 'colorPalette',
+                  value: colorInfo
+                }
+              };
+              handleChange(event);
+            }
+          }}
+        />
+      </div>
+
       <div>
         <Tooltip text="Özel isteklerinizi, renk tercihlerinizi veya önemli noktaları yazın">
           <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
@@ -80,6 +104,49 @@ const RoomInfoSection = ({ form, handleChange, handleSubmit, isLoading }) => {
           className="w-full p-1.5 rounded bg-gray-700 border border-gray-600 focus:border-blue-500 transition-colors resize-none" 
           value={form.notes} 
           onChange={handleChange}
+        />
+      </div>
+
+      {/* Ürün Kategorisi Seçimi */}
+      <div className="pt-4 border-t border-gray-600">
+        <ProductCategorySelector 
+          roomType={form.roomType}
+          className="compact"
+          onSelectionChange={(productData) => {
+            // Form state'e ürün bilgisini ekle
+            if (productData.isValid) {
+              const productInfo = productData.selection;
+              // handleChange kullanarak form'a ürün bilgisini ekle
+              const event = {
+                target: {
+                  name: 'productCategories',
+                  value: productInfo
+                }
+              };
+              handleChange(event);
+            }
+          }}
+        />
+      </div>
+
+      {/* Kapı/Pencere Konumu Seçimi */}
+      <div className="pt-4 border-t border-gray-600">
+        <DoorWindowSelector 
+          className="compact"
+          onSelectionChange={(doorWindowData) => {
+            // Form state'e kapı/pencere bilgisini ekle
+            if (doorWindowData.isValid) {
+              const doorWindowInfo = doorWindowData.configuration;
+              // handleChange kullanarak form'a kapı/pencere bilgisini ekle
+              const event = {
+                target: {
+                  name: 'doorWindow',
+                  value: doorWindowInfo
+                }
+              };
+              handleChange(event);
+            }
+          }}
         />
       </div>
 
@@ -116,6 +183,8 @@ const RoomInfoSection = ({ form, handleChange, handleSubmit, isLoading }) => {
       </div>
     </div>
   );
-};
+});
+
+RoomInfoSection.displayName = 'RoomInfoSection';
 
 export default RoomInfoSection;
