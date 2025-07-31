@@ -109,10 +109,11 @@ export const useColorPalette = () => {
   // Validation
   const isValid = useMemo(() => {
     if (useCustomDescription) {
-      return customColorDescription.trim().length >= 10;
+      // Minimum karakter sınırı kaldırıldı - boş bile olabilir
+      return true;
     }
     return selectedPalette !== null;
-  }, [useCustomDescription, customColorDescription, selectedPalette]);
+  }, [useCustomDescription, selectedPalette]);
 
   // Get current color selection for form submission
   const getColorSelection = useCallback(() => {
@@ -146,14 +147,11 @@ export const useColorPalette = () => {
 
   // Get validation message
   const getValidationMessage = useCallback(() => {
-    if (useCustomDescription && customColorDescription.trim().length < 10) {
-      return 'Renk açıklaması en az 10 karakter olmalıdır.';
-    }
     if (!useCustomDescription && !selectedPalette) {
       return 'Lütfen bir renk paleti seçin veya özel açıklama girin.';
     }
     return '';
-  }, [useCustomDescription, customColorDescription, selectedPalette]);
+  }, [useCustomDescription, selectedPalette]);
 
   return {
     // State

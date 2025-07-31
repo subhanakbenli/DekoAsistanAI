@@ -68,16 +68,40 @@ const ColorPalette = memo(({ className = '', onSelectionChange }) => {
         </select>
       </div>
 
-      {/* Custom Description Toggle */}
-      <div className={`flex items-center gap-3 bg-gray-800/50 rounded-lg border border-gray-700 ${className.includes('compact-palette') ? 'p-2' : 'p-4'}`}>
-        <input
-          type="checkbox"
-          id="useCustomDescription"
-          checked={useCustomDescription}
-          onChange={(e) => handleCustomToggle(e.target.checked)}
-          className={`text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2 ${className.includes('compact-palette') ? 'w-3 h-3' : 'w-4 h-4'}`}
-        />
-        <label htmlFor="useCustomDescription" className={`text-gray-300 flex-1 cursor-pointer ${className.includes('compact-palette') ? 'text-xs' : 'text-sm'}`}>
+      {/* Custom Description Toggle - Şık checkbox */}
+      <div className={`flex items-center gap-3 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors ${className.includes('compact-palette') ? 'p-2' : 'p-4'}`}>
+        <div className="relative">
+          <input
+            type="checkbox"
+            id="useCustomDescription"
+            checked={useCustomDescription}
+            onChange={(e) => handleCustomToggle(e.target.checked)}
+            className="sr-only"
+          />
+          <label 
+            htmlFor="useCustomDescription" 
+            className={`relative inline-flex cursor-pointer ${className.includes('compact-palette') ? 'w-8 h-4' : 'w-10 h-5'}`}
+          >
+            <span className={`
+              inline-block rounded-full transition-all duration-300 ease-in-out
+              ${useCustomDescription 
+                ? 'bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg shadow-blue-500/30' 
+                : 'bg-gray-600 hover:bg-gray-500'
+              }
+              ${className.includes('compact-palette') ? 'w-8 h-4' : 'w-10 h-5'}
+            `}>
+              <span className={`
+                block bg-white rounded-full transition-transform duration-300 ease-in-out shadow-md
+                ${useCustomDescription 
+                  ? (className.includes('compact-palette') ? 'translate-x-4' : 'translate-x-5') 
+                  : 'translate-x-0.5'
+                }
+                ${className.includes('compact-palette') ? 'w-3 h-3 mt-0.5' : 'w-4 h-4 mt-0.5'}
+              `} />
+            </span>
+          </label>
+        </div>
+        <label htmlFor="useCustomDescription" className={`text-gray-300 flex-1 cursor-pointer select-none ${className.includes('compact-palette') ? 'text-xs' : 'text-sm'}`}>
           Özel renk açıklaması
         </label>
       </div>
@@ -96,8 +120,8 @@ const ColorPalette = memo(({ className = '', onSelectionChange }) => {
             rows={className.includes('compact-palette') ? 2 : 4}
           />
           <div className="flex justify-between items-center text-xs">
-            <span className={`${customColorDescription.length >= 10 ? 'text-green-400' : 'text-red-400'}`}>
-              {customColorDescription.length}/10 minimum karakter
+            <span className="text-gray-400">
+              {customColorDescription.length} karakter (isteğe bağlı)
             </span>
           </div>
         </div>
@@ -117,7 +141,7 @@ const ColorPalette = memo(({ className = '', onSelectionChange }) => {
             </div>
           ) : (
             <div 
-              className={`grid overflow-y-auto overflow-x-hidden ${className.includes('compact-palette') ? 'grid-cols-4 gap-1 max-h-24 pr-1' : 'grid-cols-1 max-h-96 gap-4 pr-2'}`}
+              className={`grid overflow-y-auto overflow-x-hidden ${className.includes('compact-palette') ? 'grid-cols-4 gap-2 max-h-40 pr-1' : 'grid-cols-3 max-h-96 gap-3 pr-2'}`}
               style={{
                 scrollbarWidth: 'thin',
                 scrollbarColor: '#4B5563 transparent'
@@ -241,11 +265,11 @@ const PaletteCard = memo(({ palette, isSelected, onSelect, isCompact = false }) 
         </div>
       )}
 
-      {/* Selection Indicator */}
+      {/* Selection Indicator - Şık tasarım */}
       {isSelected && (
-        <div className={`absolute ${isCompact ? 'top-0 left-0' : 'top-2 left-2'} z-10`}>
-          <div className={`bg-blue-500 rounded-full flex items-center justify-center ${isCompact ? 'w-3 h-3' : 'w-6 h-6'}`}>
-            <span className={`text-white ${isCompact ? 'text-xs leading-none' : 'text-xs'}`}>✓</span>
+        <div className={`absolute ${isCompact ? '-top-0.5 -right-0.5' : 'top-2 right-2'} z-10`}>
+          <div className={`bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/50 ring-1 ring-gray-900 ${isCompact ? 'w-3 h-3' : 'w-6 h-6'}`}>
+            <span className={`text-white font-bold ${isCompact ? 'text-[8px]' : 'text-sm'}`}>✓</span>
           </div>
         </div>
       )}

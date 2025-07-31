@@ -156,10 +156,11 @@ export const useProductCategories = (roomType = 'salon') => {
   // Validation
   const isValid = useMemo(() => {
     if (useCustomProducts) {
-      return customProductDescription.trim().length >= 10;
+      // Minimum karakter sınırı kaldırıldı - boş bile olabilir
+      return true;
     }
     return selectedProducts.length > 0;
-  }, [useCustomProducts, customProductDescription, selectedProducts]);
+  }, [useCustomProducts, selectedProducts]);
 
   // Get current product selection for form submission
   const getProductSelection = useCallback(() => {
@@ -190,14 +191,11 @@ export const useProductCategories = (roomType = 'salon') => {
 
   // Get validation message
   const getValidationMessage = useCallback(() => {
-    if (useCustomProducts && customProductDescription.trim().length < 10) {
-      return 'Ürün açıklaması en az 10 karakter olmalıdır.';
-    }
     if (!useCustomProducts && selectedProducts.length === 0) {
       return 'Lütfen en az bir ürün kategorisi seçin veya özel açıklama girin.';
     }
     return '';
-  }, [useCustomProducts, customProductDescription, selectedProducts]);
+  }, [useCustomProducts, selectedProducts]);
 
   // Get selection summary
   const getSelectionSummary = useCallback(() => {

@@ -33,88 +33,97 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
         </Tooltip>
       </div>
 
-      <div>
-        <Tooltip text="Tasarlayacağınız odanın türünü seçin">
-          <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
-            🏠 Oda Türü
-          </label>
-        </Tooltip>
-        <select 
-          name="roomType" 
-          value={form.roomType} 
-          onChange={handleChange} 
-          className="w-full p-1.5 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 transition-colors"
-        >
-          <option value="salon">🛋️ Salon</option>
-          <option value="yatak">🛏️ Yatak Odası</option>
-          <option value="çocuk">🧸 Çocuk Odası</option>
-          <option value="mutfak">🍳 Mutfak</option>
-          <option value="banyo">🛁 Banyo</option>
-          <option value="calisma">💻 Çalışma Odası</option>
-        </select>
-      </div>
+      {/* Ana Layout: Sol taraf (Oda Bilgileri) + Sağ taraf (Ürün Önerileri) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Sol Taraf: Oda Türü, Tasarım Tarzı ve Renk Paleti - Alt Alta */}
+        <div className="space-y-4">
+          {/* Oda Türü */}
+          <div>
+            <Tooltip text="Tasarlayacağınız odanın türünü seçin">
+              <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
+                🏠 Oda Türü
+              </label>
+            </Tooltip>
+            <select 
+              name="roomType" 
+              value={form.roomType} 
+              onChange={handleChange} 
+              className="w-full p-1.5 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 transition-colors"
+            >
+              <option value="salon">🛋️ Salon</option>
+              <option value="yatak">🛏️ Yatak Odası</option>
+              <option value="çocuk">🧸 Çocuk Odası</option>
+              <option value="mutfak">🍳 Mutfak</option>
+              <option value="banyo">🛁 Banyo</option>
+              <option value="calisma">💻 Çalışma Odası</option>
+            </select>
+          </div>
 
-      <div>
-        <Tooltip text="Odanızın tasarım stilini belirleyin">
-          <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
-            🎨 Tasarım Tarzı
-          </label>
-        </Tooltip>
-        <select 
-          name="designStyle" 
-          value={form.designStyle} 
-          onChange={handleChange} 
-          className="w-full p-1.5 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 transition-colors"
-        >
-          <option value="modern">✨ Modern</option>
-          <option value="minimal">🎯 Minimal</option>
-          <option value="klasik">🏛️ Klasik</option>
-          <option value="endüstriyel">🏭 Endüstriyel</option>
-          <option value="iskandinav">🌲 İskandinav</option>
-        </select>
-      </div>
+          {/* Tasarım Tarzı */}
+          <div>
+            <Tooltip text="Odanızın tasarım stilini belirleyin">
+              <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
+                🎨 Tasarım Tarzı
+              </label>
+            </Tooltip>
+            <select 
+              name="designStyle" 
+              value={form.designStyle} 
+              onChange={handleChange} 
+              className="w-full p-1.5 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 transition-colors"
+            >
+              <option value="modern">✨ Modern</option>
+              <option value="minimal">🎯 Minimal</option>
+              <option value="klasik">🏛️ Klasik</option>
+              <option value="endüstriyel">🏭 Endüstriyel</option>
+              <option value="iskandinav">🌲 İskandinav</option>
+            </select>
+          </div>
 
-      {/* Renk Paleti Seçimi - Compact */}
-      <div className="pt-2">
-        <ColorPalette 
-          className="compact-palette"
-          onSelectionChange={(colorData) => {
-            // Form state'e renk bilgisini ekle
-            if (colorData.isValid) {
-              const colorInfo = colorData.selection;
-              // handleChange kullanarak form'a renk bilgisini ekle
-              const event = {
-                target: {
-                  name: 'colorPalette',
-                  value: colorInfo
+          {/* Renk Paleti */}
+          <div>
+            <ColorPalette 
+              className="compact-palette"
+              onSelectionChange={(colorData) => {
+                // Form state'e renk bilgisini ekle
+                if (colorData.isValid) {
+                  const colorInfo = colorData.selection;
+                  // handleChange kullanarak form'a renk bilgisini ekle
+                  const event = {
+                    target: {
+                      name: 'colorPalette',
+                      value: colorInfo
+                    }
+                  };
+                  handleChange(event);
                 }
-              };
-              handleChange(event);
-            }
-          }}
-        />
-      </div>
+              }}
+            />
+          </div>
+        </div>
 
-      {/* Ürün Kategorisi Seçimi - Renk paletinin hemen altında */}
-      <div className="pt-3">
-        <ProductCategorySelector 
-          roomType={form.roomType}
-          className="compact"
-          onSelectionChange={(productData) => {
-            // Form state'e ürün bilgisini ekle
-            if (productData.isValid) {
-              const productInfo = productData.selection;
-              // handleChange kullanarak form'a ürün bilgisini ekle
-              const event = {
-                target: {
-                  name: 'productCategories',
-                  value: productInfo
-                }
-              };
-              handleChange(event);
-            }
-          }}
-        />
+        {/* Sağ Taraf: Ürün Kategorisi */}
+        <div>
+          <ProductCategorySelector 
+            roomType={form.roomType}
+            className="compact"
+            onSelectionChange={(productData) => {
+              // Form state'e ürün bilgisini ekle
+              if (productData.isValid) {
+                const productInfo = productData.selection;
+                // handleChange kullanarak form'a ürün bilgisini ekle
+                const event = {
+                  target: {
+                    name: 'productCategories',
+                    value: productInfo
+                  }
+                };
+                handleChange(event);
+              }
+            }}
+          />
+        </div>
       </div>
 
       <div>

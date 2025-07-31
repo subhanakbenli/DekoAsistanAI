@@ -3,7 +3,7 @@ import { RoomInfoSection } from '../sections';
 
 /**
  * StudioDesignForm - Enhanced design preferences with product recommendations on top
- * Optimized layout for better user experience
+ * Always visible in new layout - shows as Section 2 (60% width)
  */
 const StudioDesignForm = ({ 
   form, 
@@ -13,9 +13,6 @@ const StudioDesignForm = ({
   result 
 }) => {
   
-  // Don't show if result exists (handled by sidebar)
-  if (result) return null;
-
   return (
     <div className="bg-gray-800 p-5 rounded-lg border border-gray-700">
       {/* Section Header */}
