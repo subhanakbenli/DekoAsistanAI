@@ -1,6 +1,6 @@
-# **Trello ile Proje Takibi: DekoAsistan.AI İçin Adım Adım Kanban Rehberi**
+# **Trello ile Proje Takibi: Deko Asistan İçin Adım Adım Kanban Rehberi**
 
-Merhaba\! Hackathon gibi yoğun ve zaman kısıtlı bir süreçte organize olmak, projenin başarısı için en az kodlama kadar kritiktir. Trello, bu organizasyonu sağlamak için mükemmel, görsel ve basit bir araçtır. İşte sizin "DekoAsistan.AI" projeniz için Trello'da bir Kanban tahtası oluşturup bunu nasıl verimli kullanacağınıza dair detaylı rehberiniz.
+Merhaba\! Hackathon gibi yoğun ve zaman kısıtlı bir süreçte organize olmak, projenin başarısı için en az kodlama kadar kritiktir. Trello, bu organizasyonu sağlamak için mükemmel, görsel ve basit bir araçtır. İşte sizin "Deko Asistan" projeniz için Trello'da bir Kanban tahtası oluşturup bunu nasıl verimli kullanacağınıza dair detaylı rehberiniz.
 
 ### **Adım 1: Trello Hesabı ve Proje Panosu (Board) Oluşturma**
 
@@ -8,7 +8,7 @@ Her şeyden önce bir başlangıç noktasına ihtiyacımız var.
 
 1. **Hesap Oluşturun:** Eğer yoksa, [trello.com](https://trello.com) adresinden ücretsiz bir hesap oluşturun.  
 2. **Yeni Pano Oluşturun:** Giriş yaptıktan sonra, ana ekranınızda "Yeni pano oluştur" (Create new board) seçeneğini göreceksiniz. Tıklayın.  
-3. **Panoyu Adlandırın:** Panonuza projenizi net bir şekilde yansıtan bir isim verin. Örneğin: **"DekoAsistan.AI \- Hackathon 2025"**. Arka plan rengini veya desenini takım ruhunuza uygun bir şekilde seçebilirsiniz\!
+3. **Panoyu Adlandırın:** Panonuza projenizi net bir şekilde yansıtan bir isim verin. Örneğin: **"Deko Asistan - Hackathon 2025"**. Arka plan rengini veya desenini takım ruhunuza uygun bir şekilde seçebilirsiniz\!
 
 Artık projenizin dijital evine sahipsiniz.
 
@@ -23,7 +23,7 @@ Kanban'ın kalbi, iş akışını temsil eden kolonlardır. Trello'da bu kolonla
 
 *Panonuzda varsayılan olarak gelen listeleri silebilir ve "Yeni liste ekle" (Add another list) diyerek bu dört kolonu oluşturabilirsiniz.*
 
-\[Görsel: DekoAsistan.AI için oluşturulmuş Trello panosu ve 4 temel Kanban kolonu\]
+\[Görsel: Deko Asistan için oluşturulmuş Trello panosu ve 4 temel Kanban kolonu\]
 
 ### **Adım 3: Geliştirme Planını Kartlara Dönüştürme**
 

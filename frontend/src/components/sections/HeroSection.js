@@ -19,7 +19,7 @@ const HeroSection = () => {
         <div className="max-w-4xl mx-auto text-center">
         <div className="mb-8">
           <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-blue-400 bg-clip-text text-transparent mb-6">
-            DekoAsistan.AI
+            Deko Asistan
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">
             Yapay zeka destekli iç mekan tasarımı. Odanızı hayal edin, biz gerçeğe dönüştürelim.

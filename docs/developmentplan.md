@@ -1,4 +1,4 @@
-# **DekoAsistan.AI \- 2 Haftalık Geliştirme Planı**
+# **Deko Asistan - 2 Haftalık Geliştirme Planı**
 
 * **Başlangıç:** 23 Temmuz 2025, 19:00  
 * **Bitiş:** 6 Ağustos 2025, 19:00  

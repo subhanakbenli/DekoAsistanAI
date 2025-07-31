@@ -8,7 +8,7 @@ import { usePerformanceTracker } from '../hooks/usePerformance';
 const LAYOUT_CONFIGS = {
   // Yeni 3-section layout: Section 1 (30%) + Section 2 (70%) + AI Önerileri (100%)
   MAIN_LAYOUT: "space-y-8",
-  TOP_SECTIONS: "grid grid-cols-1 lg:grid-cols-[30%_70%] gap-6",
+  TOP_SECTIONS: "grid grid-cols-1 lg:grid-cols-[30%_70%] gap-3",
   AI_RESULTS_FULL: "w-full"
 };
 
@@ -57,7 +57,7 @@ const RoomDesignStudio = memo(() => {
     <div className="min-h-screen bg-gray-900 text-white font-sans">
       <Navbar />
       <div className="pt-16">
-        <div className="max-w-7xl mx-auto p-6">
+        <div className="max-w-7xl mx-auto px-1.5 py-3">
           
           <StudioHeader />
 

@@ -7,7 +7,7 @@ const FeaturesSection = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Neden <span className="text-purple-400">DekoAsistan.AI</span>?
+            Neden <span className="text-purple-400">Deko Asistan</span>?
           </h2>
         </div>
 

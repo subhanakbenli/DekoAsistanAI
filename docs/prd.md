@@ -1,6 +1,6 @@
-# **Ürün Gereksinimleri Dokümanı (PRD): DekoAsistan.AI**
+# **Ürün Gereksinimleri Dokümanı (PRD): Deko Asistan**
 
-* **Ürün Adı:** DekoAsistan.AI  
+* **Ürün Adı:** Deko Asistan  
 * **Versiyon:** 1.0 (Hackathon MVP)  
 * **Tarih:** 24 Temmuz 2025  
 * **Yazarlar:** Geliştirici 1, Geliştirici 2  
@@ -8,11 +8,11 @@
 
 ### **1\. Genel Bakış**
 
-DekoAsistan.AI, Hackathon 2025'in "E-ticaret" teması için geliştirilen, Google Gemini destekli bir web uygulamasıdır. Kullanıcıların, belirli parametreler, kişisel notlar ve isteğe bağlı olarak oda fotoğrafları sunarak, yapay zekadan kişiselleştirilmiş iç mekan tasarım önerileri almalarını sağlar. Uygulama, bu önerileri bir "ilham panosu" (mood board) ile görselleştirir ve Function Calling teknolojisini kullanarak tasarıma uygun, satın alınabilir bir ürünü statik bir e-ticaret veri setinden bularak kullanıcıya sunar.
+Deko Asistan, Hackathon 2025'in "E-ticaret" teması için geliştirilen, Google Gemini destekli bir web uygulamasıdır. Kullanıcıların, belirli parametreler, kişisel notlar ve isteğe bağlı olarak oda fotoğrafları sunarak, yapay zekadan kişiselleştirilmiş iç mekan tasarım önerileri almalarını sağlar. Uygulama, bu önerileri bir "ilham panosu" (mood board) ile görselleştirir ve Function Calling teknolojisini kullanarak tasarıma uygun, satın alınabilir bir ürünü statik bir e-ticaret veri setinden bularak kullanıcıya sunar.
 
 ### **2\. Çözülen Problem**
 
-İnsanlar evlerini veya odalarını dekore etmek istediklerinde, ilham kaynaklarının dağınıklığı, kişisel zevklerine ve odalarının fiziksel özelliklerine uygun konseptler bulmanın zorluğu ve buldukları ilhamı satın alınabilir gerçek ürünlere dönüştürmenin karmaşıklığı gibi sorunlarla karşılaşırlar. DekoAsistan.AI, bu süreci tek bir platformda birleştirerek basitleştirir ve hızlandırır.
+İnsanlar evlerini veya odalarını dekore etmek istediklerinde, ilham kaynaklarının dağınıklığı, kişisel zevklerine ve odalarının fiziksel özelliklerine uygun konseptler bulmanın zorluğu ve buldukları ilhamı satın alınabilir gerçek ürünlere dönüştürmenin karmaşıklığı gibi sorunlarla karşılaşırlar. Deko Asistan, bu süreci tek bir platformda birleştirerek basitleştirir ve hızlandırır.
 
 ### **3\. Hedef Kitle**
 
@@ -43,7 +43,7 @@ Türkiye'de yaşayan, teknolojiye yatkın, evini/odasını yenilemek isteyen anc
 * **F1.11: Ürün Bazlı Güncelleme:** Kullanıcının belirli ürünler için AI'ya yeniden tasarım isteklerinde bulunabilmesi.  
 * **F1.12: Favori Sistemi:** Kullanıcının tekil ürünleri veya tüm tasarım setini (input+output) favorilerine ekleyebilmesi.  
 * **F1.13: Blog Paylaşım Sistemi:** Kullanıcının beğendiği tasarımları blog formatında paylaşabilmesi.  
-* **F1.14: Yükleme Durumu (Loading State):** "Tasarla" butonuna basıldıktan sonra sonuçlar gelene kadar "DekoAsistan'ınız odanızı hayal ediyor..." gibi bir animasyon veya metin gösterilmesi.
+* **F1.14: Yükleme Durumu (Loading State):** "Tasarla" butonuna basıldıktan sonra sonuçlar gelene kadar "Deko Asistan'ınız odanızı hayal ediyor..." gibi bir animasyon veya metin gösterilmesi.
 
 #### **Olsa İyi Olur (Should-Have)**
 

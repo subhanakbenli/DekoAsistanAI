@@ -39,7 +39,7 @@ const LoginPage = () => {
           <Link to="/" className="inline-block">
             <div className="flex items-center justify-center">
               <span className="text-3xl mr-3">🏠</span>
-              <span className="text-2xl font-bold text-white">DekoAsistan.AI</span>
+              <span className="text-2xl font-bold text-white">Deko Asistan</span>
             </div>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-white">

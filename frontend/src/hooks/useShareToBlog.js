@@ -75,7 +75,7 @@ const generateBlogContent = (designData) => {
     content += `${designData.notes}\n\n`;
   }
 
-  content += `---\n*Bu tasarım DekoAsistan AI ile oluşturulmuştur.*`;
+  content += `---\n*Bu tasarım Deko Asistan ile oluşturulmuştur.*`;
 
   return content;
 };
