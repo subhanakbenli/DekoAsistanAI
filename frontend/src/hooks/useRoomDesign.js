@@ -69,11 +69,11 @@ export const useRoomDesign = () => {
   }, [formState, designSubmission, webSocket]);
 
   /**
-   * Debounced input handler for better performance
+   * Direct input handler for immediate UI feedback
+   * Removed debouncing to fix input visibility issue
    */
-  const debouncedHandleChange = useDebounce(
-    formState.handleFormChange, 
-    300, 
+  const directHandleChange = useOptimizedCallback(
+    formState.handleFormChange,
     [formState.handleFormChange]
   );
 
@@ -97,7 +97,7 @@ export const useRoomDesign = () => {
     isDirty: formState.isDirty,
     
     // Form Actions
-    handleChange: debouncedHandleChange,
+    handleChange: directHandleChange,
     handleExtraChange: formState.handleBlockChange,
     addBlock: formState.addBlock,
     removeBlock: formState.removeBlock,

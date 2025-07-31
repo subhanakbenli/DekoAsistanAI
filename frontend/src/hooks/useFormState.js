@@ -29,12 +29,21 @@ export const useFormState = () => {
    * @param {Event} e - Input change event
    */
   const handleFormChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
     
-    // Don't sanitize notes field to preserve spaces
-    const processedValue = name === 'notes' 
-      ? value.replace(/[<>]/g, '') // Only remove dangerous characters
-      : ValidationUtils.sanitizeInput(value);
+    let processedValue = value;
+    
+    if (type === 'number') {
+      // For number inputs, preserve the raw value without sanitization
+      // Allow empty string, digits, and decimal point
+      processedValue = value.replace(/[^0-9.]/g, '');
+    } else if (name === 'notes') {
+      // Don't sanitize notes field to preserve spaces
+      processedValue = value.replace(/[<>]/g, ''); // Only remove dangerous characters
+    } else {
+      // For other text inputs, apply normal sanitization
+      processedValue = ValidationUtils.sanitizeInput(value);
+    }
     
     setForm(prev => ({ 
       ...prev, 
@@ -47,10 +56,21 @@ export const useFormState = () => {
    * @param {Event} e - Input change event  
    */
   const handleBlockChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    
+    let processedValue = value;
+    
+    if (type === 'number') {
+      // For number inputs, preserve the raw value without sanitization
+      // Allow empty string, digits, and decimal point
+      processedValue = value.replace(/[^0-9.]/g, '');
+    } else {
+      processedValue = ValidationUtils.sanitizeInput(value);
+    }
+    
     setNewBlock(prev => ({ 
       ...prev, 
-      [name]: ValidationUtils.sanitizeInput(value)
+      [name]: processedValue
     }));
   };
 
