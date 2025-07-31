@@ -6,10 +6,12 @@ import {
   getPaletteById,
   CATEGORY_DISPLAY_NAMES 
 } from '../data/colorPalettes';
+import { HookStorageUtils } from '../utils/LocalStorageUtils';
 
 /**
  * Custom hook for managing color palette selection and state
  * Handles localStorage persistence, validation, and category filtering
+ * Follows KISS principle with simplified, focused responsibilities
  */
 export const useColorPalette = () => {
   const [selectedPalette, setSelectedPalette] = useState(null);
@@ -17,82 +19,57 @@ export const useColorPalette = () => {
   const [useCustomDescription, setUseCustomDescription] = useState(false);
   const [customColorDescription, setCustomColorDescription] = useState('');
 
-  // Load saved state from localStorage on mount
+  // Load saved state from localStorage on mount - SIMPLIFIED ✨
   useEffect(() => {
-    try {
-      const savedPalette = localStorage.getItem('selectedColorPalette');
-      const savedUseCustom = localStorage.getItem('useCustomColorDescription');
-      const savedCustomDescription = localStorage.getItem('customColorDescription');
+    const savedPaletteId = HookStorageUtils.colorPalette.getPalette();
+    const savedUseCustom = HookStorageUtils.colorPalette.getUseCustom();
+    const savedCustomDescription = HookStorageUtils.colorPalette.getCustomDescription();
 
-      if (savedPalette && savedPalette !== 'null') {
-        const palette = getPaletteById(savedPalette);
-        if (palette) {
-          setSelectedPalette(palette);
-        }
+    if (savedPaletteId) {
+      const palette = getPaletteById(savedPaletteId);
+      if (palette) {
+        setSelectedPalette(palette);
       }
+    }
 
-      if (savedUseCustom === 'true') {
-        setUseCustomDescription(true);
-        if (savedCustomDescription) {
-          setCustomColorDescription(savedCustomDescription);
-        }
+    if (savedUseCustom) {
+      setUseCustomDescription(true);
+      if (savedCustomDescription) {
+        setCustomColorDescription(savedCustomDescription);
       }
-    } catch (error) {
-      console.warn('Error loading color palette from localStorage:', error);
     }
   }, []);
 
-  // Save selected palette to localStorage
+  // Save selected palette to localStorage - SIMPLIFIED ✨
   const handlePaletteSelect = useCallback((palette) => {
     setSelectedPalette(palette);
     setUseCustomDescription(false);
     setCustomColorDescription('');
     
-    try {
-      localStorage.setItem('selectedColorPalette', palette?.id || '');
-      localStorage.setItem('useCustomColorDescription', 'false');
-      localStorage.setItem('customColorDescription', '');
-    } catch (error) {
-      console.warn('Error saving color palette to localStorage:', error);
-    }
+    HookStorageUtils.colorPalette.setPalette(palette?.id);
+    HookStorageUtils.colorPalette.setUseCustom(false);
+    HookStorageUtils.colorPalette.setCustomDescription('');
   }, []);
 
-  // Handle custom description toggle
+  // Handle custom description toggle - SIMPLIFIED ✨
   const handleCustomToggle = useCallback((useCustom) => {
     setUseCustomDescription(useCustom);
     
     if (useCustom) {
       setSelectedPalette(null);
-      try {
-        localStorage.setItem('selectedColorPalette', '');
-      } catch (error) {
-        console.warn('Error clearing palette from localStorage:', error);
-      }
+      HookStorageUtils.colorPalette.setPalette('');
     } else {
       setCustomColorDescription('');
-      try {
-        localStorage.setItem('customColorDescription', '');
-      } catch (error) {
-        console.warn('Error clearing custom description from localStorage:', error);
-      }
+      HookStorageUtils.colorPalette.setCustomDescription('');
     }
     
-    try {
-      localStorage.setItem('useCustomColorDescription', useCustom.toString());
-    } catch (error) {
-      console.warn('Error saving custom toggle to localStorage:', error);
-    }
+    HookStorageUtils.colorPalette.setUseCustom(useCustom);
   }, []);
 
-  // Handle custom description change
+  // Handle custom description change - SIMPLIFIED ✨
   const handleCustomDescriptionChange = useCallback((description) => {
     setCustomColorDescription(description);
-    
-    try {
-      localStorage.setItem('customColorDescription', description);
-    } catch (error) {
-      console.warn('Error saving custom description to localStorage:', error);
-    }
+    HookStorageUtils.colorPalette.setCustomDescription(description);
   }, []);
 
   // Handle category change
@@ -158,19 +135,13 @@ export const useColorPalette = () => {
     return null;
   }, [useCustomDescription, customColorDescription, selectedPalette]);
 
-  // Clear all selections
+  // Clear all selections - SIMPLIFIED ✨
   const clearSelection = useCallback(() => {
     setSelectedPalette(null);
     setCustomColorDescription('');
     setUseCustomDescription(false);
     
-    try {
-      localStorage.removeItem('selectedColorPalette');
-      localStorage.removeItem('useCustomColorDescription');
-      localStorage.removeItem('customColorDescription');
-    } catch (error) {
-      console.warn('Error clearing color palette from localStorage:', error);
-    }
+    HookStorageUtils.colorPalette.clear();
   }, []);
 
   // Get validation message

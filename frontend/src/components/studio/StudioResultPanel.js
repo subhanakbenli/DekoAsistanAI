@@ -2,8 +2,8 @@ import React from 'react';
 import { DesignResultSection } from '../sections';
 
 /**
- * StudioResultPanel - Result display panel
- * Shows AI recommendations and mood board
+ * StudioResultPanel - Optimized result display panel
+ * Full-width when results exist, placeholder when empty
  */
 const StudioResultPanel = ({ 
   result, 
@@ -13,12 +13,24 @@ const StudioResultPanel = ({
   isConnected 
 }) => {
   
-  const getResultColumnSpan = () => {
-    return result ? 'lg:col-span-2 animate-expandRight' : 'lg:col-span-1';
-  };
+  if (!result) {
+    // Placeholder when no result
+    return (
+      <div className="flex items-center justify-center h-96 bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-600">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🎨</div>
+          <h3 className="text-lg font-semibold text-gray-300 mb-2">AI Önerileri</h3>
+          <p className="text-sm text-gray-500">
+            Tasarım tercihlerinizi tamamlayın ve<br />
+            yapay zeka destekli önerilerinizi görün
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={`space-y-4 transition-all duration-700 ease-in-out ${getResultColumnSpan()}`}>
+    <div className="space-y-4 animate-fadeIn">
       <ResultHeader result={result} isConnected={isConnected} />
       
       <DesignResultSection

@@ -2,7 +2,6 @@ import React, { memo } from 'react';
 import Tooltip from '../common/Tooltip';
 import ColorPalette from '../common/ColorPalette';
 import ProductCategorySelector from '../common/ProductCategorySelector';
-import DoorWindowSelector from '../common/DoorWindowSelector';
 
 /**
  * Oda bilgileri section'ı - React.memo ile optimize edilmiş
@@ -26,9 +25,9 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
   const isFormValid = form.width && form.length && form.height && form.notes?.trim() && !hasLimitExceeded;
 
   return (
-    <div className="bg-gray-800 p-3 rounded-lg shadow-lg space-y-3">
+    <div className="space-y-3">
       <div className="flex items-center mb-2">
-        <h2 className="text-lg font-semibold">🏠 Oda Bilgileri</h2>
+        <h2 className="text-base font-semibold">🏠 Oda Bilgileri</h2>
         <Tooltip text="Odanızın özelliklerini tanımlayın">
           <span className="ml-2 text-blue-400 cursor-help">ℹ️</span>
         </Tooltip>
@@ -91,24 +90,8 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
         />
       </div>
 
-      <div>
-        <Tooltip text="Özel isteklerinizi, renk tercihlerinizi veya önemli noktaları yazın">
-          <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
-            📝 Tasarım Notları
-          </label>
-        </Tooltip>
-        <textarea 
-          name="notes" 
-          rows={8} 
-          placeholder="Örnek: Açık renkler, doğal ışık, çocuk güvenliği..." 
-          className="w-full p-1.5 rounded bg-gray-700 border border-gray-600 focus:border-blue-500 transition-colors resize-none" 
-          value={form.notes} 
-          onChange={handleChange}
-        />
-      </div>
-
-      {/* Ürün Kategorisi Seçimi */}
-      <div className="pt-4 border-t border-gray-600">
+      {/* Ürün Kategorisi Seçimi - Renk paletinin hemen altında */}
+      <div className="pt-3">
         <ProductCategorySelector 
           roomType={form.roomType}
           className="compact"
@@ -129,24 +112,19 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
         />
       </div>
 
-      {/* Kapı/Pencere Konumu Seçimi */}
-      <div className="pt-4 border-t border-gray-600">
-        <DoorWindowSelector 
-          className="compact"
-          onSelectionChange={(doorWindowData) => {
-            // Form state'e kapı/pencere bilgisini ekle
-            if (doorWindowData.isValid) {
-              const doorWindowInfo = doorWindowData.configuration;
-              // handleChange kullanarak form'a kapı/pencere bilgisini ekle
-              const event = {
-                target: {
-                  name: 'doorWindow',
-                  value: doorWindowInfo
-                }
-              };
-              handleChange(event);
-            }
-          }}
+      <div>
+        <Tooltip text="Özel isteklerinizi, renk tercihlerinizi veya önemli noktaları yazın">
+          <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
+            📝 Tasarım Notları
+          </label>
+        </Tooltip>
+        <textarea 
+          name="notes" 
+          rows={8} 
+          placeholder="Örnek: Açık renkler, doğal ışık, çocuk güvenliği..." 
+          className="w-full p-1.5 rounded bg-gray-700 border border-gray-600 focus:border-blue-500 transition-colors resize-none" 
+          value={form.notes} 
+          onChange={handleChange}
         />
       </div>
 

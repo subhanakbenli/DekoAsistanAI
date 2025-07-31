@@ -1,7 +1,6 @@
 export { default as Button } from './Button';
 export { default as Card } from './Card';
 export { default as ColorPalette } from './ColorPalette';
-export { default as DoorWindowSelector } from './DoorWindowSelector';
 export { default as FeatureCard } from './FeatureCard';
 export { default as FormField } from './FormField';
 export { default as ProductCategorySelector } from './ProductCategorySelector';

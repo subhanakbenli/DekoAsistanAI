@@ -94,6 +94,37 @@ class DesignService extends BaseService {
       });
     }
 
+    // Color palette information - YENİ EKLENEN!
+    if (formData.colorPalette) {
+      if (formData.colorPalette.type === 'palette') {
+        const palette = formData.colorPalette.palette;
+        notes.push(`Renk Paleti: ${palette.name} - ${palette.description}`);
+        notes.push(`Renk Kodları: ${palette.colors.join(', ')}`);
+      } else if (formData.colorPalette.type === 'custom') {
+        notes.push(`Özel Renk Açıklaması: ${formData.colorPalette.description}`);
+      }
+    }
+
+    // Product categories information - YENİ EKLENEN!
+    if (formData.productCategories) {
+      if (formData.productCategories.type === 'categories') {
+        const products = formData.productCategories.products || [];
+        if (products.length > 0) {
+          notes.push(`Seçilen Ürün Kategorileri:`);
+          products.forEach(product => {
+            notes.push(`  - ${product.name} (${product.icon})`);
+          });
+        }
+      } else if (formData.productCategories.type === 'custom') {
+        notes.push(`Özel Ürün Açıklaması: ${formData.productCategories.description}`);
+      }
+    }
+
+    // Door/Window position information - KAPIYA HAZIR!
+    if (formData.doorWindow) {
+      notes.push(`Kapı/Pencere Pozisyonları: ${JSON.stringify(formData.doorWindow)}`);
+    }
+
     // User notes
     if (formData.notes?.trim()) {
       notes.push(`Kullanıcı Notları: ${formData.notes}`);

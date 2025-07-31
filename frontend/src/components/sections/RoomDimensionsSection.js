@@ -31,9 +31,9 @@ const RoomDimensionsSection = ({
   const isLengthOverLimit = form.length && parseInt(form.length) > MAX_LENGTH;
 
   return (
-    <div className="bg-gray-800 p-3 rounded-lg shadow-lg space-y-3">
+    <div className="space-y-3">
       <div className="flex items-center mb-2">
-        <h2 className="text-lg font-semibold">📐 Oda Boyutları</h2>
+        <h2 className="text-base font-semibold">📐 Oda Boyutları</h2>
         <Tooltip text="Odanızın temel boyutlarını girin ve görselleştirin">
           <span className="ml-2 text-blue-400 cursor-help">ℹ️</span>
         </Tooltip>

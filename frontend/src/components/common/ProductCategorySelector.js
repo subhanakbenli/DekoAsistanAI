@@ -1,11 +1,8 @@
 import React, { memo } from 'react';
+import PropTypes from 'prop-types';
 import { useProductCategories } from '../../hooks/useProductCategories';
 
-/**
- * Product Category Selector Component
- * Room-specific product category selection with popular combinations
- * Features checkbox system with SVG icons and localStorage persistence
- */
+// Room-specific product category selector with compact design
 const ProductCategorySelector = memo(({ roomType = 'salon', onSelectionChange, className = '' }) => {
   const {
     selectedProducts,
@@ -25,7 +22,7 @@ const ProductCategorySelector = memo(({ roomType = 'salon', onSelectionChange, c
     getSelectionSummary
   } = useProductCategories(roomType);
 
-  // Notify parent component of selection changes
+  // Notify parent of selection changes
   React.useEffect(() => {
     if (onSelectionChange) {
       onSelectionChange({
@@ -48,32 +45,32 @@ const ProductCategorySelector = memo(({ roomType = 'salon', onSelectionChange, c
   }
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-2 ${className}`}>
       {/* Header */}
-      <div className="space-y-2">
-        <h3 className="text-xl font-semibold text-white flex items-center gap-2">
-          <span className="text-2xl">{roomInfo.icon}</span>
+      <div className="space-y-1">
+        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+          <span className="text-base">{roomInfo.icon}</span>
           {roomInfo.name} - Ürün Kategorileri
         </h3>
-        <p className="text-gray-400 text-sm">
+        <p className="text-gray-400 text-xs">
           {roomInfo.description} için uygun ürün kategorilerini seçin.
         </p>
       </div>
 
       {/* Popular Combinations */}
       {popularCombinations.length > 0 && !useCustomProducts && (
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-300">
+        <div className="space-y-1">
+          <label className="block text-xs font-medium text-gray-300">
             💡 Popüler Kombinasyonlar
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
             {popularCombinations.map((combination, index) => (
               <button
                 key={index}
                 onClick={() => applyPopularCombination(combination)}
-                className="p-3 bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-lg text-left hover:from-purple-600/30 hover:to-blue-600/30 transition-all duration-200 group"
+                className="p-2 bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-md text-left hover:from-purple-600/30 hover:to-blue-600/30 transition-all duration-200 group"
               >
-                <div className="font-medium text-purple-300 group-hover:text-purple-200 mb-1">
+                <div className="font-medium text-purple-300 group-hover:text-purple-200 mb-1 text-xs">
                   {combination.name}
                 </div>
                 <div className="text-xs text-gray-400">
@@ -87,16 +84,16 @@ const ProductCategorySelector = memo(({ roomType = 'salon', onSelectionChange, c
 
       {/* Quick Actions */}
       {!useCustomProducts && (
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-1 flex-wrap">
           <button
             onClick={selectAllSuggested}
-            className="px-3 py-1 bg-green-600/20 border border-green-500/30 rounded-lg text-green-300 hover:bg-green-600/30 transition-colors text-sm"
+            className="px-2 py-1 bg-green-600/20 border border-green-500/30 rounded-md text-green-300 hover:bg-green-600/30 transition-colors text-xs"
           >
             ✅ Tümünü Seç
           </button>
           <button
             onClick={clearSelection}
-            className="px-3 py-1 bg-red-600/20 border border-red-500/30 rounded-lg text-red-300 hover:bg-red-600/30 transition-colors text-sm"
+            className="px-2 py-1 bg-red-600/20 border border-red-500/30 rounded-md text-red-300 hover:bg-red-600/30 transition-colors text-xs"
           >
             🗑️ Temizle
           </button>
@@ -104,31 +101,31 @@ const ProductCategorySelector = memo(({ roomType = 'salon', onSelectionChange, c
       )}
 
       {/* Custom Products Toggle */}
-      <div className="flex items-center gap-3 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+      <div className="flex items-center gap-2 p-2 bg-gray-800/50 rounded-md border border-gray-700">
         <input
           type="checkbox"
           id="useCustomProducts"
           checked={useCustomProducts}
           onChange={(e) => handleCustomToggle(e.target.checked)}
-          className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+          className="w-3 h-3 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
         />
-        <label htmlFor="useCustomProducts" className="text-sm text-gray-300 flex-1 cursor-pointer">
+        <label htmlFor="useCustomProducts" className="text-xs text-gray-300 flex-1 cursor-pointer">
           Kategorilerden seçmiyorum - Açıklamada belirteceğim
         </label>
       </div>
 
       {/* Custom Description Input */}
       {useCustomProducts && (
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-300">
+        <div className="space-y-1">
+          <label className="block text-xs font-medium text-gray-300">
             Ürün Açıklaması
           </label>
           <textarea
             value={customProductDescription}
             onChange={(e) => handleCustomDescriptionChange(e.target.value)}
             placeholder="Örnek: Modern ahşap yemek masası, 6 kişilik sandalye takımı, dekoratif avize ve duvar tabloları istiyorum..."
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
-            rows={4}
+            className="w-full bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none text-xs"
+            rows={2}
           />
           <div className="flex justify-between items-center text-xs">
             <span className={`${customProductDescription.length >= 10 ? 'text-green-400' : 'text-red-400'}`}>
@@ -140,9 +137,9 @@ const ProductCategorySelector = memo(({ roomType = 'salon', onSelectionChange, c
 
       {/* Product Categories Grid */}
       {!useCustomProducts && (
-        <div className="space-y-4">
+        <div className="space-y-1 overflow-hidden">
           <div className="flex justify-between items-center">
-            <label className="block text-sm font-medium text-gray-300">
+            <label className="block text-xs font-medium text-gray-300">
               Ürün Kategorileri ({suggestedProducts.length} adet)
             </label>
             <span className="text-xs text-gray-500">
@@ -150,7 +147,7 @@ const ProductCategorySelector = memo(({ roomType = 'salon', onSelectionChange, c
             </span>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+          <div className="grid grid-cols-4 gap-1 max-h-32 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
             {suggestedProducts.map((product) => (
               <ProductCategoryCard
                 key={product.id}
@@ -163,20 +160,20 @@ const ProductCategorySelector = memo(({ roomType = 'salon', onSelectionChange, c
         </div>
       )}
 
-      {/* Validation Message - hide in compact mode */}
+      {/* Validation Message - compact mode */}
       {!isValid && !className.includes('compact') && (
-        <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-          <p className="text-red-400 text-sm flex items-center gap-2">
+        <div className="p-2 bg-red-500/10 border border-red-500/30 rounded-md">
+          <p className="text-red-400 text-xs flex items-center gap-2">
             <span>⚠️</span>
             {getValidationMessage()}
           </p>
         </div>
       )}
 
-      {/* Selection Summary - hide in compact mode */}
+      {/* Selection Summary - compact mode */}
       {isValid && !className.includes('compact') && (
-        <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-          <p className="text-green-400 text-sm flex items-center gap-2">
+        <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-md">
+          <p className="text-green-400 text-xs flex items-center gap-2">
             <span>✅</span>
             {useCustomProducts 
               ? 'Özel ürün açıklaması hazır'
@@ -202,15 +199,13 @@ const ProductCategorySelector = memo(({ roomType = 'salon', onSelectionChange, c
   );
 });
 
-/**
- * Individual Product Category Card Component
- */
+// Individual product category card with compact design
 const ProductCategoryCard = memo(({ product, isSelected, onToggle }) => {
   return (
     <div
       onClick={onToggle}
       className={`
-        relative p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 group
+        relative p-1 rounded-md border-2 cursor-pointer transition-all duration-200 group overflow-hidden
         ${isSelected 
           ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20' 
           : 'border-gray-700 bg-gray-800/50 hover:border-gray-600 hover:bg-gray-800'
@@ -218,22 +213,22 @@ const ProductCategoryCard = memo(({ product, isSelected, onToggle }) => {
       `}
     >
       {/* Product Icon */}
-      <div className="text-center mb-2">
-        <span className="text-2xl block mb-1">{product.icon}</span>
+      <div className="text-center mb-1">
+        <span className="text-base block">{product.icon}</span>
       </div>
 
       {/* Product Name */}
-      <div className="text-center">
-        <h4 className="font-medium text-white text-xs leading-tight group-hover:text-blue-400 transition-colors">
+      <div className="text-center px-1">
+        <h4 className="font-medium text-white text-xs leading-tight group-hover:text-blue-400 transition-colors line-clamp-2">
           {product.name}
         </h4>
       </div>
 
       {/* Selection Indicator */}
       {isSelected && (
-        <div className="absolute -top-1 -right-1">
-          <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-xs">✓</span>
+        <div className="absolute top-0 left-0 z-10">
+          <div className="w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-xs leading-none">✓</span>
           </div>
         </div>
       )}
@@ -252,5 +247,21 @@ const ProductCategoryCard = memo(({ product, isSelected, onToggle }) => {
 
 ProductCategorySelector.displayName = 'ProductCategorySelector';
 ProductCategoryCard.displayName = 'ProductCategoryCard';
+
+ProductCategorySelector.propTypes = {
+  roomType: PropTypes.string,
+  onSelectionChange: PropTypes.func,
+  className: PropTypes.string
+};
+
+ProductCategoryCard.propTypes = {
+  product: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    icon: PropTypes.string.isRequired
+  }).isRequired,
+  isSelected: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func.isRequired
+};
 
 export default ProductCategorySelector;

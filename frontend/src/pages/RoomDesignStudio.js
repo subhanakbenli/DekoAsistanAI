@@ -4,17 +4,19 @@ import { StudioHeader, StudioSidebar, StudioDesignForm, StudioResultPanel } from
 import Navbar from '../components/Navbar';
 import { usePerformanceTracker } from '../hooks/usePerformance';
 
-/**
- * Room Design Studio - Professional Interior Design Tool
- * AI-powered room design and visualization platform
- * 
- * Refactored for better component composition and separation of concerns
- * Optimized with React.memo and performance tracking
- */
+// Layout configuration constants - KISS principle ✨
+const LAYOUT_CONFIGS = {
+  WITH_RESULT: "grid gap-6 transition-all duration-700 ease-in-out grid-cols-1 lg:grid-cols-[350px_1fr]",
+  NO_RESULT: "grid gap-8 transition-all duration-700 ease-in-out grid-cols-1 lg:grid-cols-[45%_55%]"
+};
+
+// AI-powered room design studio with dynamic layout
 const RoomDesignStudio = memo(() => {
-  // Performance tracking in development
   usePerformanceTracker('RoomDesignStudio');
 
+  const roomDesignState = useRoomDesign();
+  
+  // Extract needed props - cleaner destructuring ✨
   const {
     form,
     newBlock,
@@ -29,50 +31,48 @@ const RoomDesignStudio = memo(() => {
     addBlock,
     removeBlock,
     handleSubmit
-  } = useRoomDesign();
+  } = roomDesignState;
 
-  // Memoize grid classes for better performance
-  const gridClasses = useMemo(() => 
-    "grid gap-8 transition-all duration-700 ease-in-out grid-cols-1 lg:grid-cols-3", 
-    []
+  // Simplified layout logic - KISS principle ✨
+  const layoutClasses = useMemo(() => 
+    result ? LAYOUT_CONFIGS.WITH_RESULT : LAYOUT_CONFIGS.NO_RESULT, 
+    [result]
   );
 
   return (
     <div className="min-h-screen bg-gray-900 text-white font-sans">
       <Navbar />
       <div className="pt-16">
-        {/* Main Workspace */}
-        <div className="max-w-7xl mx-auto p-8">
+        <div className="max-w-7xl mx-auto p-6">
           
-          {/* Studio Header */}
           <StudioHeader />
 
-          {/* Design Grid - Dynamic layout based on result */}
-          <div className={gridClasses}>
+          <div className={layoutClasses}>
             
-            {/* LEFT SIDE - Form Sections */}
-            <StudioSidebar
-              form={form}
-              newBlock={newBlock}
-              result={result}
-              isLoading={isLoading}
-              handleChange={handleChange}
-              handleExtraChange={handleExtraChange}
-              addBlock={addBlock}
-              removeBlock={removeBlock}
-              handleSubmit={handleSubmit}
-            />
+            <div className="space-y-6">
+              <StudioSidebar
+                form={form}
+                newBlock={newBlock}
+                result={result}
+                isLoading={isLoading}
+                handleChange={handleChange}
+                handleExtraChange={handleExtraChange}
+                addBlock={addBlock}
+                removeBlock={removeBlock}
+                handleSubmit={handleSubmit}
+              />
 
-            {/* MIDDLE SECTION - Design Form (only when no result) */}
-            <StudioDesignForm
-              form={form}
-              handleChange={handleChange}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
-              result={result}
-            />
+              {!result && (
+                <StudioDesignForm
+                  form={form}
+                  handleChange={handleChange}
+                  handleSubmit={handleSubmit}
+                  isLoading={isLoading}
+                  result={result}
+                />
+              )}
+            </div>
 
-            {/* RIGHT SIDE - Result Panel */}
             <StudioResultPanel
               result={result}
               moodBoard={moodBoard}
