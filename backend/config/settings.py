@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     # Authentication settings
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 1 day (24 hours * 60 minutes)
     
     @property
     def debug(self) -> bool:
