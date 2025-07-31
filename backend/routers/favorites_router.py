@@ -13,7 +13,7 @@ from models.user_models import User
 from models.design_models_db import Design, UserFavoriteDesign, UserFavoriteProduct, DesignHashtag, MoodBoard
 from models.auth_schemas import UserResponse
 from routers.auth_router import get_current_user
-from services.gemini_service import GeminiService
+from services.ai.gemini_service import GeminiService
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/favorites", tags=["Favorites"])

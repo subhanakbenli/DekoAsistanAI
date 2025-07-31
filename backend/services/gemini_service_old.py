@@ -1,22 +1,25 @@
 import google.generativeai as genai
 from config.settings import Settings
 from config import logger
+from config.prompts import GeminiPrompts, PromptUtils
 from typing import Dict, Any, Optional, List
 import json
 import os
+import re
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from models.design_models_db import Hashtag, DesignHashtag
 from .hashtag_service import HashtagService
+from .base_service import BaseService
 
-class GeminiService:
+class GeminiService(BaseService):
     """
     Service class for interaction with Google Gemini AI.
     Provides design suggestions and Function Calling-supported product suggestions according to PRD.
     """
     
     def __init__(self):
-        self.settings = Settings()
+        super().__init__()
         
         # Configure Gemini API
         genai.configure(api_key=self.settings.GEMINI_API_KEY)
@@ -35,7 +38,7 @@ class GeminiService:
         # Initialize hashtag service
         self.hashtag_service = HashtagService()
         
-        logger.debug("Gemini Service initialized")
+        self.log_operation("initialized")
     
     def generate_design_suggestion(self, room_type: str, design_style: str, notes: str) -> Dict[str, Any]:
         """
@@ -44,17 +47,21 @@ class GeminiService:
         Args:
             room_type: Type of room (Living Room, Bedroom, etc.)
             design_style: Design style (Modern, Classic, etc.)
-            notes: User's special requests
+            notes: User's special requests (includes room dimensions, color palette, product categories)
             
         Returns:
             Dict: Dictionary containing design title, description and product suggestion
         """
         
+        # Parse notes to extract structured information
+        parsed_info = self._parse_notes_information(notes)
+        
         # Prepare detailed and personalized prompt according to PRD
-        prompt = self._create_design_prompt(room_type, design_style, notes)
+        prompt = self._create_design_prompt(room_type, design_style, notes, parsed_info)
         
         try:
             logger.info(f"Requesting design suggestion from Gemini: {room_type} - {design_style}")
+            logger.debug(f"Parsed info: {parsed_info}")
             
             response = self.model.generate_content(prompt)
             
@@ -72,70 +79,130 @@ class GeminiService:
             logger.error(f"Gemini service error: {str(e)}")
             return self._create_fallback_response(room_type, design_style)
     
-    def _create_design_prompt(self, room_type: str, design_style: str, notes: str) -> str:
+    def _parse_notes_information(self, notes: str) -> Dict[str, Any]:
         """
-        Creates detailed design prompt according to PRD.
+        Parse notes to extract structured information about room, colors, and products.
+        
+        Args:
+            notes: The notes string containing room dimensions, color palette, product categories, etc.
+            
+        Returns:
+            Dict: Parsed information structure
         """
-        prompt = f"""
-Sen bir uzman iç mimar ve dekorasyon danışmanısın. Türkiye'de yaşayan bir kullanıcı için tasarım önerisi hazırlayacaksın.
+        parsed_info = {
+            'room_dimensions': None,
+            'extra_areas': [],
+            'color_palette': None,
+            'product_categories': [],
+            'door_window_positions': None,
+            'user_notes': None
+        }
+        
+        try:
+            lines = notes.split('\n')
+            
+            for line in lines:
+                line = line.strip()
+                
+                # Parse room dimensions
+                if line.startswith('Oda Boyutları:'):
+                    dimensions_text = line.replace('Oda Boyutları:', '').strip()
+                    # Extract dimensions like "300cm x 400cm x 250cm (G x U x Y)"
+                    dimension_match = re.search(r'(\d+)cm x (\d+)cm x (\d+)cm', dimensions_text)
+                    if dimension_match:
+                        parsed_info['room_dimensions'] = {
+                            'width': int(dimension_match.group(1)),
+                            'length': int(dimension_match.group(2)),
+                            'height': int(dimension_match.group(3))
+                        }
+                
+                # Parse color palette
+                elif line.startswith('Renk Paleti:'):
+                    palette_info = line.replace('Renk Paleti:', '').strip()
+                    parsed_info['color_palette'] = {
+                        'type': 'palette',
+                        'description': palette_info
+                    }
+                elif line.startswith('Renk Kodları:'):
+                    color_codes = line.replace('Renk Kodları:', '').strip()
+                    if parsed_info['color_palette']:
+                        parsed_info['color_palette']['colors'] = [c.strip() for c in color_codes.split(',')]
+                elif line.startswith('Özel Renk Açıklaması:'):
+                    custom_color = line.replace('Özel Renk Açıklaması:', '').strip()
+                    parsed_info['color_palette'] = {
+                        'type': 'custom',
+                        'description': custom_color
+                    }
+                
+                # Parse product categories
+                elif line.startswith('Seçilen Ürün Kategorileri:'):
+                    # Next lines will contain product categories
+                    continue
+                elif line.startswith('  - '):
+                    # Product category line like "  - Mobilya (🪑)"
+                    product_line = line.replace('  - ', '').strip()
+                    if '(' in product_line and ')' in product_line:
+                        name_part = product_line.split('(')[0].strip()
+                        icon_part = product_line.split('(')[1].replace(')', '').strip()
+                        parsed_info['product_categories'].append({
+                            'name': name_part,
+                            'icon': icon_part
+                        })
+                elif line.startswith('Özel Ürün Açıklaması:'):
+                    custom_products = line.replace('Özel Ürün Açıklaması:', '').strip()
+                    parsed_info['product_categories'] = [{
+                        'type': 'custom',
+                        'description': custom_products
+                    }]
+                
+                # Parse extra areas
+                elif line.startswith('Ekstra Alanlar:'):
+                    continue
+                elif re.match(r'\s*\d+\.\s+\d+cm x \d+cm', line):
+                    # Lines like "  1. 150cm x 200cm (Konum: x:100cm, y:50cm)"
+                    area_match = re.search(r'(\d+)cm x (\d+)cm.*x:(\d+)cm.*y:(\d+)cm', line)
+                    if area_match:
+                        parsed_info['extra_areas'].append({
+                            'width': int(area_match.group(1)),
+                            'length': int(area_match.group(2)),
+                            'x': int(area_match.group(3)),
+                            'y': int(area_match.group(4))
+                        })
+                
+                # Parse door/window positions
+                elif line.startswith('Kapı/Pencere Pozisyonları:'):
+                    positions_text = line.replace('Kapı/Pencere Pozisyonları:', '').strip()
+                    try:
+                        parsed_info['door_window_positions'] = json.loads(positions_text)
+                    except json.JSONDecodeError:
+                        parsed_info['door_window_positions'] = positions_text
+                
+                # Parse user notes
+                elif line.startswith('Kullanıcı Notları:'):
+                    user_notes = line.replace('Kullanıcı Notları:', '').strip()
+                    parsed_info['user_notes'] = user_notes
+            
+            return parsed_info
+            
+        except Exception as e:
+            logger.error(f"Error parsing notes: {str(e)}")
+            return parsed_info
 
-**Kullanıcı Bilgileri:**
-- Oda Tipi: {room_type}
-- Tasarım Stili: {design_style}
-- Özel İstekler: {notes}
-
-**ÖNEMLİ:** Cevabını mutlaka aşağıdaki JSON formatında ver. Başka hiçbir metin ekleme, sadece JSON:
-
-{{
-  "title": "Tasarım başlığı (maksimum 60 karakter)",
-  "description": "Bu tasarım hakkında detaylı açıklama. Renk paleti, atmosfer, stil özellikleri hakkında bilgi ver.",
-  "hashtags": ["#genel_kategori", "#stil", "#oda_tipi", "#renk", "#atmosfer", "#malzeme", "#ozellik1", "#ozellik2", "#detay1", "#detay2"],
-  "products": [
-    {{
-      "category": "Kategori adı",
-      "name": "Ürün adı",
-      "description": "Ürün detayları ve neden önerildiği"
-    }},
-    {{
-      "category": "Kategori adı",
-      "name": "Ürün adı",
-      "description": "Ürün detayları ve neden önerildiği"
-    }}
-  ]
-}}
-
-**Format Kuralları:**
-- "title": Kısa ve çekici başlık (maksimum 60 karakter)
-- "description": Tasarım konsepti hakkında kapsamlı açıklama (2-4 cümle)
-- "hashtags": TAM 10 ADET hashtag listesi - GENELDEN ÖZELE SIRALI
-  - # ile başlamalı (örn: "#modern", "#living_room")
-  - snake_case kullan (örn: "#living_room", "#neutral_colors")
-  - İngilizce kelimeler kullan, Türkçe karakter yok
-  - Sıralama: En genel kategoriden en spesifik detaya doğru
-  - Örnek sıralama: #interior_design, #modern, #living_room, #neutral_tones, #minimalist, #scandinavian, #cozy, #functional, #natural_light, #urban_style
-- "products": Ürün listesi array'i
-  - "category": Ürün kategorisi (örn: "Mobilyalar", "Aydınlatma", "Tekstil", "Dekoratif Objeler" vs.)
-  - "name": Ürün adı (maksimum 40 karakter)
-  - "description": Ürün açıklaması (maksimum 120 karakter)
-
-**Hashtag Örnekleri:**
-- Genel: #interior_design, #home_decor, #room_design
-- Stil: #modern, #classic, #contemporary, #minimalist, #industrial, #scandinavian
-- Oda: #living_room, #bedroom, #kitchen, #bathroom, #office
-- Renk: #neutral_tones, #warm_colors, #cool_colors, #monochrome, #colorful
-- Atmosfer: #cozy, #elegant, #luxurious, #rustic, #urban, #vintage
-- Malzeme: #wood, #metal, #glass, #stone, #fabric, #leather
-- Özellikler: #spacious, #compact, #bright, #natural_light, #functional, #artistic
-
-**Önemli:**
-- TAM 10 adet hashtag oluştur, eksik veya fazla olmasın
-- Hashtag sıralaması çok önemli: en genel kategoriden başla, en spesifik detaylarla bitir
-- İstediğin kategorileri kullanabilirsin, sınırlama yok
-- Kaç ürün önereceğin sana kalmış (önerilen: 6-12 ürün)
-- Sadece JSON formatında cevap ver, başka hiçbir metin ekleme
-- Kullanıcının özel isteklerini dikkate al
-"""
-        return prompt
+    def _create_design_prompt(self, room_type: str, design_style: str, notes: str, parsed_info: Dict[str, Any] = None) -> str:
+        """
+        Creates detailed design prompt according to PRD with enhanced color and product information.
+        Now uses centralized prompt management.
+        """
+        # Build additional context from parsed info using centralized utility
+        additional_context = PromptUtils.build_additional_context(parsed_info)
+        
+        # Use centralized prompt template
+        return GeminiPrompts.get_design_suggestion_prompt(
+            room_type=room_type,
+            design_style=design_style,
+            notes=notes,
+            additional_context=additional_context
+        )
     
     def _parse_design_response(self, response_text: str, room_type: str = "", design_style: str = "") -> Dict[str, Any]:
         """

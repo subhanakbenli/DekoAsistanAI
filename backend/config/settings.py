@@ -55,26 +55,6 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     @property
-    def db_user(self) -> str:
-        return self.DB_USER
-    
-    @property
-    def db_password(self) -> str:
-        return self.DB_PASSWORD
-    
-    @property
-    def db_host(self) -> str:
-        return self.DB_HOST
-    
-    @property
-    def db_port(self) -> int:
-        return self.DB_PORT
-    
-    @property
-    def db_name(self) -> str:
-        return self.DB_NAME
-    
-    @property
     def debug(self) -> bool:
         return self.ENVIRONMENT == "development"
     

@@ -7,7 +7,7 @@ from sqlalchemy.orm import DeclarativeBase
 from config.settings import settings
 
 # Database URL
-DATABASE_URL = f"postgresql+asyncpg://{settings.db_user}:{settings.db_password}@{settings.db_host}:{settings.db_port}/{settings.db_name}"
+DATABASE_URL = f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
 
 # Create async engine with simple, proven settings for VDS
 engine = create_async_engine(

@@ -2,6 +2,8 @@ from fastapi import APIRouter, Form, HTTPException, BackgroundTasks, Depends, Qu
 from fastapi.responses import FileResponse
 from config import logger
 from config.database import get_db, get_async_session
+from config.constants import DESIGN_NOT_FOUND, DESIGN_CREATED_SUCCESS
+from utils.error_handler import ErrorHandler
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -40,9 +42,19 @@ def get_clean_image_filename(image_path):
     
     return filename
 
-# Initialize services
-gemini_service = GeminiService()
-history_service = DesignHistoryService()
+# Service Container Pattern
+class DesignServices:
+    """Service container for design operations"""
+    _instance = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.gemini_service = GeminiService()
+            cls._instance.history_service = DesignHistoryService()
+        return cls._instance
+
+services = DesignServices()
 
 @router.post("/test", response_model=DesignResponseModel)
 async def design_request_endpoint(
@@ -67,7 +79,7 @@ async def design_request_endpoint(
     
     try:
         # Generate design suggestion using Gemini service
-        design_result = gemini_service.generate_design_suggestion(
+        design_result = services.gemini_service.generate_design_suggestion(
             room_type=room_type,
             design_style=design_style,
             notes=notes
@@ -121,7 +133,7 @@ async def design_request_endpoint(
             hashtags = design_result.get("hashtags", {})
             if hashtags and hashtags.get("en"):  # Check if English hashtags exist
                 try:
-                    await gemini_service.save_design_hashtags(db, design_id, hashtags)
+                    await services.gemini_service.save_design_hashtags(db, design_id, hashtags)
                     logger.info(f"Hashtags saved for design {design_id}: EN={hashtags.get('en', [])} TR={hashtags.get('tr', [])}")
                 except Exception as hashtag_error:
                     logger.error(f"Error saving hashtags for design {design_id}: {str(hashtag_error)}")
@@ -143,9 +155,9 @@ async def design_request_endpoint(
             product_suggestion=design_result["product_suggestion"],
             products=design_result.get("products", []),
             success=True,
-            message=f"Design suggestion created successfully" + 
+            message=DESIGN_CREATED_SUCCESS + 
                    (f" - Mood board generating for connection: {connection_id}" if connection_id else "") +
-                   (f" - Saved to your account" if user_id else " - Sign in to save designs to your account")
+                   (" - Saved to your account" if user_id else " - Sign in to save designs to your account")
         )
         
     except Exception as e:
@@ -384,7 +396,7 @@ async def get_design_history(limit: int = 20):
     Get recent design history.
     """
     try:
-        history = history_service.get_design_history(limit=limit)
+        history = services.history_service.get_design_history(limit=limit)
         return {
             "success": True,
             "data": history,
@@ -427,7 +439,7 @@ async def get_my_design_by_id(
         design = result.scalar_one_or_none()
         
         if not design:
-            raise HTTPException(status_code=404, detail="Design not found")
+            raise HTTPException(status_code=404, detail=DESIGN_NOT_FOUND)
         
         design_data = {
             "id": design.id,
@@ -463,7 +475,7 @@ async def get_design_by_id(request_id: str):
     Get specific design by request ID.
     """
     try:
-        design = history_service.get_design_by_id(request_id)
+        design = services.history_service.get_design_by_id(request_id)
         if design:
             return {
                 "success": True,
@@ -474,7 +486,7 @@ async def get_design_by_id(request_id: str):
             return {
                 "success": False,
                 "data": None,
-                "message": "Design not found"
+                "message": DESIGN_NOT_FOUND
             }
     except Exception as e:
         logger.error(f"Error retrieving design by ID: {str(e)}")
@@ -491,7 +503,7 @@ async def get_design_stats():
     Get design request statistics.
     """
     try:
-        stats = history_service.get_design_stats()
+        stats = services.history_service.get_design_stats()
         return {
             "success": True,
             "data": stats,
@@ -680,7 +692,7 @@ async def get_design_details(
         if not design_with_mood_board or not design_with_mood_board.Design:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Design not found"
+                detail=DESIGN_NOT_FOUND
             )
         
         design = design_with_mood_board.Design
@@ -694,7 +706,7 @@ async def get_design_details(
             english_hashtags = [dh.hashtag.name for dh in sorted_hashtags]
             
             # Use hashtag service to translate
-            hashtag_translations = gemini_service.hashtag_service.translate_hashtags(english_hashtags)
+            hashtag_translations = services.gemini_service.hashtag_service.translate_hashtags(english_hashtags)
             hashtags_data = hashtag_translations
         
         # Convert to response format

@@ -32,7 +32,7 @@ const ColorPalette = memo(({ className = '', onSelectionChange }) => {
           : { type: 'palette', palette: selectedPalette }
       });
     }
-  }, [selectedPalette, useCustomDescription, customColorDescription, isValid, onSelectionChange]);
+  }, [selectedPalette, useCustomDescription, customColorDescription, isValid]);
 
   return (
     <div className={`${className.includes('compact-palette') ? 'space-y-2 w-full' : 'space-y-6'} ${className} ${className.includes('compact-palette') ? 'compact-color-palette overflow-hidden' : ''}`}>

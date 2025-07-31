@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import Tooltip from '../common/Tooltip';
 import ColorPalette from '../common/ColorPalette';
 import ProductCategorySelector from '../common/ProductCategorySelector';
@@ -13,6 +13,38 @@ import ProductCategorySelector from '../common/ProductCategorySelector';
 const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) => {
   // Boyut sınırları
   const MAX_HEIGHT = 2000; // 20m
+
+  // Color selection callback'ini optimize et
+  const handleColorSelection = useCallback((colorData) => {
+    // Form state'e renk bilgisini ekle
+    if (colorData.isValid) {
+      const colorInfo = colorData.selection;
+      // handleChange kullanarak form'a renk bilgisini ekle
+      const event = {
+        target: {
+          name: 'colorPalette',
+          value: colorInfo
+        }
+      };
+      handleChange(event);
+    }
+  }, [handleChange]);
+
+  // Product selection callback'ini optimize et
+  const handleProductSelection = useCallback((productData) => {
+    // Form state'e ürün bilgisini ekle
+    if (productData.isValid) {
+      const productInfo = productData.selection;
+      // handleChange kullanarak form'a ürün bilgisini ekle
+      const event = {
+        target: {
+          name: 'productCategories',
+          value: productInfo
+        }
+      };
+      handleChange(event);
+    }
+  }, [handleChange]);
   const MAX_WIDTH = 5000;  // 50m
   const MAX_LENGTH = 5000; // 50m
   
@@ -85,20 +117,7 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
           <div>
             <ColorPalette 
               className="compact-palette"
-              onSelectionChange={(colorData) => {
-                // Form state'e renk bilgisini ekle
-                if (colorData.isValid) {
-                  const colorInfo = colorData.selection;
-                  // handleChange kullanarak form'a renk bilgisini ekle
-                  const event = {
-                    target: {
-                      name: 'colorPalette',
-                      value: colorInfo
-                    }
-                  };
-                  handleChange(event);
-                }
-              }}
+              onSelectionChange={handleColorSelection}
             />
           </div>
         </div>
@@ -108,20 +127,7 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
           <ProductCategorySelector 
             roomType={form.roomType}
             className="compact"
-            onSelectionChange={(productData) => {
-              // Form state'e ürün bilgisini ekle
-              if (productData.isValid) {
-                const productInfo = productData.selection;
-                // handleChange kullanarak form'a ürün bilgisini ekle
-                const event = {
-                  target: {
-                    name: 'productCategories',
-                    value: productInfo
-                  }
-                };
-                handleChange(event);
-              }
-            }}
+            onSelectionChange={handleProductSelection}
           />
         </div>
       </div>

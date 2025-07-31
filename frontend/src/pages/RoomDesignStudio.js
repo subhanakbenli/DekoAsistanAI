@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { useRoomDesign } from '../hooks/useRoomDesign';
 import { StudioHeader, StudioSidebar, StudioDesignForm, StudioResultPanel } from '../components/studio';
 import Navbar from '../components/Navbar';
@@ -36,7 +36,7 @@ const RoomDesignStudio = memo(() => {
   } = roomDesignState;
 
   // Simplified layout logic - KISS principle ✨
-  const scrollToResults = () => {
+  const scrollToResults = useCallback(() => {
     if (result) {
       // AI önerileri section'ına scroll
       const resultsSection = document.getElementById('ai-results-section');
@@ -44,7 +44,7 @@ const RoomDesignStudio = memo(() => {
         resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
-  };
+  }, [result]);
 
   // Result değiştiğinde scroll yap
   React.useEffect(() => {

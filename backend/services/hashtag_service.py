@@ -214,3 +214,49 @@ class HashtagService:
                     matches.append(tr_tag)
         
         return list(set(matches))  # Remove duplicates
+    
+    async def save_hashtags_to_db(self, db, design_id: str, english_hashtags: list, turkish_hashtags: list) -> None:
+        """
+        Save hashtags to database for a design.
+        
+        Args:
+            db: Database session
+            design_id: Design ID
+            english_hashtags: List of English hashtags
+            turkish_hashtags: List of Turkish hashtags
+        """
+        try:
+            from sqlalchemy import select
+            from models.design_models_db import Hashtag, DesignHashtag
+            
+            # Save hashtags
+            for i, en_tag in enumerate(english_hashtags):
+                tr_tag = turkish_hashtags[i] if i < len(turkish_hashtags) else en_tag
+                
+                # Check if hashtag exists
+                result = await db.execute(
+                    select(Hashtag).where(Hashtag.english_text == en_tag)
+                )
+                hashtag = result.scalar_one_or_none()
+                
+                if not hashtag:
+                    # Create new hashtag
+                    hashtag = Hashtag(
+                        english_text=en_tag,
+                        turkish_text=tr_tag
+                    )
+                    db.add(hashtag)
+                    await db.flush()  # Get ID
+                
+                # Link to design
+                design_hashtag = DesignHashtag(
+                    design_id=design_id,
+                    hashtag_id=hashtag.id
+                )
+                db.add(design_hashtag)
+            
+            await db.commit()
+            
+        except Exception as e:
+            await db.rollback()
+            raise e

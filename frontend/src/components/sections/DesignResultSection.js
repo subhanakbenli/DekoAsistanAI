@@ -5,23 +5,21 @@ import HashtagDisplay from '../HashtagDisplay';
 import ShareToBlog from '../common/ShareToBlog';
 
 /**
- * Design suggestion result section with mood board support
- * @param {Object} result - Design result data
- * @param {Object} moodBoard - Mood board data from WebSocket
- * @param {Object} progress - Progress data for mood board generation
- * @param {boolean} isMoodBoardLoading - Loading state for mood board
+ * Enhanced Design Result Section with modern UI
+ * Features: Modern cards, gradients, animations, better typography
  */
 const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }) => {
   const [showMoodBoard, setShowMoodBoard] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Progress mesajları için mapping
   const progressMessages = {
-    'preparing_prompt': 'Mood board konsepti hazırlanıyor...',
+    'preparing_prompt': "Deko'nun hayali konsepti hazırlanıyor...",
     'optimizing_prompt': 'Tasarım promtu optimize ediliyor...',
     'generating_image': 'AI görsel oluşturuyor...',
     'processing_image': 'Görsel işleniyor...',
     'finalizing': 'Son düzenlemeler yapılıyor...',
-    'completed': 'Mood board hazırlandı!'
+    'completed': "Deko'nun hayali hazırlandı!"
   };
 
   // Mood board tamamlandığında otomatik göster
@@ -31,252 +29,374 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
     }
   }, [moodBoard]);
 
+  const tabs = [
+    { id: 'overview', label: 'Genel Bakış', icon: '🎨' },
+    { id: 'moodboard', label: "Deko'nun Hayali", icon: '🖼️' },
+    { id: 'products', label: 'Ürünler', icon: '🛍️' }
+  ];
+
   return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-lg space-y-4">
-      <h2 className="text-lg font-semibold mb-3">🎨 Tasarım Önerisi</h2>
+    <div className="space-y-6">
       {result ? (
-        <div className="space-y-3">
-          {/* Success/Error Status */}
-          <div className={`p-3 rounded border ${result.success 
-            ? 'bg-green-900 border-green-600' 
-            : 'bg-red-900 border-red-600'
-          }`}>
-            <div className="flex items-center space-x-2">
-              <span>{result.success ? '✅' : '❌'}</span>
-              <span className={`text-sm font-medium ${result.success 
-                ? 'text-green-200' 
-                : 'text-red-200'
-              }`}>
-                {result.success ? 'Başarılı' : 'Hata'}
-              </span>
+        <div className="space-y-6">
+          
+          {/* Tab Navigation */}
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-white/10 p-2">
+            <div className="flex space-x-2">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    activeTab === tab.id
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg scale-105'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <span>{tab.icon}</span>
+                  <span>{tab.label}</span>
+                </button>
+              ))}
             </div>
-            <p className={`text-xs mt-1 ${result.success 
-              ? 'text-green-100' 
-              : 'text-red-100'
-            }`}>
-              {result.message}
-            </p>
           </div>
 
-          {/* Design Content */}
-          <div className="bg-gray-700 p-4 rounded space-y-3">
-            <div className="border-b border-gray-600 pb-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-blue-300">{result.design_title}</h3>
-                {result.design_id && (
-                  <FavoriteButton 
-                    designId={result.design_id}
-                    variant="icon"
-                    size="md"
-                  />
-                )}
-              </div>
-            </div>
+          {/* Tab Content */}
+          <div className="space-y-6">
             
-            {/* Room Info */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-gray-800 p-2 rounded">
-                <span className="text-gray-400">Oda Tipi:</span>
-                <p className="text-white font-medium">{result.room_type}</p>
-              </div>
-              <div className="bg-gray-800 p-2 rounded">
-                <span className="text-gray-400">Tasarım Stili:</span>
-                <p className="text-white font-medium">{result.design_style}</p>
-              </div>
-            </div>
-
-            {/* Design Description */}
-            <div className="bg-gray-800 p-3 rounded">
-              <p className="text-sm font-medium text-yellow-300 mb-2">📝 Tasarım Açıklaması:</p>
-              <p className="text-xs text-gray-300 leading-relaxed">{result.design_description}</p>
-            </div>
-
-            {/* Hashtags */}
-            {result.hashtags && (
-              <div className="bg-gray-800 p-3 rounded">
-                <HashtagDisplay 
-                  hashtags={result.hashtags} 
-                  previewLimit={4}
-                  showAll={false}
-                  copyEnabled={true}
-                />
-              </div>
-            )}
-
-            {/* Product Suggestions */}
-            <ProductSuggestionSection result={result} />
-
-            {/* User Notes */}
-            {result.notes && (
-              <div className="bg-gray-800 p-3 rounded">
-                <p className="text-sm font-medium text-green-300 mb-2">📝 Verilen Bilgiler:</p>
-                <pre className="text-xs text-gray-300 whitespace-pre-wrap leading-relaxed">
-                  {result.notes}
-                </pre>
-              </div>
-            )}
-
-            {/* Mood Board Section */}
-            <div className="bg-gray-800 p-3 rounded">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-medium text-pink-300">🎨 Mood Board</p>
-                {moodBoard && (
-                  <button 
-                    onClick={() => setShowMoodBoard(!showMoodBoard)}
-                    className="text-xs bg-pink-600 hover:bg-pink-700 px-2 py-1 rounded transition-colors"
-                  >
-                    {showMoodBoard ? 'Gizle' : 'Göster'}
-                  </button>
-                )}
-              </div>
-
-              {/* Progress Bar */}
-              {(isMoodBoardLoading || progress) && !moodBoard && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-blue-300">
-                      {progress ? progressMessages[progress.stage] || progress.message : 'Mood board hazırlanıyor...'}
-                    </span>
-                    <span className="text-blue-300">
-                      {progress ? `${progress.progress_percentage}%` : '0%'}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-pink-500 to-purple-500 h-2 rounded-full transition-all duration-300 ease-out"
-                      style={{ width: `${progress ? progress.progress_percentage : 0}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-gray-400 italic">
-                    AI tasarımınız için özel mood board oluşturuyor...
-                  </p>
-                </div>
-              )}
-
-              {/* Mood Board Image */}
-              {moodBoard && showMoodBoard && (
-                <div className="space-y-3">
-                  <div className="relative">
-                    <img 
-                      src={`data:image/png;base64,${moodBoard.image_data.base64}`}
-                      alt="Design Mood Board"
-                      className="w-full rounded-lg shadow-lg border border-gray-600"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'block';
-                      }}
-                    />
-                    <div className="hidden bg-red-900 border border-red-600 p-3 rounded text-center">
-                      <span className="text-red-200 text-sm">❌ Mood board yüklenemedi</span>
-                    </div>
-                  </div>
+            {/* Overview Tab */}
+            {activeTab === 'overview' && (
+              <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-sm rounded-xl p-3 border border-white/10">
+                <div className="space-y-3 animate-fadeIn">
+                
+                {/* Main Content Grid - Mood Board Left, Content Right */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="bg-gray-700 p-2 rounded">
-                      <span className="text-gray-400">Oluşturulma:</span>
-                      <p className="text-white font-medium">
-                        {new Date(moodBoard.created_at).toLocaleString('tr-TR')}
-                      </p>
-                    </div>
-                    <div className="bg-gray-700 p-2 rounded">
-                      <span className="text-gray-400">Format:</span>
-                      <p className="text-white font-medium">{moodBoard.image_data.format}</p>
-                    </div>
+                  {/* Left: Mood Board */}
+                  <div className="order-2 lg:order-1">
+                    <MoodBoardSection 
+                      moodBoard={moodBoard} 
+                      progress={progress} 
+                      isMoodBoardLoading={isMoodBoardLoading}
+                      showMoodBoard={showMoodBoard}
+                      setShowMoodBoard={setShowMoodBoard}
+                      progressMessages={progressMessages}
+                      compact={true}
+                    />
                   </div>
 
-                  {moodBoard.prompt_used && (
-                    <div className="bg-gray-700 p-2 rounded">
-                      <p className="text-xs text-gray-400 mb-1">🤖 AI Prompt:</p>
-                      <p className="text-xs text-gray-300 italic">
-                        {moodBoard.prompt_used.length > 150 
-                          ? `${moodBoard.prompt_used.substring(0, 150)}...` 
-                          : moodBoard.prompt_used
-                        }
-                      </p>
+                  {/* Right: Design Content */}
+                  <div className="order-1 lg:order-2 space-y-3">
+                    
+                    {/* Design Title Card */}
+                    <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-sm rounded-xl p-3 border border-white/10 hover:border-white/20 transition-all duration-300">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <div className="bg-gradient-to-br from-blue-500 to-cyan-500 p-2 rounded-lg">
+                              <span className="text-lg">🏠</span>
+                            </div>
+                            <h3 className="text-xl font-bold text-white">{result.design_title}</h3>
+                          </div>
+                          <p className="text-gray-300 leading-relaxed">{result.design_description}</p>
+                        </div>
+                        {result.design_id && (
+                          <div className="ml-4">
+                            <FavoriteButton 
+                              designId={result.design_id}
+                              variant="icon"
+                              size="lg"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              )}
 
-              {/* Mood Board Error State */}
-              {progress && progress.type === 'mood_board_error' && (
-                <div className="bg-red-900 border border-red-600 p-3 rounded">
-                  <div className="flex items-center space-x-2">
-                    <span>❌</span>
-                    <span className="text-sm font-medium text-red-200">Mood Board Hatası</span>
+                    {/* Room Info Cards Grid */}
+                    <div className="grid grid-cols-1 gap-2">
+                      <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/40 backdrop-blur-sm rounded-xl p-2 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 group">
+                        <div className="flex items-center space-x-3">
+                          <div className="bg-purple-500/20 p-2 rounded-lg group-hover:bg-purple-500/30 transition-colors">
+                            <span className="text-lg">🏛️</span>
+                          </div>
+                          <div>
+                            <p className="text-purple-300 text-sm font-medium">Oda Tipi</p>
+                            <p className="text-white font-semibold">{result.room_type}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-pink-900/40 to-pink-800/40 backdrop-blur-sm rounded-xl p-2 border border-pink-500/20 hover:border-pink-500/40 transition-all duration-300 group">
+                        <div className="flex items-center space-x-3">
+                          <div className="bg-pink-500/20 p-2 rounded-lg group-hover:bg-pink-500/30 transition-colors">
+                            <span className="text-lg">🎭</span>
+                          </div>
+                          <div>
+                            <p className="text-pink-300 text-sm font-medium">Tasarım Stili</p>
+                            <p className="text-white font-semibold">{result.design_style}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {(result.width || result.length || result.height) && (
+                        <div className="bg-gradient-to-br from-cyan-900/40 to-cyan-800/40 backdrop-blur-sm rounded-xl p-2 border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 group">
+                          <div className="flex items-center space-x-3">
+                            <div className="bg-cyan-500/20 p-2 rounded-lg group-hover:bg-cyan-500/30 transition-colors">
+                              <span className="text-lg">📐</span>
+                            </div>
+                            <div>
+                              <p className="text-cyan-300 text-sm font-medium">Boyutlar</p>
+                              <p className="text-white font-semibold">
+                                {[result.width, result.length, result.height].filter(Boolean).join(' × ')} m
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Hashtags Card */}
+                    {result.hashtags && (
+                      <div className="bg-gradient-to-br from-indigo-900/40 to-indigo-800/40 backdrop-blur-sm rounded-xl p-2 border border-indigo-500/20 hover:border-indigo-500/40 transition-all duration-300">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <div className="bg-indigo-500/20 p-2 rounded-lg">
+                            <span className="text-lg">#️⃣</span>
+                          </div>
+                          <h5 className="text-indigo-300 text-sm font-medium">Popüler Etiketler</h5>
+                        </div>
+                        <HashtagDisplay 
+                          hashtags={result.hashtags} 
+                          previewLimit={6}
+                          showAll={false}
+                          copyEnabled={true}
+                        />
+                      </div>
+                    )}
+
+                    {/* Blog Paylaşımı */}
+                    {result.design_id && (
+                      <div className="bg-gradient-to-br from-yellow-900/40 to-orange-900/40 backdrop-blur-sm rounded-xl p-2 border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300">
+                        <ShareToBlog
+                          designData={{
+                            designId: result.design_id,
+                            roomType: result.room_type,
+                            designStyle: result.design_style,
+                            width: result.width,
+                            length: result.length,
+                            height: result.height,
+                            notes: result.notes,
+                            designTitle: result.design_title,
+                            designDescription: result.design_description,
+                            hashtags: result.hashtags,
+                            imageUrl: moodBoard ? `data:image/png;base64,${moodBoard.image_data.base64}` : null
+                          }}
+                          designId={result.design_id}
+                          variant="card"
+                          onPublishSuccess={(publishedPost) => {
+                            console.log('Design published to blog:', publishedPost);
+                          }}
+                          onPublishError={(error) => {
+                            console.error('Failed to publish to blog:', error);
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
-                  <p className="text-xs text-red-100 mt-1">
-                    {progress.error || 'Mood board oluşturulurken bir hata oluştu.'}
-                  </p>
-                  <button 
-                    onClick={() => window.location.reload()}
-                    className="text-xs bg-red-600 hover:bg-red-700 px-2 py-1 rounded mt-2 transition-colors"
-                  >
-                    Yeniden Dene
-                  </button>
-                </div>
-              )}
 
-              {/* Mood Board Placeholder */}
-              {!moodBoard && !isMoodBoardLoading && !progress && (
-                <div className="text-center text-gray-500 py-4">
-                  <div className="text-2xl mb-2">🎨</div>
-                  <p className="text-xs">
-                    Tasarım önerisi gönderildikten sonra<br />
-                    mood board otomatik oluşturulacak
-                  </p>
                 </div>
-              )}
-            </div>
-
-            {/* WebSocket Connection Status */}
-            {result.message && result.message.includes('connection:') && (
-              <div className="bg-blue-900 border border-blue-600 p-2 rounded">
-                <div className="flex items-center space-x-2">
-                  <span>🔗</span>
-                  <span className="text-xs text-blue-200">
-                    WebSocket bağlantısı kuruldu - Mood board oluşturuluyor...
-                  </span>
                 </div>
               </div>
             )}
 
-            {/* Blog Paylaşımı */}
-            {result.design_id && (
-              <div className="pt-4 border-t border-gray-600">
-                <ShareToBlog
-                  designData={{
-                    designId: result.design_id,
-                    roomType: result.room_type,
-                    designStyle: result.design_style,
-                    width: result.width,
-                    length: result.length,
-                    height: result.height,
-                    notes: result.notes,
-                    designTitle: result.design_title,
-                    designDescription: result.design_description,
-                    hashtags: result.hashtags,
-                    imageUrl: moodBoard ? `data:image/png;base64,${moodBoard.image_data.base64}` : null
-                  }}
-                  designId={result.design_id}
-                  variant="card"
-                  onPublishSuccess={(publishedPost) => {
-                    // Toast notification could be added here
-                    console.log('Design published to blog:', publishedPost);
-                  }}
-                  onPublishError={(error) => {
-                    // Error handling could be added here
-                    console.error('Failed to publish to blog:', error);
-                  }}
+            {/* Mood Board Tab */}
+            {activeTab === 'moodboard' && (
+              <div className="animate-fadeIn">
+                <MoodBoardSection 
+                  moodBoard={moodBoard} 
+                  progress={progress} 
+                  isMoodBoardLoading={isMoodBoardLoading}
+                  showMoodBoard={showMoodBoard}
+                  setShowMoodBoard={setShowMoodBoard}
+                  progressMessages={progressMessages}
                 />
               </div>
             )}
+
+            {/* Products Tab */}
+            {activeTab === 'products' && (
+              <div className="animate-fadeIn">
+                <ProductSuggestionSection result={result} />
+              </div>
+            )}
+
           </div>
         </div>
       ) : (
-        <div className="text-center text-gray-400 py-8">
-          <p className="text-sm">Henüz bir tasarım oluşturulmadı.</p>
-          <p className="text-xs mt-2">👈 Sol taraftan bilgileri doldurun</p>
+        <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl p-12 border border-white/10 text-center">
+          <div className="space-y-4">
+            <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
+              <span className="text-4xl">🎨</span>
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-gray-300 mb-2">Henüz Tasarım Oluşturulmadı</h3>
+              <p className="text-gray-500 text-sm">
+                Sol taraftaki formu doldurarak yapay zeka destekli<br />
+                tasarım önerilerinizi alabilirsiniz
+              </p>
+            </div>
+            <div className="flex items-center justify-center space-x-2 text-gray-600 text-xs">
+              <span>👈</span>
+              <span>Formları doldurun ve önerilerinizi görün</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Modern Mood Board Section Component
+ */
+const MoodBoardSection = ({ 
+  moodBoard, 
+  progress, 
+  isMoodBoardLoading, 
+  showMoodBoard, 
+  setShowMoodBoard, 
+  progressMessages,
+  compact = false
+}) => {
+  return (
+    <div className="bg-gradient-to-br from-pink-900/40 to-purple-900/40 backdrop-blur-sm rounded-xl p-6 border border-pink-500/20">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="bg-gradient-to-br from-pink-500 to-purple-500 p-2 rounded-lg">
+            <span className="text-lg">🎨</span>
+          </div>
+          <h4 className="text-lg font-semibold text-pink-300">Deko'nun Hayali</h4>
+        </div>
+        
+        {moodBoard && (
+          <button 
+            onClick={() => setShowMoodBoard(!showMoodBoard)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              showMoodBoard 
+                ? 'bg-pink-500 hover:bg-pink-600 text-white shadow-lg' 
+                : 'bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/30'
+            }`}
+          >
+            {showMoodBoard ? 'Gizle' : 'Göster'}
+          </button>
+        )}
+      </div>
+
+      {/* Progress Bar */}
+      {(isMoodBoardLoading || progress) && !moodBoard && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-pink-300 text-sm font-medium">
+              {progress ? progressMessages[progress.stage] || progress.message : "Deko'nun hayali hazırlanıyor..."}
+            </span>
+            <span className="text-pink-300 text-sm font-bold">
+              {progress ? `${progress.progress_percentage}%` : '0%'}
+            </span>
+          </div>
+          
+          <div className="relative">
+            <div className="w-full bg-gray-700/50 rounded-full h-3 overflow-hidden">
+              <div 
+                className="bg-gradient-to-r from-pink-500 via-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500 ease-out bg-size-200 animate-gradient-x"
+                style={{ width: `${progress ? progress.progress_percentage : 0}%` }}
+              ></div>
+            </div>
+          </div>
+          
+          <div className="bg-pink-950/30 rounded-lg p-4 border border-pink-500/10">
+            <p className="text-pink-200 text-sm italic text-center">
+              ✨ AI tasarımınız için özel hayal dünyası oluşturuyor...
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Mood Board Image */}
+      {moodBoard && showMoodBoard && (
+        <div className="space-y-6 animate-fadeIn">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-xl filter blur-lg opacity-50 group-hover:opacity-70 transition-opacity"></div>
+            <img 
+              src={`data:image/png;base64,${moodBoard.image_data.base64}`}
+              alt="Design Mood Board"
+              className="relative w-full rounded-xl shadow-2xl border border-white/10 hover:border-white/20 transition-all duration-300"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'block';
+              }}
+            />
+            <div className="hidden bg-red-900/80 backdrop-blur-sm border border-red-500/30 p-6 rounded-xl text-center">
+              <span className="text-red-200">❌ Deko'nun hayali yüklenemedi</span>
+            </div>
+          </div>
+          
+          {/* Mood Board Info Grid - Only show if not compact */}
+          {!compact && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-pink-950/30 backdrop-blur-sm rounded-lg p-4 border border-pink-500/20">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-pink-400">📅</span>
+                    <span className="text-pink-300 text-sm font-medium">Oluşturulma</span>
+                  </div>
+                  <p className="text-white font-semibold">
+                    {new Date(moodBoard.created_at).toLocaleString('tr-TR')}
+                  </p>
+                </div>
+                
+                <div className="bg-purple-950/30 backdrop-blur-sm rounded-lg p-4 border border-purple-500/20">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-purple-400">🖼️</span>
+                    <span className="text-purple-300 text-sm font-medium">Format</span>
+                  </div>
+                  <p className="text-white font-semibold">{moodBoard.image_data.format}</p>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Error State */}
+      {progress && progress.type === 'mood_board_error' && (
+        <div className="bg-red-900/40 backdrop-blur-sm border border-red-500/30 p-6 rounded-xl">
+          <div className="flex items-center space-x-3 mb-3">
+            <div className="bg-red-500/20 p-2 rounded-lg">
+              <span className="text-lg">❌</span>
+            </div>
+            <span className="text-lg font-semibold text-red-200">Deko'nun Hayali Hatası</span>
+          </div>
+          <p className="text-red-100 mb-4">
+            {progress.error || "Deko'nun hayali oluşturulurken bir hata oluştu."}
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg"
+          >
+            🔄 Yeniden Dene
+          </button>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!moodBoard && !isMoodBoardLoading && !progress && (
+        <div className="text-center py-12">
+          <div className="bg-pink-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl">🎨</span>
+          </div>
+          <h5 className="text-pink-300 font-semibold mb-2">Deko'nun Hayali Bekleniyor</h5>
+          <p className="text-gray-400 text-sm">
+            Tasarım önerisi gönderildikten sonra<br />
+            Deko'nun hayali otomatik oluşturulacak
+          </p>
         </div>
       )}
     </div>

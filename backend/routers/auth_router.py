@@ -18,7 +18,7 @@ from models.auth_schemas import (
     UserProfileRequest, UserProfileResponse,
     ErrorResponse
 )
-from services.auth_service import AuthService
+from services.auth.auth_service import AuthService
 
 # Router setup
 router = APIRouter(prefix="/auth", tags=["Authentication"])

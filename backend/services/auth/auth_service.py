@@ -7,12 +7,17 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from fastapi import HTTPException, status
 from config.settings import settings
+from ..base_service import BaseService
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-class AuthService:
+class AuthService(BaseService):
     """Service for handling authentication operations."""
+    
+    def __init__(self):
+        super().__init__()
+        self.log_operation("initialized")
     
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:

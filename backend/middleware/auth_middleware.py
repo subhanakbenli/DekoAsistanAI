@@ -10,7 +10,7 @@ from sqlalchemy import select
 
 from config.database import get_async_session
 from models.user_models import User
-from services.auth_service import AuthService
+from services.auth.auth_service import AuthService
 
 security = HTTPBearer(auto_error=False)  # auto_error=False allows None
 

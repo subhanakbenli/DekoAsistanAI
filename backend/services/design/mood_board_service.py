@@ -2,10 +2,12 @@ import google.generativeai as genai
 from google.cloud import aiplatform
 from config.settings import Settings
 from config import logger
+from config.prompts import GeminiPrompts, PromptUtils
 from config.database import get_async_session
 from models.design_models_db import MoodBoard, Design
-from services.websocket_manager import websocket_manager
-from services.mood_board_log_service import mood_board_log_service
+from services.communication.websocket_manager import websocket_manager
+from services.ai.notes_parser import NotesParser
+from services.design.mood_board_log_service import mood_board_log_service
 from typing import Dict, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
@@ -14,6 +16,7 @@ import base64
 import asyncio
 import uuid
 import os
+import re
 from datetime import datetime
 
 class MoodBoardService:
@@ -37,6 +40,9 @@ class MoodBoardService:
         self.gemini_model = genai.GenerativeModel(
             model_name=self.settings.GENERATIVE_MODEL_NAME
         )
+        
+        # Initialize NotesParser for notes parsing
+        self.notes_parser = NotesParser()
         
         # Ensure mood_boards directory exists
         self.mood_boards_dir = os.path.join("data", "mood_boards")
@@ -63,7 +69,7 @@ class MoodBoardService:
             connection_id: WebSocket connection ID for progress updates
             room_type: Type of room
             design_style: Design style
-            notes: User notes
+            notes: User notes (includes room dimensions, color palette, product categories)
             design_title: Generated design title from Gemini
             design_description: Generated design description from Gemini
             products: List of suggested products to include in the room visualization
@@ -85,9 +91,12 @@ class MoodBoardService:
                 "mood_board_id": mood_board_id
             })
             
+            # Parse notes to extract structured information
+            parsed_info = self.notes_parser.parse_notes(notes)
+            
             # Create enhanced prompt for Imagen
             enhanced_prompt = self._create_imagen_prompt(
-                room_type, design_style, notes, design_title, design_description, products
+                room_type, design_style, notes, design_title, design_description, products, parsed_info
             )
             
             # Stage 2: Generating image with Imagen 4
@@ -240,56 +249,32 @@ class MoodBoardService:
         notes: str,
         design_title: str,
         design_description: str,
-        products: list = None
+        products: list = None,
+        parsed_info: Dict[str, Any] = None
     ) -> str:
         """
         Create optimized prompt for Imagen 4 using Gemini for room visualization.
+        Now uses centralized prompt management.
         """
         
-        # Ürün listesini formatla
-        products_text = ""
-        if products and len(products) > 0:
-            products_by_category = {}
-            for product in products:
-                category = product.get('category', 'Genel')
-                if category not in products_by_category:
-                    products_by_category[category] = []
-                products_by_category[category].append(product['name'])
-            
-            products_text = "Kullanılacak Ürünler:\n"
-            for category, product_names in products_by_category.items():
-                products_text += f"- {category}: {', '.join(product_names)}\n"
+        # Format products using centralized utility
+        products_text = PromptUtils.format_products_for_imagen(products)
         
-        prompt_enhancement_request = f"""
-Sen bir AI görsel üretim uzmanısın. Aşağıdaki iç mekan tasarım bilgilerini kullanarak Imagen 4 modeli için optimize edilmiş bir prompt oluştur.
-
-**Tasarım Bilgileri:**
-- Oda Tipi: {room_type}
-- Tasarım Stili: {design_style}
-- Kullanıcı Notları: {notes}
-- Tasarım Başlığı: {design_title}
-- Tasarım Açıklaması: {design_description}
-
-{products_text}
-
-**Görevin:**
-Bu bilgileri kullanarak Imagen 4 için optimize edilmiş bir oda görseli prompt'u oluştur. Prompt:
-
-1. **Görsel Stil**: Photo-realistic interior room visualization  
-2. **İçerik**: A complete {design_style.lower()} style {room_type.lower()} interior room
-3. **Ürünler**: Include the suggested products naturally in the room scene
-4. **Detaylar**: Specific colors, materials, furniture pieces, lighting, textures from design description
-5. **Kalite**: High-quality, professional interior photography style, realistic lighting
-6. **Kompozisyon**: Well-furnished room with proper perspective and natural arrangement
-
-**Önemli**: 
-- Mood board DEĞİL, gerçekçi oda görseli oluştur
-- Önerilen ürünleri odada doğal şekilde yerleştir
-- Prompt'u İngilizce olarak yaz ve Imagen 4'ün anlayabileceği şekilde düzenle
-- Maksimum 500 karakter olsun
-
-Sadece prompt'u döndür, açıklama yapma.
-"""
+        # Extract color and dimensions info using centralized utilities
+        color_info = PromptUtils.extract_color_info_for_imagen(parsed_info)
+        dimensions_info = PromptUtils.extract_dimensions_info_for_imagen(parsed_info)
+        
+        # Use centralized prompt template
+        prompt_enhancement_request = GeminiPrompts.get_imagen_prompt_enhancement_request(
+            room_type=room_type,
+            design_style=design_style,
+            notes=notes,
+            design_title=design_title,
+            design_description=design_description,
+            products_text=products_text,
+            dimensions_info=dimensions_info,
+            color_info=color_info
+        )
         
         try:
             response = self.gemini_model.generate_content(prompt_enhancement_request)
@@ -297,14 +282,14 @@ Sadece prompt'u döndür, açıklama yapma.
             
             # Fallback if Gemini response is too long or empty
             if not enhanced_prompt or len(enhanced_prompt) > 500:
-                enhanced_prompt = f"Photo-realistic {design_style.lower()} style {room_type.lower()} interior, complete furnished room, professional photography, natural lighting, modern composition"
+                enhanced_prompt = GeminiPrompts.get_fallback_imagen_prompt(room_type, design_style)
             
             logger.info(f"Enhanced Imagen prompt created for room visualization: {enhanced_prompt[:100]}...")
             return enhanced_prompt
             
         except Exception as e:
             logger.error(f"Error creating enhanced prompt: {str(e)}")
-            return f"Interior {design_style} style {room_type}, realistic room photography, fully furnished space, professional quality"
+            return GeminiPrompts.get_fallback_imagen_prompt(room_type, design_style)
     
     def _save_mood_board_image(self, mood_board_id: str, base64_image: str) -> Optional[str]:
         """
@@ -347,7 +332,7 @@ Sadece prompt'u döndür, açıklama yapma.
             import asyncio
             import os
             
-            logger.info(f"🎨 Generating room visualization with Vertex AI...")
+            logger.info("🎨 Generating room visualization with Vertex AI...")
             
             # Set authentication explicitly
             os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = self.settings.GOOGLE_APPLICATION_CREDENTIALS
