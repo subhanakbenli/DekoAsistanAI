@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { ValidationUtils } from '../utils/ValidationUtils';
 import { ErrorHandler } from '../utils/ErrorHandler';
 
@@ -31,7 +31,7 @@ export const useFormState = () => {
    * Handle form field changes
    * @param {Event} e - Input change event
    */
-  const handleFormChange = (e) => {
+  const handleFormChange = useCallback((e) => {
     const { name, value, type } = e.target;
     
     let processedValue = value;
@@ -52,13 +52,13 @@ export const useFormState = () => {
       ...prev, 
       [name]: processedValue
     }));
-  };
+  }, []);
 
   /**
    * Handle new block form changes
    * @param {Event} e - Input change event  
    */
-  const handleBlockChange = (e) => {
+  const handleBlockChange = useCallback((e) => {
     const { name, value, type } = e.target;
     
     let processedValue = value;
@@ -75,12 +75,12 @@ export const useFormState = () => {
       ...prev, 
       [name]: processedValue
     }));
-  };
+  }, []);
 
   /**
    * Add a new block to extras array
    */
-  const addBlock = () => {
+  const addBlock = useCallback(() => {
     try {
       const roomDimensions = {
         width: parseInt(form.width) || 0,
@@ -117,31 +117,31 @@ export const useFormState = () => {
       });
       return false;
     }
-  };
+  }, [form.width, form.length, newBlock]);
 
   /**
    * Remove block from extras array
    * @param {number} indexToRemove - Index of block to remove
    */
-  const removeBlock = (indexToRemove) => {
+  const removeBlock = useCallback((indexToRemove) => {
     setForm(prev => ({
       ...prev,
       extras: prev.extras.filter((_, index) => index !== indexToRemove)
     }));
-  };
+  }, []);
 
   /**
    * Validate entire form
    * @returns {Object} Validation result {isValid: boolean, errors: string[]}
    */
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     return ValidationUtils.validateRoomForm(form);
-  };
+  }, [form]);
 
   /**
    * Reset form to initial state
    */
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setForm({
       roomType: 'salon',
       designStyle: 'modern',
@@ -155,24 +155,24 @@ export const useFormState = () => {
       doorWindow: null
     });
     setNewBlock({ width: '', length: '', x: '', y: '' });
-  };
+  }, []);
 
   /**
    * Update form with new data (useful for loading saved designs)
    * @param {Object} newFormData - New form data
    */
-  const updateForm = (newFormData) => {
+  const updateForm = useCallback((newFormData) => {
     setForm(prev => ({
       ...prev,
       ...newFormData
     }));
-  };
+  }, []);
 
   /**
    * Get form data for submission
    * @returns {Object} Clean form data
    */
-  const getFormData = () => {
+  const getFormData = useCallback(() => {
     return {
       ...form,
       width: parseInt(form.width) || 0,
@@ -186,16 +186,16 @@ export const useFormState = () => {
         y: parseInt(extra.y) || 0
       }))
     };
-  };
+  }, [form]);
 
   /**
    * Check if form has unsaved changes
    * @returns {boolean} Whether form is dirty
    */
-  const isDirty = () => {
+  const isDirty = useCallback(() => {
     return form.width || form.length || form.height || 
            form.notes.trim() || form.extras.length > 0;
-  };
+  }, [form.width, form.length, form.height, form.notes, form.extras.length]);
 
   return {
     // State

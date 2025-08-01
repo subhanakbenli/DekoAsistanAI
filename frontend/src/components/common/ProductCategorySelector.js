@@ -48,7 +48,7 @@ const ProductCategorySelector = memo(({ roomType = 'salon', onSelectionChange, c
           : { type: 'categories', productIds: selectedProducts, roomType }
       });
     }
-  }, [selectedProducts, useCustomProducts, customProductDescription, isValid, roomType, onSelectionChange]);
+  }, [selectedProducts, useCustomProducts, customProductDescription, isValid, roomType]); // onSelectionChange'i dependency array'den çıkardık
 
   if (!roomInfo) {
     return (
