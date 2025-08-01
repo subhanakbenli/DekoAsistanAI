@@ -82,6 +82,45 @@ class UserFavoriteProduct(Base):
     def __repr__(self):
         return f"<UserFavoriteProduct(user_id={self.user_id}, product_name={self.product_name})>"
 
+class Product(Base):
+    """Products table for Gemini function calling."""
+    __tablename__ = "products"
+    
+    id = Column(String(36), primary_key=True, index=True)  # UUID string
+    
+    # Product information
+    product_name = Column(String(255), nullable=False, index=True)
+    category = Column(String(50), nullable=False, index=True)  # roomCategories.js uyumlu
+    style = Column(String(50), nullable=False, index=True)
+    color = Column(String(100), nullable=False, index=True)
+    
+    # Dimensions
+    width_cm = Column(Integer, nullable=True, index=True)
+    depth_cm = Column(Integer, nullable=True, index=True) 
+    height_cm = Column(Integer, nullable=True, index=True)
+    
+    # Details
+    description = Column(Text, nullable=False)
+    price = Column(Integer, nullable=False, index=True)  # Price in kuruş or cents
+    
+    # Links and media
+    image_path = Column(String(255), nullable=True)
+    product_link = Column(String(500), nullable=True)
+    
+    # Metadata
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Indexes for better search performance
+    __table_args__ = (
+        Index('idx_products_category_style', 'category', 'style'),
+        Index('idx_products_price_range', 'price'),
+        Index('idx_products_dimensions', 'width_cm', 'depth_cm', 'height_cm'),
+    )
+    
+    def __repr__(self):
+        return f"<Product(id={self.id}, name={self.product_name}, category={self.category})>"
+
 class MoodBoard(Base):
     """Mood board generations linked to designs."""
     __tablename__ = "mood_boards"
