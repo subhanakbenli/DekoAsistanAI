@@ -218,6 +218,7 @@ class HashtagService:
     async def save_hashtags_to_db(self, db, design_id: str, english_hashtags: list, turkish_hashtags: list) -> None:
         """
         Save hashtags to database for a design.
+        Uses the new simplified hashtag system where hashtags are stored directly as strings.
         
         Args:
             db: Database session
@@ -226,37 +227,34 @@ class HashtagService:
             turkish_hashtags: List of Turkish hashtags
         """
         try:
-            from sqlalchemy import select
-            from models.design_models_db import Hashtag, DesignHashtag
+            from models.design_models_db import DesignHashtag
             
-            # Save hashtags
+            # Save both English and Turkish hashtags with order_index
+            all_hashtags = []
+            
+            # Add English hashtags
             for i, en_tag in enumerate(english_hashtags):
-                tr_tag = turkish_hashtags[i] if i < len(turkish_hashtags) else en_tag
-                
-                # Check if hashtag exists
-                result = await db.execute(
-                    select(Hashtag).where(Hashtag.english_text == en_tag)
-                )
-                hashtag = result.scalar_one_or_none()
-                
-                if not hashtag:
-                    # Create new hashtag
-                    hashtag = Hashtag(
-                        english_text=en_tag,
-                        turkish_text=tr_tag
-                    )
-                    db.add(hashtag)
-                    await db.flush()  # Get ID
-                
-                # Link to design
+                if en_tag.strip():  # Skip empty hashtags
+                    all_hashtags.append((en_tag, i))
+            
+            # Add Turkish hashtags (with offset to preserve order)
+            for i, tr_tag in enumerate(turkish_hashtags):
+                if tr_tag.strip() and tr_tag not in [h[0] for h in all_hashtags]:  # Skip duplicates
+                    all_hashtags.append((tr_tag, len(english_hashtags) + i))
+            
+            # Save hashtags to database
+            for hashtag_text, order_index in all_hashtags:
                 design_hashtag = DesignHashtag(
                     design_id=design_id,
-                    hashtag_id=hashtag.id
+                    hashtag=hashtag_text,
+                    order_index=order_index
                 )
                 db.add(design_hashtag)
             
             await db.commit()
+            logger.info(f"Saved {len(all_hashtags)} hashtags for design {design_id}")
             
         except Exception as e:
             await db.rollback()
+            logger.error(f"Error saving hashtags for design {design_id}: {str(e)}")
             raise e
