@@ -18,7 +18,6 @@ export const ROOM_TYPES = {
 export const PRODUCT_CATEGORIES = {
   // Oturma ve Dinlenme
   KOLTUK: { id: 'koltuk', name: 'Koltuk Takımı', icon: '🛋️' },
-  KANEPE: { id: 'kanepe', name: 'Kanepe', icon: '🛋️' },
   BERJER: { id: 'berjer', name: 'Berjer', icon: '🪑' },
   
   // Yataklar
@@ -72,7 +71,6 @@ export const roomCategories = {
     description: 'Oturma ve sosyal alan tasarımı',
     suggestedProducts: [
       PRODUCT_CATEGORIES.KOLTUK,
-      PRODUCT_CATEGORIES.KANEPE,
       PRODUCT_CATEGORIES.SEHPA,
       PRODUCT_CATEGORIES.TV_UNITESI,
       PRODUCT_CATEGORIES.HALI,
@@ -90,7 +88,7 @@ export const roomCategories = {
       },
       {
         name: 'Modern Salon',
-        products: ['kanepe', 'sehpa', 'aydinlatma', 'dekoratif_objeler']
+        products: ['koltuk', 'sehpa', 'aydinlatma', 'dekoratif_objeler']
       }
     ]
   },
@@ -272,7 +270,6 @@ export const roomCategories = {
     description: 'Konforlu misafir ağırlama alanı',
     suggestedProducts: [
       PRODUCT_CATEGORIES.YATAK,
-      PRODUCT_CATEGORIES.KANEPE,
       PRODUCT_CATEGORIES.DOLAP,
       PRODUCT_CATEGORIES.KOMODIN,
       PRODUCT_CATEGORIES.AYDINLATMA,
@@ -290,7 +287,7 @@ export const roomCategories = {
       },
       {
         name: 'Çok Amaçlı Oda',
-        products: ['kanepe', 'sehpa', 'dolap', 'aydinlatma']
+        products: ['koltuk', 'sehpa', 'dolap', 'aydinlatma']
       }
     ]
   }
