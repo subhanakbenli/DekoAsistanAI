@@ -5,8 +5,63 @@ import { BaseService } from './BaseService';
  * Manages design publishing to blog functionality
  */
 class BlogService extends BaseService {
-  constructor() {
-    super('/blog');
+  /**
+   * Get published blog posts with filtering and pagination
+   * @param {Object} options - Query options
+   * @returns {Promise<Array>} List of published blog posts
+   */
+  getPublishedPosts = async (options = {}) => {
+    try {
+      const response = await this.api.get('/blog/designs', { params: options });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching published posts:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get blog filters (room types, design styles, sort options)
+   * @returns {Promise<Object>} Available filter options
+   */
+  getBlogFilters = async () => {
+    try {
+      const response = await this.api.get('/blog/filters');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching blog filters:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Toggle like for a blog post
+   * @param {number} blogPostId - Blog post ID
+   * @returns {Promise<Object>} Like toggle result
+   */
+  toggleLike = async (blogPostId) => {
+    try {
+      const response = await this.api.post(`/blog/designs/${blogPostId}/like`);
+      return response.data;
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Record a view for a blog post
+   * @param {number} blogPostId - Blog post ID
+   * @returns {Promise<Object>} View record result
+   */
+  recordView = async (blogPostId) => {
+    try {
+      const response = await this.api.post(`/blog/designs/${blogPostId}/view`);
+      return response.data;
+    } catch (error) {
+      console.error('Error recording view:', error);
+      throw error;
+    }
   }
 
   /**
@@ -15,18 +70,15 @@ class BlogService extends BaseService {
    * @param {Object} publishData - Additional publish data
    * @returns {Promise<Object>} Published blog post data
    */
-  async publishDesignToBlog(designId, publishData = {}) {
+  publishDesignToBlog = async (designId, publishData = {}) => {
     try {
-      const response = await this.apiCall({
-        method: 'POST',
-        endpoint: `/favorites/designs/${designId}/publish`,
-        data: {
-          ...publishData,
-          publishedAt: new Date().toISOString()
-        }
+      const response = await this.api.post(`/blog/designs/${designId}/publish`, {
+        ...publishData,
+        allow_comments: publishData.allow_comments !== false,
+        is_featured: publishData.is_featured || false
       });
-
-      return response;
+      
+      return response.data;
     } catch (error) {
       console.error('Error publishing design to blog:', error);
       throw error;
@@ -34,38 +86,14 @@ class BlogService extends BaseService {
   }
 
   /**
-   * Get published blog posts
-   * @param {Object} options - Query options
-   * @returns {Promise<Array>} List of published blog posts
-   */
-  async getPublishedPosts(options = {}) {
-    try {
-      const response = await this.apiCall({
-        method: 'GET',
-        endpoint: '/published',
-        params: options
-      });
-
-      return response;
-    } catch (error) {
-      console.error('Error fetching published posts:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get blog post by ID
-   * @param {string} postId - Blog post ID
+   * Get a single blog post by ID
+   * @param {string} postId - Post ID
    * @returns {Promise<Object>} Blog post data
    */
-  async getBlogPost(postId) {
+  getBlogPost = async (postId) => {
     try {
-      const response = await this.apiCall({
-        method: 'GET',
-        endpoint: `/posts/${postId}`
-      });
-
-      return response;
+      const response = await this.api.get(`/blog/posts/${postId}`);
+      return response.data;
     } catch (error) {
       console.error('Error fetching blog post:', error);
       throw error;
@@ -73,76 +101,13 @@ class BlogService extends BaseService {
   }
 
   /**
-   * Update blog post
-   * @param {string} postId - Blog post ID
-   * @param {Object} updateData - Data to update
-   * @returns {Promise<Object>} Updated blog post
-   */
-  async updateBlogPost(postId, updateData) {
-    try {
-      const response = await this.apiCall({
-        method: 'PUT',
-        endpoint: `/posts/${postId}`,
-        data: updateData
-      });
-
-      return response;
-    } catch (error) {
-      console.error('Error updating blog post:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Delete blog post
-   * @param {string} postId - Blog post ID
-   * @returns {Promise<Object>} Deletion confirmation
-   */
-  async deleteBlogPost(postId) {
-    try {
-      const response = await this.apiCall({
-        method: 'DELETE',
-        endpoint: `/posts/${postId}`
-      });
-
-      return response;
-    } catch (error) {
-      console.error('Error deleting blog post:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Check if design is already published
-   * @param {string} designId - Design ID to check
-   * @returns {Promise<boolean>} Whether design is published
-   */
-  async isDesignPublished(designId) {
-    try {
-      const response = await this.apiCall({
-        method: 'GET',
-        endpoint: `/designs/${designId}/published-status`
-      });
-
-      return response.isPublished || false;
-    } catch (error) {
-      console.error('Error checking design published status:', error);
-      return false;
-    }
-  }
-
-  /**
    * Get blog statistics
    * @returns {Promise<Object>} Blog statistics
    */
-  async getBlogStats() {
+  getBlogStats = async () => {
     try {
-      const response = await this.apiCall({
-        method: 'GET',
-        endpoint: '/stats'
-      });
-
-      return response;
+      const response = await this.api.get('/blog/stats');
+      return response.data;
     } catch (error) {
       console.error('Error fetching blog stats:', error);
       throw error;
@@ -151,5 +116,5 @@ class BlogService extends BaseService {
 }
 
 // Export singleton instance
-export const blogService = new BlogService();
+const blogService = new BlogService();
 export default blogService;

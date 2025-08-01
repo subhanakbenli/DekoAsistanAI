@@ -42,6 +42,16 @@ const Navbar = () => {
                 Ana Sayfa
               </Link>
               
+              <Link
+                to="/blog"
+                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-1"
+              >
+                {/* <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg> */}
+                <span>Blog</span>
+              </Link>
+              
               {isAuthenticated ? (
                 <>
                   <Link
@@ -54,18 +64,18 @@ const Navbar = () => {
                     to="/favorites"
                     className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-1"
                   >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    {/* <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                    </svg>
+                    </svg> */}
                     <span>Favorilerim</span>
                   </Link>
                   
                   {/* User Menu */}
                   <div className="relative group">
                     <button className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-1">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      {/* <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                      </svg>
+                      </svg> */}
                       <span>{user?.full_name || user?.email}</span>
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -135,6 +145,14 @@ const Navbar = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Ana Sayfa
+              </Link>
+              
+              <Link
+                to="/blog"
+                className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                📖 Blog
               </Link>
               
               {isAuthenticated ? (

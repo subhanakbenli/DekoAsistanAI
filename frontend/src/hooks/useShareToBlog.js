@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { blogService } from '../services/blogService';
+import blogService from '../services/blogService';
 import { ErrorHandler } from '../utils/ErrorHandler';
 
 /**

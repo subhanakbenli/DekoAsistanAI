@@ -160,7 +160,7 @@ async def get_my_favorites(
         .join(Design, UserFavoriteDesign.design_id == Design.id)
         .outerjoin(MoodBoard, Design.id == MoodBoard.design_id)
         .options(
-            selectinload(Design.hashtags).selectinload(DesignHashtag.hashtag)
+            selectinload(Design.hashtags)
         )
         .where(UserFavoriteDesign.user_id == current_user.id)
         .order_by(UserFavoriteDesign.created_at.desc())
@@ -210,7 +210,7 @@ async def get_my_favorites(
                 "products": fav.Design.products,
                 "hashtags": (
                     gemini_service.hashtag_service.translate_hashtags([
-                        dh.hashtag.name for dh in sorted(fav.Design.hashtags, key=lambda x: x.order_index)
+                        dh.hashtag for dh in sorted(fav.Design.hashtags, key=lambda x: x.order_index)
                     ]) if fav.Design.hashtags else {"en": [], "tr": [], "display": []}
                 ),
                 "image": {
@@ -252,7 +252,7 @@ async def get_favorite_designs(
     result = await db.execute(
         select(UserFavoriteDesign, Design)
         .join(Design, UserFavoriteDesign.design_id == Design.id)
-        .options(selectinload(Design.hashtags).selectinload(DesignHashtag.hashtag))
+        .options(selectinload(Design.hashtags))
         .where(UserFavoriteDesign.user_id == current_user.id)
     )
     

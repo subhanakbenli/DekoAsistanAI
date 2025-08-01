@@ -16,9 +16,11 @@ export const API_CONFIG = {
 };
 
 // Modern export
-export default {
+const apiExports = {
   ...API_CONFIG,
   // Expose new constants for gradual migration
   CONSTANTS: ApiConstants,
   ENVIRONMENT: EnvironmentConfig
 };
+
+export default apiExports;

@@ -189,6 +189,35 @@ export class ErrorHandler {
       }
     }
   }
+
+  /**
+   * Extract error message from various error formats
+   * @param {Error|Object|string} error - Error object or message
+   * @returns {string} Extracted error message
+   */
+  static extractErrorMessage(error) {
+    if (typeof error === 'string') {
+      return error;
+    }
+
+    if (error?.response?.data?.message) {
+      return error.response.data.message;
+    }
+
+    if (error?.response?.data?.error) {
+      return error.response.data.error;
+    }
+
+    if (error?.message) {
+      return error.message;
+    }
+
+    if (error?.data?.message) {
+      return error.data.message;
+    }
+
+    return 'Bilinmeyen bir hata oluştu';
+  }
 }
 
 export default ErrorHandler;

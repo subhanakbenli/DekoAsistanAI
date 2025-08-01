@@ -5,3 +5,4 @@ export { default as RegisterPage } from './RegisterPage';
 export { default as DesignDetailPage } from './DesignDetailPage';
 export { default as FavoritesPage } from './FavoritesPage';
 export { default as ProfilePage } from './ProfilePage';
+export { default as BlogPage } from './BlogPage';

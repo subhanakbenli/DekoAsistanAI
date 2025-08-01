@@ -700,7 +700,7 @@ async def get_design_details(
         result = await db.execute(
             select(Design, MoodBoard)
             .outerjoin(MoodBoard, Design.id == MoodBoard.design_id)
-            .options(selectinload(Design.hashtags).selectinload(DesignHashtag.hashtag))
+            .options(selectinload(Design.hashtags))
             .where(Design.id == design_id)
         )
         design_with_mood_board = result.first()
@@ -719,7 +719,7 @@ async def get_design_details(
         if design.hashtags:
             # Sort hashtags by order_index to maintain general-to-specific ordering
             sorted_hashtags = sorted(design.hashtags, key=lambda x: x.order_index)
-            english_hashtags = [dh.hashtag.name for dh in sorted_hashtags]
+            english_hashtags = [dh.hashtag for dh in sorted_hashtags]
             
             # Use hashtag service to translate
             hashtag_translations = services.gemini_service.hashtag_service.translate_hashtags(english_hashtags)

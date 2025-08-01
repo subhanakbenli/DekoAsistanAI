@@ -1,4 +1,6 @@
-import React from 'react';
+/**
+ * Mock product data for development and testing purposes
+ */
 
 /**
  * Test data for development and testing

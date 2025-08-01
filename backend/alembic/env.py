@@ -8,7 +8,10 @@ import asyncio
 # Import your models here
 from config.database import Base
 from models.user_models import User, UserProfile
-from models.design_models_db import Design, UserFavoriteDesign, UserFavoriteProduct, MoodBoard
+from models.design_models_db import (
+    Design, UserFavoriteDesign, UserFavoriteProduct, MoodBoard,
+    DesignHashtag, Hashtag, BlogPost, BlogPostLike, BlogPostView
+)
 
 # this is the Alembic Config object
 config = context.config

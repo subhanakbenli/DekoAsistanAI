@@ -2,8 +2,9 @@
 Authentication router for user management endpoints.
 """
 from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Form, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, OAuth2PasswordRequestForm
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -55,6 +56,30 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials"
         )
+
+async def get_current_user_optional(
+    authorization: Optional[str] = Header(None),
+    db: AsyncSession = Depends(get_async_session)
+) -> Optional[User]:
+    """Get current authenticated user from JWT token, return None if not authenticated."""
+    try:
+        if not authorization or not authorization.startswith("Bearer "):
+            return None
+            
+        token = authorization.split(" ")[1]
+        
+        # Verify token and extract payload
+        payload = AuthService.verify_token(token)
+        user_id: int = payload.get("user_id")
+        if user_id is None:
+            return None
+        
+        # Get user from database
+        result = await db.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+        return user
+    except Exception:
+        return None
 
 @router.post("/register", response_model=UserRegisterResponse)
 async def register_user(

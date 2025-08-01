@@ -6,7 +6,7 @@ import os
 from config import settings, setup_logging, logger
 from models import DesignRequestModel, DesignResponseModel
 from exceptions import setup_exception_handlers
-from routers import design_router, health_router, websocket_router, auth_router, favorites_router
+from routers import design_router, health_router, websocket_router, auth_router, favorites_router, blog_router
 
 # Initialize logging
 setup_logging()
@@ -51,6 +51,7 @@ else:
 app.include_router(health_router, tags=["Health"])
 app.include_router(auth_router, prefix="/api", tags=["Authentication"])
 app.include_router(favorites_router, prefix="/api", tags=["Favorites"])
+app.include_router(blog_router, prefix="/api", tags=["Blog"])
 app.include_router(design_router, prefix="/api", tags=["Design"])
 app.include_router(websocket_router, prefix="/api", tags=["WebSocket"])
 

@@ -18,9 +18,14 @@ class Design(Base):
     design_style = Column(String(100), nullable=False)
     notes = Column(Text, nullable=True)
     
+    # Room dimensions (existing fields)
+    width = Column(Integer, nullable=True)
+    length = Column(Integer, nullable=True)
+    height = Column(Integer, nullable=True)
+    
     # AI response data  
-    title = Column(String(255), nullable=False)
-    description = Column(Text, nullable=False)
+    title = Column(String(255), nullable=False)  # Back to original title
+    description = Column(Text, nullable=False)   # Back to original description
     product_suggestion = Column(Text, nullable=True)  # Text field for product suggestions
     products = Column(JSON, nullable=True)  # JSON array of products
     gemini_response = Column(JSON, nullable=True)  # Full Gemini API response
@@ -125,7 +130,7 @@ class DesignHashtag(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     design_id = Column(String(36), ForeignKey("designs.id", ondelete="CASCADE"), nullable=False)
-    hashtag_id = Column(Integer, ForeignKey("hashtags.id", ondelete="CASCADE"), nullable=False)
+    hashtag = Column(String(100), nullable=False, index=True)  # Direct hashtag string
     
     # Order of hashtag in the design (for general-to-specific ordering)
     order_index = Column(Integer, nullable=False, default=0)
@@ -135,13 +140,109 @@ class DesignHashtag(Base):
     
     # Relationships
     design = relationship("Design", back_populates="hashtags")
-    hashtag = relationship("Hashtag")
     
     # Composite index for performance
     __table_args__ = (
-        Index('idx_design_hashtag', 'design_id', 'hashtag_id'),
+        Index('idx_design_hashtag', 'design_id', 'hashtag'),
         Index('idx_design_order', 'design_id', 'order_index'),
     )
     
     def __repr__(self):
-        return f"<DesignHashtag(design_id={self.design_id}, hashtag_id={self.hashtag_id}, order={self.order_index})>"
+        return f"<DesignHashtag(design_id={self.design_id}, hashtag={self.hashtag}, order={self.order_index})>"
+
+
+class BlogPost(Base):
+    """Blog posts created from published designs."""
+    __tablename__ = "blog_posts"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    design_id = Column(String(36), ForeignKey("designs.id", ondelete="CASCADE"), nullable=False, unique=True)
+    
+    # Blog post content
+    title = Column(String(255), nullable=False, index=True)
+    content = Column(Text, nullable=False)
+    tags = Column(JSON, nullable=True)  # Array of tags
+    category = Column(String(100), nullable=True, index=True)
+    
+    # Publishing settings
+    is_published = Column(Boolean, default=True, nullable=False, index=True)
+    allow_comments = Column(Boolean, default=True, nullable=False)
+    featured_image_url = Column(String(500), nullable=True)
+    
+    # Additional metadata
+    blog_metadata = Column(JSON, nullable=True)  # Additional data (room dimensions, etc.)
+    
+    # SEO and social sharing
+    meta_description = Column(String(500), nullable=True)
+    social_image_url = Column(String(500), nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    published_at = Column(DateTime(timezone=True), nullable=True)
+    
+    # Relationships
+    design = relationship("Design")
+    likes = relationship("BlogPostLike", back_populates="blog_post", cascade="all, delete-orphan")
+    views = relationship("BlogPostView", back_populates="blog_post", cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f"<BlogPost(id={self.id}, title={self.title}, design_id={self.design_id})>"
+
+
+class BlogPostLike(Base):
+    """User likes for blog posts."""
+    __tablename__ = "blog_post_likes"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    blog_post_id = Column(Integer, ForeignKey("blog_posts.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    blog_post = relationship("BlogPost", back_populates="likes")
+    user = relationship("User")
+    
+    # Composite unique constraint to prevent duplicate likes
+    __table_args__ = (
+        Index('idx_unique_blog_like', 'blog_post_id', 'user_id', unique=True),
+        Index('idx_blog_post_likes', 'blog_post_id'),
+        Index('idx_user_likes', 'user_id'),
+    )
+    
+    def __repr__(self):
+        return f"<BlogPostLike(blog_post_id={self.blog_post_id}, user_id={self.user_id})>"
+
+
+class BlogPostView(Base):
+    """View tracking for blog posts (for analytics)."""
+    __tablename__ = "blog_post_views"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    blog_post_id = Column(Integer, ForeignKey("blog_posts.id", ondelete="CASCADE"), nullable=False)
+    
+    # Optional user tracking (for registered users)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    
+    # Anonymous tracking (for future IP-based deduplication)
+    ip_address = Column(String(45), nullable=True)  # Support IPv6
+    user_agent = Column(String(500), nullable=True)
+    
+    # Timestamps
+    viewed_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    blog_post = relationship("BlogPost", back_populates="views")
+    user = relationship("User")
+    
+    # Indexes for performance
+    __table_args__ = (
+        Index('idx_blog_post_views', 'blog_post_id'),
+        Index('idx_user_views', 'user_id'),
+        Index('idx_view_time', 'viewed_at'),
+    )
+    
+    def __repr__(self):
+        return f"<BlogPostView(blog_post_id={self.blog_post_id}, user_id={self.user_id})>"
