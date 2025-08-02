@@ -70,6 +70,7 @@ async def design_request_endpoint(
     length: int = Form(None),  # Oda uzunluğu (cm)  
     height: int = Form(None),  # Oda yüksekliği (cm)
     product_categories: str = Form(""),  # Seçilen ürün kategorileri (JSON string)
+    price: float = Form(None),  # Fiyat limiti (TL)
     db: AsyncSession = Depends(get_db),
     auth_data: dict = Depends(OptionalAuth())
 ):
@@ -111,6 +112,7 @@ async def design_request_endpoint(
             room_type=room_type,
             design_style=design_style,
             notes=notes,
+            price=price,
             db_session=db
         )
         
@@ -179,6 +181,7 @@ async def design_request_endpoint(
                 height=height,  # Doğrudan frontend'den gelen değer
                 color_info=color_info,  # Renk paleti bilgisi
                 product_categories=parsed_product_categories,  # Seçilen ürün kategorileri
+                price=price,  # Fiyat limiti (TL)
                 product_suggestion=design_result["product_suggestion"],
                 products=design_result.get("products", []),
                 gemini_response=design_result,

@@ -210,7 +210,7 @@ class MoodBoardService:
                     "description": design_description
                 },
                 "image_data": {
-                    "base64": None,  # Remove base64 to avoid huge dict size
+                    "base64": image_data["base64"] if image_data and image_data.get("base64") else None,
                     "format": "PNG",
                     "generated_with": "Imagen 4",
                     "file_path": image_file_path
@@ -1039,14 +1039,20 @@ class MoodBoardService:
         Combines real product visual references with AI-generated descriptions.
         """
         
-        # Base room prompt
+        # Base home room prompt with residential emphasis
+        # Map room type to clear home terminology
+        from config.prompts import PromptUtils
+        home_room_type = PromptUtils.map_room_type_to_home_english(room_type)
+        
         base_prompt = f"""
-Create a photorealistic interior design image of a {room_type} in {design_style} style.
+Create a photorealistic residential home interior design image of a {home_room_type} in {design_style} style.
 
-Design Concept: {design_title}
+IMPORTANT: This is a HOME/RESIDENTIAL interior - family living space, NOT commercial, hotel, or venue.
+
+Home Design Concept: {design_title}
 {design_description}
 
-User Requirements: {notes}
+Family/Homeowner Requirements: {notes}
 """
         
         # Add color and dimension info if available
@@ -1057,28 +1063,29 @@ User Requirements: {notes}
         
         # Add real product references
         if real_product_images:
-            base_prompt += f"\n\nReal Product References (use these as visual inspiration):"
+            base_prompt += "\n\nReal Product References (use these as visual inspiration):"
             for product in real_product_images:
                 base_prompt += f"\n- {product['category']}: {product['name']} (reference: {product['image_url']})"
         
         # Add fake product descriptions for creativity
         if fake_product_descriptions:
-            base_prompt += f"\n\nAdditional Design Elements (creative interpretation):"
+            base_prompt += "\n\nAdditional Design Elements (creative interpretation):"
             for product in fake_product_descriptions:
                 base_prompt += f"\n- {product['category']}: {product['name']} - {product['description']}"
         
         base_prompt += f"""
 
-Image Requirements:
-- Photorealistic, high-quality interior photography style
-- Professional lighting and composition
-- {design_style} aesthetic with modern touches
+Home Interior Image Requirements:
+- Photorealistic residential home interior photography style
+- Professional home lighting and family-friendly composition
+- {design_style} aesthetic suitable for family living
 - Include both referenced real products and creatively interpreted elements
-- Natural lighting, realistic textures and materials
-- Wide-angle view showing the complete room layout
-- 4K quality with sharp details and vibrant colors
+- Natural home lighting, realistic textures and family-safe materials
+- Wide-angle view showing the complete home room layout
+- Warm, lived-in comfort suitable for daily family use
+- 4K quality with sharp details and welcoming home atmosphere
 
-Style: Professional interior photography, architectural visualization, realistic rendering
+Style: Professional residential interior photography, family home visualization, comfortable living space
 """
         
         return base_prompt
