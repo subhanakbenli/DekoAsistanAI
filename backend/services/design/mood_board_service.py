@@ -73,7 +73,9 @@ class MoodBoardService:
         design_id: str = None,
         user_id: int = None,
         color_info: str = "",  # Frontend'den gelen formatlanmış renk bilgisi
-        dimensions_info: str = ""  # Frontend'den gelen formatlanmış boyut bilgisi
+        width: int = None,  # Oda genişliği (cm)
+        length: int = None,  # Oda uzunluğu (cm)
+        height: int = None   # Oda yüksekliği (cm)
     ) -> Dict[str, Any]:
         """
         Generate realistic room visualization with enhanced progress tracking.
@@ -131,6 +133,14 @@ class MoodBoardService:
             # Parse notes only for info not provided by frontend (extra areas, door/windows, etc.)
             # Color and dimensions are now provided separately by frontend
             parsed_info = self.notes_parser.parse_notes(notes) if notes.strip() else {}
+            
+            # Format dimensions info for prompt
+            dimensions_info = ""
+            if width and length:
+                if height:
+                    dimensions_info = f"Oda Boyutları: {width}cm x {length}cm x {height}cm"
+                else:
+                    dimensions_info = f"Oda Boyutları: {width}cm x {length}cm"
             
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "preparing_prompt", 
@@ -817,7 +827,9 @@ class MoodBoardService:
         design_id: str = None,
         user_id: int = None,
         color_info: str = "",
-        dimensions_info: str = ""
+        width: int = None,  # Oda genişliği (cm)
+        length: int = None,  # Oda uzunluğu (cm)
+        height: int = None   # Oda yüksekliği (cm)
     ) -> Dict[str, Any]:
         """
         Generate room visualization using HYBRID system with real product images + fake product descriptions.
@@ -885,6 +897,14 @@ class MoodBoardService:
                 "message": f"Hibrit içerik hazırlandı: {len(real_product_images)} gerçek ürün fotoğrafı + {len(fake_product_descriptions)} AI açıklaması",
                 "mood_board_id": mood_board_id
             })
+            
+            # Format dimensions info for prompt
+            dimensions_info = ""
+            if width and length:
+                if height:
+                    dimensions_info = f"Oda Boyutları: {width}cm x {length}cm x {height}cm"
+                else:
+                    dimensions_info = f"Oda Boyutları: {width}cm x {length}cm"
             
             # Create hybrid prompt combining real product references and AI descriptions
             enhanced_prompt = await self._create_hybrid_imagen_prompt(

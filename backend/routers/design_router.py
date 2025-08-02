@@ -66,7 +66,10 @@ async def design_request_endpoint(
     notes: str = Form(...),
     connection_id: str = Form(None),  # WebSocket connection ID for real-time room visualization
     color_info: str = Form(""),  # Renk paleti bilgisi (frontend'den formatlanmış)
-    dimensions_info: str = Form(""),  # Oda boyutları bilgisi (frontend'den formatlanmış)
+    width: int = Form(None),  # Oda genişliği (cm)
+    length: int = Form(None),  # Oda uzunluğu (cm)  
+    height: int = Form(None),  # Oda yüksekliği (cm)
+    product_categories: str = Form(""),  # Seçilen ürün kategorileri (JSON string)
     db: AsyncSession = Depends(get_db),
     auth_data: dict = Depends(OptionalAuth())
 ):
@@ -146,12 +149,23 @@ async def design_request_endpoint(
                 design_id=design_id,
                 user_id=user_id,
                 color_info=color_info,
-                dimensions_info=dimensions_info
+                width=width,
+                length=length,
+                height=height
             )
         
         # If user is authenticated, save to database
         # Save design to database for all users (guest and authenticated)
         try:
+            # Parse product_categories JSON if provided
+            parsed_product_categories = None
+            if product_categories:
+                try:
+                    import json
+                    parsed_product_categories = json.loads(product_categories)
+                except json.JSONDecodeError:
+                    logger.warning(f"Invalid product_categories JSON: {product_categories}")
+            
             db_design = Design(
                 id=design_id,
                 user_id=user_id,  # Will be None for guests
@@ -160,6 +174,11 @@ async def design_request_endpoint(
                 room_type=room_type,
                 design_style=design_style,
                 notes=notes,
+                width=width,  # Doğrudan frontend'den gelen değer
+                length=length,  # Doğrudan frontend'den gelen değer
+                height=height,  # Doğrudan frontend'den gelen değer
+                color_info=color_info,  # Renk paleti bilgisi
+                product_categories=parsed_product_categories,  # Seçilen ürün kategorileri
                 product_suggestion=design_result["product_suggestion"],
                 products=design_result.get("products", []),
                 gemini_response=design_result,
@@ -402,6 +421,11 @@ async def get_my_designs(
                 "room_type": design.room_type,
                 "design_style": design.design_style,
                 "notes": design.notes,
+                "width": design.width,  # Oda genişliği
+                "length": design.length,  # Oda uzunluğu
+                "height": design.height,  # Oda yüksekliği
+                "color_info": design.color_info,  # Renk paleti bilgisi
+                "product_categories": design.product_categories,  # Seçilen ürün kategorileri
                 "product_suggestion": design.product_suggestion,
                 "products": design.products,
                 "is_favorite": design.is_favorite,
@@ -490,6 +514,11 @@ async def get_my_design_by_id(
             "room_type": design.room_type,
             "design_style": design.design_style,
             "notes": design.notes,
+            "width": design.width,  # Oda genişliği
+            "length": design.length,  # Oda uzunluğu
+            "height": design.height,  # Oda yüksekliği
+            "color_info": design.color_info,  # Renk paleti bilgisi
+            "product_categories": design.product_categories,  # Seçilen ürün kategorileri
             "product_suggestion": design.product_suggestion,
             "products": design.products,
             "is_favorite": design.is_favorite,
@@ -759,6 +788,11 @@ async def get_design_details(
             "room_type": design.room_type,
             "design_style": design.design_style,
             "notes": design.notes,
+            "width": design.width,  # Oda genişliği
+            "length": design.length,  # Oda uzunluğu
+            "height": design.height,  # Oda yüksekliği
+            "color_info": design.color_info,  # Renk paleti bilgisi
+            "product_categories": design.product_categories,  # Seçilen ürün kategorileri
             "product_suggestion": design.product_suggestion,
             "products": design.products or [],
             "hashtags": hashtags_data,  # Add hashtags to response
@@ -766,8 +800,7 @@ async def get_design_details(
                 "has_image": mood_board is not None,
                 "image_url": f"/static/mood_boards/{get_clean_image_filename(mood_board.image_path)}" if mood_board and mood_board.image_path else None,
                 "mood_board_id": mood_board.mood_board_id if mood_board else None,
-                "generation_time": mood_board.generation_time_seconds if mood_board else None,
-                "debug_original_path": mood_board.image_path if mood_board else None  # Debug için
+                "generation_time": mood_board.generation_time_seconds if mood_board else None
             },
             "created_at": design.created_at.isoformat() if design.created_at else None,
             "updated_at": design.updated_at.isoformat() if design.updated_at else None,

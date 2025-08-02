@@ -18,10 +18,14 @@ class Design(Base):
     design_style = Column(String(100), nullable=False)
     notes = Column(Text, nullable=True)
     
-    # Room dimensions (existing fields)
+    # Room dimensions
     width = Column(Integer, nullable=True)
     length = Column(Integer, nullable=True)
     height = Column(Integer, nullable=True)
+    
+    # User preferences - NEW FIELDS
+    color_info = Column(Text, nullable=True)  # Renk paleti bilgisi
+    product_categories = Column(JSON, nullable=True)  # Seçilen ürün kategorileri
     
     # AI response data  
     title = Column(String(255), nullable=False)  # Back to original title
@@ -223,7 +227,6 @@ class BlogPost(Base):
     # Relationships
     design = relationship("Design")
     likes = relationship("BlogPostLike", back_populates="blog_post", cascade="all, delete-orphan")
-    views = relationship("BlogPostView", back_populates="blog_post", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<BlogPost(id={self.id}, title={self.title}, design_id={self.design_id})>"
@@ -253,35 +256,3 @@ class BlogPostLike(Base):
     
     def __repr__(self):
         return f"<BlogPostLike(blog_post_id={self.blog_post_id}, user_id={self.user_id})>"
-
-
-class BlogPostView(Base):
-    """View tracking for blog posts (for analytics)."""
-    __tablename__ = "blog_post_views"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    blog_post_id = Column(Integer, ForeignKey("blog_posts.id", ondelete="CASCADE"), nullable=False)
-    
-    # Optional user tracking (for registered users)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    
-    # Anonymous tracking (for future IP-based deduplication)
-    ip_address = Column(String(45), nullable=True)  # Support IPv6
-    user_agent = Column(String(500), nullable=True)
-    
-    # Timestamps
-    viewed_at = Column(DateTime(timezone=True), server_default=func.now())
-    
-    # Relationships
-    blog_post = relationship("BlogPost", back_populates="views")
-    user = relationship("User")
-    
-    # Indexes for performance
-    __table_args__ = (
-        Index('idx_blog_post_views', 'blog_post_id'),
-        Index('idx_user_views', 'user_id'),
-        Index('idx_view_time', 'viewed_at'),
-    )
-    
-    def __repr__(self):
-        return f"<BlogPostView(blog_post_id={self.blog_post_id}, user_id={self.user_id})>"

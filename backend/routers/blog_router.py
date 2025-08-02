@@ -2,18 +2,18 @@
 Blog router for public design sharing and discovery.
 Handles public blog posts, likes, views, and filtering.
 """
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func, desc, asc, update
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 from config.database import get_async_session
 from models.user_models import User
 from models.design_models_db import (
-    Design, BlogPost, BlogPostLike, BlogPostView, 
+    Design, BlogPost, BlogPostLike, 
     DesignHashtag, MoodBoard
 )
 from routers.auth_router import get_current_user, get_current_user_optional
@@ -23,50 +23,30 @@ router = APIRouter(prefix="/blog", tags=["Blog"])
 
 # Pydantic models for request/response
 class BlogPostResponse(BaseModel):
-    """Response for blog post."""
+    """Response for blog post - optimized for frontend usage."""
     id: int
     design_id: str
     title: str
-    content: str
     author_name: str
     room_type: str
     design_style: str
-    tags: List[str] = []
-    like_count: int = 0
-    view_count: int = 0
-    is_liked: bool = False  # Whether current user liked it
     created_at: str
     design_title: str
-    design_description: str
-    width: Optional[float] = None
-    length: Optional[float] = None
-    height: Optional[float] = None
-    hashtags: List[str] = []
     image: Optional[dict] = None
     
     class Config:
         from_attributes = True
 
 class BlogStatsResponse(BaseModel):
-    """Response for blog statistics."""
+    """Response for blog statistics - simplified."""
     total_posts: int
-    total_likes: int
-    total_views: int
     popular_room_types: List[dict]
     popular_design_styles: List[dict]
     
     class Config:
         from_attributes = True
 
-class LikeToggleResponse(BaseModel):
-    """Response for like toggle operation."""
-    is_liked: bool
-    like_count: int
-    
-    class Config:
-        from_attributes = True
-
-@router.get("/designs", response_model=List[BlogPostResponse])
+@router.get("/posts", response_model=List[BlogPostResponse])
 async def get_public_designs(
     room_type: Optional[str] = Query(None, description="Filter by room type"),
     design_style: Optional[str] = Query(None, description="Filter by design style"),
@@ -79,24 +59,18 @@ async def get_public_designs(
 ):
     """Get published blog posts with filtering and pagination."""
     
-    # Base query for published blog posts
+    # Base query for published blog posts - optimized for frontend needs
     query = select(
         BlogPost,
         Design,
         User.first_name,
-        User.last_name,
-        func.count(BlogPostLike.id).label('like_count'),
-        func.count(BlogPostView.id).label('view_count')
+        User.last_name
     ).select_from(
         BlogPost
     ).join(
         Design, BlogPost.design_id == Design.id
     ).join(
         User, Design.user_id == User.id
-    ).outerjoin(
-        BlogPostLike, BlogPost.id == BlogPostLike.blog_post_id
-    ).outerjoin(
-        BlogPostView, BlogPost.id == BlogPostView.blog_post_id
     ).where(
         BlogPost.is_published == True
     )
@@ -117,21 +91,15 @@ async def get_public_designs(
         )
         query = query.where(search_filter)
     
-    # Group by blog post to aggregate likes and views
+    # Group by blog post
     query = query.group_by(BlogPost.id, Design.id, User.id)
     
-    # Apply sorting
+    # Apply sorting - simplified without likes/views
     if sort_by == "newest":
         query = query.order_by(desc(BlogPost.created_at))
-    elif sort_by == "popular":
-        # Sort by combination of likes and views
-        query = query.order_by(
-            desc(func.count(BlogPostLike.id) + func.count(BlogPostView.id) * 0.1)
-        )
-    elif sort_by == "most_viewed":
-        query = query.order_by(desc(func.count(BlogPostView.id)))
-    elif sort_by == "most_liked":
-        query = query.order_by(desc(func.count(BlogPostLike.id)))
+    else:
+        # Default to newest
+        query = query.order_by(desc(BlogPost.created_at))
     
     # Apply pagination
     offset = (page - 1) * limit
@@ -141,25 +109,9 @@ async def get_public_designs(
     result = await db.execute(query)
     blog_data = result.all()
     
-    # Get user likes if authenticated
-    user_likes = set()
-    if current_user:
-        likes_query = select(BlogPostLike.blog_post_id).where(
-            BlogPostLike.user_id == current_user.id
-        )
-        likes_result = await db.execute(likes_query)
-        user_likes = {like[0] for like in likes_result.all()}
-    
     # Process results
     blog_posts = []
-    for blog_post, design, first_name, last_name, like_count, view_count in blog_data:
-        # Get hashtags (now directly stored as strings)
-        hashtags_query = select(DesignHashtag.hashtag).where(
-            DesignHashtag.design_id == design.id
-        )
-        hashtags_result = await db.execute(hashtags_query)
-        hashtags = [tag[0] for tag in hashtags_result.all()]
-        
+    for blog_post, design, first_name, last_name in blog_data:
         # Get mood board image
         mood_board_query = select(MoodBoard).where(
             MoodBoard.design_id == design.id
@@ -185,21 +137,11 @@ async def get_public_designs(
             id=blog_post.id,
             design_id=blog_post.design_id,
             title=blog_post.title,
-            content=blog_post.content,
             author_name=author_name,
             room_type=design.room_type,
             design_style=design.design_style,
-            tags=blog_post.tags or [],
-            like_count=like_count or 0,
-            view_count=view_count or 0,
-            is_liked=blog_post.id in user_likes,
             created_at=blog_post.created_at.isoformat(),
             design_title=design.title,
-            design_description=design.description,
-            width=design.width,
-            length=design.length,
-            height=design.height,
-            hashtags=hashtags,
             image=image_data
         ))
     
@@ -249,7 +191,7 @@ async def publish_design_to_blog(
         allow_comments=publish_data.get('allowComments', True),
         featured_image_url=publish_data.get('featuredImageUrl'),
         blog_metadata=publish_data.get('metadata', {}),
-        created_at=datetime.utcnow()
+        created_at=datetime.now()
     )
     
     db.add(blog_post)
@@ -262,97 +204,7 @@ async def publish_design_to_blog(
         "message": "Design published to blog successfully"
     }
 
-@router.post("/designs/{blog_post_id}/like", response_model=LikeToggleResponse)
-async def toggle_blog_post_like(
-    blog_post_id: int,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_async_session)
-):
-    """Toggle like for a blog post."""
-    
-    # Check if blog post exists
-    blog_post_result = await db.execute(
-        select(BlogPost).where(BlogPost.id == blog_post_id)
-    )
-    blog_post = blog_post_result.scalar_one_or_none()
-    
-    if not blog_post:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Blog post not found"
-        )
-    
-    # Check if already liked
-    existing_like = await db.execute(
-        select(BlogPostLike).where(
-            and_(
-                BlogPostLike.blog_post_id == blog_post_id,
-                BlogPostLike.user_id == current_user.id
-            )
-        )
-    )
-    existing = existing_like.scalar_one_or_none()
-    
-    if existing:
-        # Unlike
-        await db.delete(existing)
-        is_liked = False
-    else:
-        # Like
-        new_like = BlogPostLike(
-            blog_post_id=blog_post_id,
-            user_id=current_user.id,
-            created_at=datetime.utcnow()
-        )
-        db.add(new_like)
-        is_liked = True
-    
-    await db.commit()
-    
-    # Get updated like count
-    like_count_result = await db.execute(
-        select(func.count(BlogPostLike.id)).where(
-            BlogPostLike.blog_post_id == blog_post_id
-        )
-    )
-    like_count = like_count_result.scalar()
-    
-    return LikeToggleResponse(
-        is_liked=is_liked,
-        like_count=like_count
-    )
-
-@router.post("/designs/{blog_post_id}/view")
-async def record_blog_post_view(
-    blog_post_id: int,
-    db: AsyncSession = Depends(get_async_session)
-):
-    """Record a view for a blog post."""
-    
-    # Check if blog post exists
-    blog_post_result = await db.execute(
-        select(BlogPost).where(BlogPost.id == blog_post_id)
-    )
-    blog_post = blog_post_result.scalar_one_or_none()
-    
-    if not blog_post:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Blog post not found"
-        )
-    
-    # Record view (we can add IP-based deduplication later if needed)
-    new_view = BlogPostView(
-        blog_post_id=blog_post_id,
-        viewed_at=datetime.utcnow()
-    )
-    
-    db.add(new_view)
-    await db.commit()
-    
-    return {"success": True, "message": "View recorded"}
-
-@router.get("/filters")
+@router.get("/filter-options")
 async def get_blog_filters(
     db: AsyncSession = Depends(get_async_session)
 ):
@@ -419,15 +271,6 @@ async def get_blog_stats(
     total_likes_result = await db.execute(total_likes_query)
     total_likes = total_likes_result.scalar()
     
-    # Total views
-    total_views_query = select(func.count(BlogPostView.id)).select_from(
-        BlogPostView
-    ).join(
-        BlogPost, BlogPostView.blog_post_id == BlogPost.id
-    ).where(BlogPost.is_published == True)
-    total_views_result = await db.execute(total_views_query)
-    total_views = total_views_result.scalar()
-    
     # Popular room types
     popular_rooms_query = select(
         Design.room_type, 
@@ -466,8 +309,6 @@ async def get_blog_stats(
     
     return BlogStatsResponse(
         total_posts=total_posts,
-        total_likes=total_likes,
-        total_views=total_views,
         popular_room_types=popular_room_types,
         popular_design_styles=popular_design_styles
     )
