@@ -4,17 +4,13 @@ import { RoomDimensionsSection } from '../sections';
 
 /**
  * StudioSidebar - Enhanced sidebar with integrated sections
- * Combines room setup and design preferences efficiently
+ * Simplified to show only room dimensions without extras
  */
 const StudioSidebar = ({ 
   form, 
-  newBlock, 
   result, 
   isLoading,
   handleChange, 
-  handleExtraChange, 
-  addBlock, 
-  removeBlock, 
   handleSubmit 
 }) => {
   
@@ -33,10 +29,6 @@ const StudioSidebar = ({
       <RoomDimensionsSection
         form={form}
         handleChange={handleChange}
-        newBlock={newBlock}
-        handleExtraChange={handleExtraChange}
-        addBlock={addBlock}
-        removeBlock={removeBlock}
       />
     </div>
   );
@@ -44,13 +36,9 @@ const StudioSidebar = ({
 
 StudioSidebar.propTypes = {
   form: PropTypes.object.isRequired,
-  newBlock: PropTypes.object.isRequired,
   result: PropTypes.object,
   isLoading: PropTypes.bool.isRequired,
   handleChange: PropTypes.func.isRequired,
-  handleExtraChange: PropTypes.func.isRequired,
-  addBlock: PropTypes.func.isRequired,
-  removeBlock: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired
 };
 

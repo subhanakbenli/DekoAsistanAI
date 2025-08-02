@@ -24,10 +24,10 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
 
   // Mood board tamamlandığında otomatik göster
   useEffect(() => {
-    if (moodBoard?.image_data) {
+    if (moodBoard?.image_data && !showMoodBoard) {
       setShowMoodBoard(true);
     }
-  }, [moodBoard]);
+  }, [moodBoard?.mood_board_id, moodBoard?.id]);
 
   const tabs = [
     { id: 'overview', label: 'Genel Bakış', icon: '🎨' },
@@ -339,11 +339,47 @@ const MoodBoardSection = ({
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-xl filter blur-lg opacity-50 group-hover:opacity-70 transition-opacity"></div>
             {(() => {
-              const imageSrc = moodBoard.image_data?.base64 
-                ? `data:image/png;base64,${moodBoard.image_data.base64}`
-                : moodBoard.image_data?.file_path 
-                  ? `http://localhost:8000/static/mood_boards/${moodBoard.image_data.file_path.split('\\').pop().split('/').pop()}`
-                  : moodBoard.image_data;
+              // Çoklu kaynak desteği: farklı data yapılarını destekle
+              let imageSrc = null;
+              
+              // 1. Nested image_data yapısı
+              if (moodBoard.image_data?.base64) {
+                imageSrc = `data:image/png;base64,${moodBoard.image_data.base64}`;
+              } else if (moodBoard.image_data?.file_path) {
+                const fileName = moodBoard.image_data.file_path.split('\\').pop().split('/').pop();
+                imageSrc = `http://localhost:8000/static/mood_boards/${fileName}`;
+              }
+              // 2. Direct properties
+              else if (moodBoard.base64) {
+                imageSrc = `data:image/png;base64,${moodBoard.base64}`;
+              } else if (moodBoard.file_path) {
+                const fileName = moodBoard.file_path.split('\\').pop().split('/').pop();
+                imageSrc = `http://localhost:8000/static/mood_boards/${fileName}`;
+              }
+              // 3. Direct image_data string
+              else if (typeof moodBoard.image_data === 'string') {
+                if (moodBoard.image_data.startsWith('data:')) {
+                  imageSrc = moodBoard.image_data;
+                } else {
+                  const fileName = moodBoard.image_data.split('\\').pop().split('/').pop();
+                  imageSrc = `http://localhost:8000/static/mood_boards/${fileName}`;
+                }
+              }
+              // 4. Image URL
+              else if (moodBoard.image_url) {
+                imageSrc = moodBoard.image_url;
+              }
+              
+              // Eğer imageSrc hala undefined ise, alternatif kaynaklara bak
+              if (!imageSrc) {
+                // Fallback sources
+                if (moodBoard.base64) {
+                  imageSrc = `data:image/png;base64,${moodBoard.base64}`;
+                } else if (moodBoard.file_path) {
+                  const fileName = moodBoard.file_path.split('\\').pop().split('/').pop();
+                  imageSrc = `http://localhost:8000/static/mood_boards/${fileName}`;
+                }
+              }
               
               return (
                 <img 

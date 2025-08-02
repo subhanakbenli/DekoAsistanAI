@@ -39,7 +39,7 @@ const ProductSuggestionSection = ({ result }) => {
         </span>
       </div>
       
-      {/* Her zaman kartları göster - test için */}
+      {/* Ürün kartları */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {productsToShow.map((product, index) => (
           <ProductCard
@@ -51,16 +51,7 @@ const ProductSuggestionSection = ({ result }) => {
         ))}
       </div>
 
-      {/* Debug bilgisi - Sadece debug amaçlı */}
-      <div className="mt-4 p-2 bg-yellow-900/20 border border-yellow-600 rounded text-xs">
-        <p className="text-yellow-300">DEBUG INFO:</p>
-        <p className="text-yellow-200">Has valid products: {hasValidProducts ? 'YES' : 'NO'}</p>
-        <p className="text-yellow-200">Products count: {validProducts.length}</p>
-        <p className="text-yellow-200">Raw products length: {result?.products?.length || 0}</p>
-        <p className="text-yellow-200">Using: {hasValidProducts ? 'Real backend data' : 'No data available'}</p>
-      </div>
-
-      {/* Fallback sadece gerçek data yokken ve mock da çalışmıyorsa */}
+      {/* Fallback text sadece ürün yokken */}
       {productsToShow.length === 0 && (
         <div className="bg-gray-700 p-4 rounded-lg">
           <p className="text-sm text-gray-300 leading-relaxed">

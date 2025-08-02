@@ -54,7 +54,8 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
   const isLengthOverLimit = form.length && parseInt(form.length) > MAX_LENGTH;
   const hasLimitExceeded = isHeightOverLimit || isWidthOverLimit || isLengthOverLimit;
   
-  const isFormValid = form.width && form.length && form.height && form.notes?.trim() && !hasLimitExceeded;
+  // Notes artık opsiyonel - form validation'dan kaldırıldı
+  const isFormValid = form.width && form.length && form.height && !hasLimitExceeded;
 
   return (
     <div className="space-y-3">
@@ -120,6 +121,28 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
               onSelectionChange={handleColorSelection}
             />
           </div>
+
+          {/* Fiyat Limiti */}
+          <div>
+            <Tooltip text="Bütçenize uygun ürün önerilerini almak için maksimum fiyat limitinizi girin">
+              <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
+                💰 Fiyat Limiti (TL)
+              </label>
+            </Tooltip>
+            <input
+              type="number"
+              name="price"
+              value={form.price}
+              onChange={handleChange}
+              placeholder="Örnek: 25000"
+              min="0"
+              step="500"
+              className="w-full p-1.5 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 transition-colors"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              ℹ️ Boş bırakırsanız tüm fiyat aralığından öneriler gelir
+            </p>
+          </div>
         </div>
 
         {/* Sağ Taraf: Ürün Kategorisi */}
@@ -133,15 +156,15 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
       </div>
 
       <div>
-        <Tooltip text="Özel isteklerinizi, renk tercihlerinizi veya önemli noktaları yazın">
+        <Tooltip text="Tasarımınız için özel isteklerinizi belirtin (isteğe bağlı)">
           <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
-            📝 Tasarım Notları
+            📝 Tasarım Notları <span className="text-gray-500 text-xs">(İsteğe bağlı)</span>
           </label>
         </Tooltip>
         <textarea 
           name="notes" 
           rows={8} 
-          placeholder="Örnek: Açık renkler, doğal ışık, çocuk güvenliği..." 
+          placeholder="İsteğe bağlı: Açık renkler, doğal ışık, çocuk güvenliği gibi özel isteklerinizi yazabilirsiniz..." 
           className="w-full p-1.5 rounded bg-gray-700 border border-gray-600 focus:border-blue-500 transition-colors resize-none" 
           value={form.notes} 
           onChange={handleChange}
@@ -150,7 +173,7 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
 
       {/* Buton section'ı - ortalı ve kompakt */}
       <div className="mt-2.5 pt-1.5 border-t border-gray-600">
-        <Tooltip text="Tüm bilgileri doldurduktan sonra tasarım önerisi oluşturmak için tıklayın">
+        <Tooltip text="Oda boyutlarını doldurduktan sonra tasarım önerisi oluşturmak için tıklayın (notlar isteğe bağlı)">
           <button 
             onClick={handleSubmit} 
             className="w-full bg-green-600 hover:bg-green-700 py-2 px-4 rounded-lg font-semibold text-base transition-colors flex items-center justify-center shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed"
