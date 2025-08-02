@@ -1,19 +1,11 @@
-// Hook exports - Centralized hook management
-
-// Composed hooks
+// Custom Hooks - Business Logic Layer
 export { useRoomDesign } from './useRoomDesign';
 export { useFavorites } from './useFavorites';
+export { usePerformanceTracker } from './usePerformance';
+export { useFormState } from './useFormState';
+export { useWebSocket } from './useWebSocket';
 
-// New feature hooks
-export { useColorPalette } from './useColorPalette';
-export { useProductCategories } from './useProductCategories';
-export { useDoorWindow } from './useDoorWindow';
-export { useShareToBlog } from './useShareToBlog';
-
-// Specialized hooks
-export { default as useWebSocket } from './useWebSocket';
-export { default as useFormState } from './useFormState';
-export { default as useDesignSubmission } from './useDesignSubmission';
-
-// Legacy hooks (for backward compatibility)
-export { useRoomDesign as useRoomDesignLegacy } from './useRoomDesign_backup';
+// Blog-specific hooks
+export { default as useBlogData } from './useBlogData';
+export { default as useBlogActions } from './useBlogActions';
+export { default as useBlogState } from './useBlogState';

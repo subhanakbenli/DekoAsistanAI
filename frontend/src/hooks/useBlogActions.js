@@ -5,33 +5,29 @@ import blogService from '../services/blogService';
 
 /**
  * Blog Actions Hook
- * Handles all blog-related actions and business logic
+ * Handles all blog-related actions and side effects
+ * Single Responsibility: Action handling only
+ * Open/Closed Principle: Easy to extend with new actions
  */
-export const useBlogActions = (blogState) => {
+export const useBlogActions = (state) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  
+
+  // Destructure state updaters
   const {
     updateBlogPosts,
-    updateFilters,
-    resetFilters,
-    updatePagination,
-    resetPaginationToFirstPage,
-    setLoadingState,
-    setErrorState,
-    clearError,
     updateFilterOptions,
     updateStats,
-    filters,
-    pagination,
-    blogPosts
-  } = blogState;
+    updateBlogPost,
+    setLoadingState,
+    setErrorState
+  } = state;
 
   // Fetch blog posts with current filters and pagination
-  const fetchBlogPosts = useCallback(async () => {
+  const fetchBlogPosts = useCallback(async (filters, pagination) => {
     try {
       setLoadingState(true);
-      clearError();
+      setErrorState(null);
 
       const queryParams = {
         ...filters,
@@ -39,7 +35,7 @@ export const useBlogActions = (blogState) => {
         limit: pagination.limit
       };
 
-      // Remove empty filters
+      // Remove empty filters - data cleaning
       Object.keys(queryParams).forEach(key => {
         if (!queryParams[key]) {
           delete queryParams[key];
@@ -56,7 +52,7 @@ export const useBlogActions = (blogState) => {
     } finally {
       setLoadingState(false);
     }
-  }, [filters, pagination.page, pagination.limit, setLoadingState, clearError, updateBlogPosts, setErrorState]);
+  }, [updateBlogPosts, setLoadingState, setErrorState]);
 
   // Fetch filter options
   const fetchFilterOptions = useCallback(async () => {
@@ -68,7 +64,7 @@ export const useBlogActions = (blogState) => {
     }
   }, [updateFilterOptions]);
 
-  // Fetch blog stats
+  // Fetch blog statistics
   const fetchBlogStats = useCallback(async () => {
     try {
       const blogStats = await blogService.getBlogStats();
@@ -78,97 +74,36 @@ export const useBlogActions = (blogState) => {
     }
   }, [updateStats]);
 
-  // Handle filter changes
-  const handleFilterChange = useCallback((newFilters) => {
-    updateFilters(newFilters);
-    resetPaginationToFirstPage();
-  }, [updateFilters, resetPaginationToFirstPage]);
-
-  // Handle search
-  const handleSearch = useCallback((searchTerm) => {
-    updateFilters({ search: searchTerm });
-    resetPaginationToFirstPage();
-  }, [updateFilters, resetPaginationToFirstPage]);
-
-  // Handle pagination
-  const handlePageChange = useCallback((newPage) => {
-    updatePagination({ page: newPage });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [updatePagination]);
-
-  // Handle like toggle
-  const handleLikeToggle = useCallback(async (blogPostId) => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
-
-    try {
-      const result = await blogService.toggleLike(blogPostId);
-      
-      // Update the post in local state
-      updateBlogPosts(blogPosts.map(post => 
-        post.id === blogPostId 
-          ? { 
-              ...post, 
-              is_liked: result.is_liked, 
-              like_count: result.like_count 
-            }
-          : post
-      ));
-      
-    } catch (err) {
-      console.error('Error toggling like:', err);
-    }
-  }, [isAuthenticated, navigate, blogPosts, updateBlogPosts]);
-
-  // Handle view recording
-  const handleViewRecord = useCallback(async (blogPostId) => {
-    try {
-      await blogService.recordView(blogPostId);
-      
-      // Update view count in local state
-      updateBlogPosts(blogPosts.map(post => 
-        post.id === blogPostId 
-          ? { ...post, view_count: post.view_count + 1 }
-          : post
-      ));
-      
-    } catch (err) {
-      console.error('Error recording view:', err);
-    }
-  }, [blogPosts, updateBlogPosts]);
+  // Handle like toggle with authentication check
+  // NOTE: Like functionality removed - replaced with favorites system
 
   // Handle design detail navigation
   const handleDesignView = useCallback((designId) => {
     navigate(`/design/${designId}`);
   }, [navigate]);
 
-  // Clear all filters
-  const handleClearFilters = useCallback(() => {
-    resetFilters();
-    resetPaginationToFirstPage();
-  }, [resetFilters, resetPaginationToFirstPage]);
+  // Handle navigation to studio
+  const handleNavigateToStudio = useCallback(() => {
+    navigate('/studio');
+  }, [navigate]);
 
-  // Retry fetching posts
-  const retryFetchPosts = useCallback(() => {
-    fetchBlogPosts();
-  }, [fetchBlogPosts]);
+  // Smooth scroll to top on page change
+  const handlePageChange = useCallback((newPage) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return newPage;
+  }, []);
 
   return {
     // Data fetching actions
     fetchBlogPosts,
     fetchFilterOptions,
     fetchBlogStats,
-    retryFetchPosts,
     
-    // User interaction handlers
-    handleFilterChange,
-    handleSearch,
-    handlePageChange,
-    handleLikeToggle,
-    handleViewRecord,
+    // User interaction actions
     handleDesignView,
-    handleClearFilters
+    handleNavigateToStudio,
+    handlePageChange
   };
 };
+
+export default useBlogActions;

@@ -35,8 +35,7 @@ export const useBlogStoreHook = () => {
   const likeHandler = new LikeActionHandler(
     isAuthenticated, 
     navigate, 
-    blogPosts, 
-    actions.setBlogPosts
+    actions.updatePostLike // Use store action instead of direct callback
   );
   
   const viewHandler = new ViewActionHandler(
@@ -83,7 +82,7 @@ export const useBlogStoreHook = () => {
     showFilters,
     filterOptions,
     stats,
-    hasActiveFilters: hasActiveFilters(),
+    hasActiveFilters: hasActiveFilters ? hasActiveFilters() : false,
     
     // Store actions (direct from store)
     handleFilterChange: actions.handleFilterChange,

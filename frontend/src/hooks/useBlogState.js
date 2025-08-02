@@ -2,65 +2,58 @@ import { useState, useCallback } from 'react';
 
 /**
  * Blog State Management Hook
- * Manages all blog-related state in a centralized way
+ * Handles all local state following KISS principle
+ * Single Responsibility: State management only
  */
 export const useBlogState = () => {
-  // Blog posts state
+  // Core blog state
   const [blogPosts, setBlogPosts] = useState([]);
-  
-  // Filter state
   const [filters, setFilters] = useState({
     room_type: '',
     design_style: '',
     search: '',
     sort_by: 'newest'
   });
-  
-  // Pagination state
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 12,
     total: 0
   });
-  
+
   // UI state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
-  
-  // Filter options state
+
+  // Meta data state
   const [filterOptions, setFilterOptions] = useState({
     room_types: [],
     design_styles: [],
     sort_options: []
   });
-  
-  // Statistics state
   const [stats, setStats] = useState(null);
 
-  // State update methods
+  // State updaters - following OOP encapsulation principle
   const updateBlogPosts = useCallback((posts) => {
     setBlogPosts(posts);
   }, []);
 
   const updateFilters = useCallback((newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
+    setPagination(prev => ({ ...prev, page: 1 })); // Reset pagination
   }, []);
 
-  const resetFilters = useCallback(() => {
+  const updatePagination = useCallback((newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
+  }, []);
+
+  const clearFilters = useCallback(() => {
     setFilters({
       room_type: '',
       design_style: '',
       search: '',
       sort_by: 'newest'
     });
-  }, []);
-
-  const updatePagination = useCallback((newPagination) => {
-    setPagination(prev => ({ ...prev, ...newPagination }));
-  }, []);
-
-  const resetPaginationToFirstPage = useCallback(() => {
     setPagination(prev => ({ ...prev, page: 1 }));
   }, []);
 
@@ -76,10 +69,6 @@ export const useBlogState = () => {
     setError(errorMessage);
   }, []);
 
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
   const updateFilterOptions = useCallback((options) => {
     setFilterOptions(options);
   }, []);
@@ -88,8 +77,12 @@ export const useBlogState = () => {
     setStats(newStats);
   }, []);
 
-  // Computed state
-  const hasActiveFilters = filters.room_type || filters.design_style || filters.search;
+  // Update specific blog post (for like toggle)
+  const updateBlogPost = useCallback((postId, updates) => {
+    setBlogPosts(prev => prev.map(post => 
+      post.id === postId ? { ...post, ...updates } : post
+    ));
+  }, []);
 
   return {
     // State
@@ -101,19 +94,19 @@ export const useBlogState = () => {
     showFilters,
     filterOptions,
     stats,
-    hasActiveFilters,
     
     // State updaters
     updateBlogPosts,
     updateFilters,
-    resetFilters,
     updatePagination,
-    resetPaginationToFirstPage,
+    clearFilters,
     toggleFiltersVisibility,
     setLoadingState,
     setErrorState,
-    clearError,
     updateFilterOptions,
-    updateStats
+    updateStats,
+    updateBlogPost
   };
 };
+
+export default useBlogState;
