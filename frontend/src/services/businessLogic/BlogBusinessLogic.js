@@ -1,167 +1,199 @@
-import blogService from '../blogService';
-import { BlogErrorHandler } from './BlogErrorHandler';
+import { 
+  DEFAULT_FILTERS, 
+  DEFAULT_PAGINATION,
+  BLOG_CONSTANTS 
+} from '../../types/blogTypes';
+import { blogApi } from '../api/blogApi';
 
 /**
- * Blog Business Logic - Handles complex blog operations
- * Separates business logic from UI components
+ * Blog Business Logic - Central business logic for blog operations
+ * Handles data transformation, validation, and API interactions
  */
 export class BlogBusinessLogic {
   
   /**
-   * Handle like toggle with authentication check
-   * @param {number} postId - Blog post ID
-   * @param {boolean} isAuthenticated - User authentication status
-   * @param {Function} navigate - Navigation function
-   * @returns {Promise<Object|null>} Like result or null if authentication required
+   * Check if any filters are currently active
+   * @param {import('../../types/blogTypes').BlogFilters} filters - Current filters
+   * @returns {boolean} True if any filters are active
    */
-  static async handleLikeToggle(postId, isAuthenticated, navigate) {
-    // Authentication guard
-    if (!isAuthenticated) {
-      navigate('/login');
-      return null;
-    }
-
-    try {
-      const result = await blogService.toggleLike(postId);
-      return {
-        success: true,
-        data: result
-      };
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      return {
-        success: false,
-        error: BlogErrorHandler.handleLikeError(error)
-      };
-    }
+  static hasActiveFilters(filters) {
+    if (!filters) return false;
+    
+    return (
+      (filters.room_type && filters.room_type !== DEFAULT_FILTERS.room_type) ||
+      (filters.design_style && filters.design_style !== DEFAULT_FILTERS.design_style) ||
+      (filters.search && filters.search !== DEFAULT_FILTERS.search) ||
+      (filters.sort_by && filters.sort_by !== DEFAULT_FILTERS.sort_by)
+    );
   }
 
   /**
-   * Handle view recording
-   * @param {number} postId - Blog post ID
-   * @returns {Promise<Object>} View recording result
+   * Create default filters object
+   * @returns {import('../../types/blogTypes').BlogFilters}
    */
-  static async handleViewRecord(postId) {
-    try {
-      await blogService.recordView(postId);
-      return {
-        success: true,
-        increment: 1
-      };
-    } catch (error) {
-      console.error('Error recording view:', error);
-      return {
-        success: false,
-        error: BlogErrorHandler.handleViewError(error)
-      };
-    }
+  static createDefaultFilters() {
+    return { ...DEFAULT_FILTERS };
   }
 
   /**
-   * Fetch blog posts with error handling
-   * @param {Object} filters - Filter parameters
-   * @param {Object} pagination - Pagination parameters
-   * @returns {Promise<Object>} Fetch result
+   * Create default pagination object
+   * @returns {import('../../types/blogTypes').BlogPagination}
+   */
+  static createDefaultPagination() {
+    return { ...DEFAULT_PAGINATION };
+  }
+
+  /**
+   * Fetch blog posts with filters and pagination
+   * @param {import('../../types/blogTypes').BlogFilters} filters
+   * @param {import('../../types/blogTypes').BlogPagination} pagination
+   * @returns {Promise<import('../../types/blogTypes').ApiResponse<import('../../types/blogTypes').BlogPost[]>>}
    */
   static async fetchBlogPosts(filters, pagination) {
     try {
-      const queryParams = {
-        ...filters,
-        page: pagination.page,
-        limit: pagination.limit
-      };
-
-      // Remove empty filters
-      Object.keys(queryParams).forEach(key => {
-        if (!queryParams[key]) {
-          delete queryParams[key];
-        }
-      });
-
-      const posts = await blogService.getPublishedPosts(queryParams);
-      
+      const response = await blogApi.fetchBlogPosts(filters, pagination);
       return {
         success: true,
-        data: posts
+        data: response.posts || [],
+        pagination: response.pagination
       };
     } catch (error) {
-      console.error('Error fetching blog posts:', error);
+      console.error('BlogBusinessLogic: Error fetching blog posts:', error);
       return {
         success: false,
-        error: BlogErrorHandler.handleFetchError(error),
-        data: []
+        data: [],
+        error: error.message || 'Blog yazıları yüklenirken bir hata oluştu'
       };
     }
   }
 
   /**
    * Fetch filter options
-   * @returns {Promise<Object>} Filter options result
+   * @returns {Promise<import('../../types/blogTypes').ApiResponse<import('../../types/blogTypes').FilterOptions>>}
    */
   static async fetchFilterOptions() {
     try {
-      const options = await blogService.getBlogFilters();
+      const response = await blogApi.fetchFilterOptions();
       return {
         success: true,
-        data: options
+        data: response
       };
     } catch (error) {
-      console.error('Error fetching filter options:', error);
+      console.error('BlogBusinessLogic: Error fetching filter options:', error);
       return {
         success: false,
         data: {
           room_types: [],
           design_styles: [],
           sort_options: []
-        }
+        },
+        error: error.message || 'Filtre seçenekleri yüklenirken bir hata oluştu'
       };
     }
   }
 
   /**
    * Fetch blog statistics
-   * @returns {Promise<Object>} Blog stats result
+   * @returns {Promise<import('../../types/blogTypes').ApiResponse<import('../../types/blogTypes').BlogStats>>}
    */
   static async fetchBlogStats() {
     try {
-      const stats = await blogService.getBlogStats();
+      const response = await blogApi.fetchBlogStats();
       return {
         success: true,
-        data: stats
+        data: response
       };
     } catch (error) {
-      console.error('Error fetching blog stats:', error);
+      console.error('BlogBusinessLogic: Error fetching blog stats:', error);
       return {
         success: false,
-        data: null
+        data: null,
+        error: error.message || 'Blog istatistikleri yüklenirken bir hata oluştu'
       };
     }
   }
 
   /**
-   * Update post in posts array after like toggle
-   * @param {Array} posts - Current posts array
-   * @param {number} postId - Post ID to update
-   * @param {Object} likeResult - Like operation result
-   * @returns {Array} Updated posts array
+   * Handle like toggle for a blog post
+   * @param {number} postId
+   * @param {boolean} isAuthenticated
+   * @param {Function} navigate
+   * @returns {Promise<import('../../types/blogTypes').ApiResponse<import('../../types/blogTypes').LikeToggleResult>>}
+   */
+  static async handleLikeToggle(postId, isAuthenticated, navigate) {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return {
+        success: false,
+        data: null,
+        error: 'Beğenmek için giriş yapmalısınız'
+      };
+    }
+
+    try {
+      const response = await blogApi.toggleLike(postId);
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('BlogBusinessLogic: Error toggling like:', error);
+      return {
+        success: false,
+        data: null,
+        error: error.message || 'Beğenme işlemi sırasında bir hata oluştu'
+      };
+    }
+  }
+
+  /**
+   * Handle view record for a blog post
+   * @param {number} postId
+   * @returns {Promise<import('../../types/blogTypes').ApiResponse<import('../../types/blogTypes').ViewRecordResult>>}
+   */
+  static async handleViewRecord(postId) {
+    try {
+      const response = await blogApi.recordView(postId);
+      return {
+        success: true,
+        data: response
+      };
+    } catch (error) {
+      console.error('BlogBusinessLogic: Error recording view:', error);
+      return {
+        success: false,
+        data: null,
+        error: error.message || 'Görüntüleme kaydetme sırasında bir hata oluştu'
+      };
+    }
+  }
+
+  /**
+   * Update post like status in the posts array
+   * @param {import('../../types/blogTypes').BlogPost[]} posts
+   * @param {number} postId
+   * @param {import('../../types/blogTypes').LikeToggleResult} likeResult
+   * @returns {import('../../types/blogTypes').BlogPost[]}
    */
   static updatePostLikeStatus(posts, postId, likeResult) {
+    if (!likeResult) return posts;
+    
     return posts.map(post => 
       post.id === postId 
         ? { 
             ...post, 
-            is_liked: likeResult.data.is_liked, 
-            like_count: likeResult.data.like_count 
+            is_liked: likeResult.is_liked,
+            like_count: likeResult.like_count
           }
         : post
     );
   }
 
   /**
-   * Update post view count in posts array
-   * @param {Array} posts - Current posts array
-   * @param {number} postId - Post ID to update
-   * @returns {Array} Updated posts array
+   * Update post view count in the posts array
+   * @param {import('../../types/blogTypes').BlogPost[]} posts
+   * @param {number} postId
+   * @returns {import('../../types/blogTypes').BlogPost[]}
    */
   static updatePostViewCount(posts, postId) {
     return posts.map(post => 
@@ -169,39 +201,5 @@ export class BlogBusinessLogic {
         ? { ...post, view_count: post.view_count + 1 }
         : post
     );
-  }
-
-  /**
-   * Check if filters are active
-   * @param {Object} filters - Filter object
-   * @returns {boolean} True if any filter is active
-   */
-  static hasActiveFilters(filters) {
-    return !!(filters.room_type || filters.design_style || filters.search);
-  }
-
-  /**
-   * Create default filter state
-   * @returns {Object} Default filters
-   */
-  static createDefaultFilters() {
-    return {
-      room_type: '',
-      design_style: '',
-      search: '',
-      sort_by: 'newest'
-    };
-  }
-
-  /**
-   * Create default pagination state
-   * @returns {Object} Default pagination
-   */
-  static createDefaultPagination() {
-    return {
-      page: 1,
-      limit: 12,
-      total: 0
-    };
   }
 }

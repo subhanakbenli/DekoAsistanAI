@@ -12,7 +12,7 @@ class BlogService extends BaseService {
    */
   getPublishedPosts = async (options = {}) => {
     try {
-      const response = await this.api.get('/blog/designs', { params: options });
+      const response = await this.api.get('/blog/posts', { params: options });
       return response.data;
     } catch (error) {
       console.error('Error fetching published posts:', error);
@@ -26,7 +26,7 @@ class BlogService extends BaseService {
    */
   getBlogFilters = async () => {
     try {
-      const response = await this.api.get('/blog/filters');
+      const response = await this.api.get('/blog/filter-options');
       return response.data;
     } catch (error) {
       console.error('Error fetching blog filters:', error);
@@ -35,70 +35,11 @@ class BlogService extends BaseService {
   }
 
   /**
-   * Toggle like for a blog post
-   * @param {number} blogPostId - Blog post ID
-   * @returns {Promise<Object>} Like toggle result
+   * Toggle like for a blog post - DEPRECATED
+   * Replaced with favorites system
+   * @deprecated Use favorite system instead
    */
-  toggleLike = async (blogPostId) => {
-    try {
-      const response = await this.api.post(`/blog/designs/${blogPostId}/like`);
-      return response.data;
-    } catch (error) {
-      console.error('Error toggling like:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Record a view for a blog post
-   * @param {number} blogPostId - Blog post ID
-   * @returns {Promise<Object>} View record result
-   */
-  recordView = async (blogPostId) => {
-    try {
-      const response = await this.api.post(`/blog/designs/${blogPostId}/view`);
-      return response.data;
-    } catch (error) {
-      console.error('Error recording view:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Publish a design to blog
-   * @param {string} designId - Design ID to publish
-   * @param {Object} publishData - Additional publish data
-   * @returns {Promise<Object>} Published blog post data
-   */
-  publishDesignToBlog = async (designId, publishData = {}) => {
-    try {
-      const response = await this.api.post(`/blog/designs/${designId}/publish`, {
-        ...publishData,
-        allow_comments: publishData.allow_comments !== false,
-        is_featured: publishData.is_featured || false
-      });
-      
-      return response.data;
-    } catch (error) {
-      console.error('Error publishing design to blog:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get a single blog post by ID
-   * @param {string} postId - Post ID
-   * @returns {Promise<Object>} Blog post data
-   */
-  getBlogPost = async (postId) => {
-    try {
-      const response = await this.api.get(`/blog/posts/${postId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching blog post:', error);
-      throw error;
-    }
-  }
+  // toggleLike method removed - replaced with favorites system
 
   /**
    * Get blog statistics
@@ -110,6 +51,54 @@ class BlogService extends BaseService {
       return response.data;
     } catch (error) {
       console.error('Error fetching blog stats:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Record view for design detail page
+   * @param {string} designId - Design ID to record view for
+   * @returns {Promise<Object>} View record result
+   */
+  recordDesignDetailView = async (designId) => {
+    try {
+      const response = await this.api.post(`/blog/designs/${designId}/view`);
+      return response.data;
+    } catch (error) {
+      console.error('Error recording design detail view:', error);
+      // Don't throw error for view recording - it's not critical
+      return null;
+    }
+  }
+
+  /**
+   * Record view for blog post
+   * @param {number} postId - Post ID to record view for
+   * @returns {Promise<Object>} View record result
+   */
+  recordView = async (postId) => {
+    try {
+      const response = await this.api.post(`/blog/posts/${postId}/view`);
+      return response.data;
+    } catch (error) {
+      console.error('Error recording post view:', error);
+      // Don't throw error for view recording - it's not critical
+      return null;
+    }
+  }
+
+  /**
+   * Publish design to blog
+   * @param {string} designId - Design ID to publish
+   * @param {Object} blogPostData - Blog post data
+   * @returns {Promise<Object>} Published blog post
+   */
+  publishDesignToBlog = async (designId, blogPostData) => {
+    try {
+      const response = await this.api.post(`/blog/designs/${designId}/publish`, blogPostData);
+      return response.data;
+    } catch (error) {
+      console.error('Error publishing design to blog:', error);
       throw error;
     }
   }

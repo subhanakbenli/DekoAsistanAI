@@ -5,11 +5,10 @@ import { BlogBusinessLogic } from '../businessLogic/BlogBusinessLogic';
  * Simplifies like operations with proper error handling
  */
 export class LikeActionHandler {
-  constructor(isAuthenticated, navigate, blogPosts, updateBlogPosts) {
+  constructor(isAuthenticated, navigate, updatePostLike) {
     this.isAuthenticated = isAuthenticated;
     this.navigate = navigate;
-    this.blogPosts = blogPosts;
-    this.updateBlogPosts = updateBlogPosts;
+    this.updatePostLike = updatePostLike;
   }
 
   /**
@@ -17,19 +16,21 @@ export class LikeActionHandler {
    * @param {number} postId - Post ID to toggle like
    */
   async handle(postId) {
+    console.log('LikeActionHandler: Toggling like for post:', postId);
+    
     const result = await BlogBusinessLogic.handleLikeToggle(
       postId, 
       this.isAuthenticated, 
       this.navigate
     );
 
+    console.log('LikeActionHandler: Toggle result:', result);
+
     if (result?.success) {
-      const updatedPosts = BlogBusinessLogic.updatePostLikeStatus(
-        this.blogPosts, 
-        postId, 
-        result
-      );
-      this.updateBlogPosts(updatedPosts);
+      // Use store's updatePostLike action for proper state management
+      // result.data contains the actual like data from backend
+      this.updatePostLike(postId, result.data);
+      console.log('LikeActionHandler: State updated via store');
     }
     // If not authenticated, user will be redirected to login
     // If error occurs, it's logged but UI remains stable

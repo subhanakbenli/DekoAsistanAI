@@ -38,10 +38,20 @@ class DesignService extends BaseService {
         formDataObj.append('color_info', colorInfo);
       }
 
-      // Add dimensions info as separate parameter (professional approach)  
-      const dimensionsInfo = this.formatDimensionsInfo(formData);
-      if (dimensionsInfo) {
-        formDataObj.append('dimensions_info', dimensionsInfo);
+      // Add dimensions as separate parameters (professional approach)  
+      if (formData.width) {
+        formDataObj.append('width', formData.width);
+      }
+      if (formData.length) {
+        formDataObj.append('length', formData.length);
+      }
+      if (formData.height) {
+        formDataObj.append('height', formData.height);
+      }
+
+      // Add product categories as separate parameter (professional approach)
+      if (formData.productCategories) {
+        formDataObj.append('product_categories', JSON.stringify(formData.productCategories));
       }
 
       // Add WebSocket connection ID if available

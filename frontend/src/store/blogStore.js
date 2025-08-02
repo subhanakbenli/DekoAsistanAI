@@ -24,8 +24,13 @@ export const useBlogStore = create((set, get) => ({
 
   // Computed values
   hasActiveFilters: () => {
-    const { filters } = get();
-    return BlogBusinessLogic.hasActiveFilters(filters);
+    try {
+      const { filters } = get();
+      return BlogBusinessLogic.hasActiveFilters(filters);
+    } catch (error) {
+      console.error('Error in hasActiveFilters:', error);
+      return false;
+    }
   },
 
   // Actions
