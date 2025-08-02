@@ -14,10 +14,10 @@ export const useFormState = () => {
     width: '',
     length: '',
     height: '',
-    extras: [],
     colorPalette: null, // Renk paleti bilgisi için
     productCategories: null, // Ürün kategorileri bilgisi için
-    doorWindow: null // Kapı/pencere konumu bilgisi için
+    doorWindow: null, // Kapı/pencere konumu bilgisi için
+    price: '' // Fiyat limiti (TL)
   });
 
   const [newBlock, setNewBlock] = useState({
@@ -55,82 +55,6 @@ export const useFormState = () => {
   }, []);
 
   /**
-   * Handle new block form changes
-   * @param {Event} e - Input change event  
-   */
-  const handleBlockChange = useCallback((e) => {
-    const { name, value, type } = e.target;
-    
-    let processedValue = value;
-    
-    if (type === 'number') {
-      // For number inputs, preserve the raw value without sanitization
-      // Allow empty string, digits, and decimal point
-      processedValue = value.replace(/[^0-9.]/g, '');
-    } else {
-      processedValue = ValidationUtils.sanitizeInput(value);
-    }
-    
-    setNewBlock(prev => ({ 
-      ...prev, 
-      [name]: processedValue
-    }));
-  }, []);
-
-  /**
-   * Add a new block to extras array
-   */
-  const addBlock = useCallback(() => {
-    try {
-      const roomDimensions = {
-        width: parseInt(form.width) || 0,
-        length: parseInt(form.length) || 0
-      };
-
-      const validation = ValidationUtils.validateRoomBlock(newBlock, roomDimensions);
-      
-      if (!validation.isValid) {
-        alert(validation.error);
-        return false;
-      }
-
-      const blockToAdd = {
-        width: parseInt(newBlock.width),
-        length: parseInt(newBlock.length), 
-        x: parseInt(newBlock.x) || 0,
-        y: parseInt(newBlock.y) || 0
-      };
-
-      setForm(prev => ({
-        ...prev,
-        extras: [...prev.extras, blockToAdd]
-      }));
-      
-      // Reset new block form
-      setNewBlock({ width: '', length: '', x: '', y: '' });
-      return true;
-
-    } catch (error) {
-      ErrorHandler.handle(error, 'Block Addition', {
-        showAlert: true,
-        returnUserMessage: true
-      });
-      return false;
-    }
-  }, [form.width, form.length, newBlock]);
-
-  /**
-   * Remove block from extras array
-   * @param {number} indexToRemove - Index of block to remove
-   */
-  const removeBlock = useCallback((indexToRemove) => {
-    setForm(prev => ({
-      ...prev,
-      extras: prev.extras.filter((_, index) => index !== indexToRemove)
-    }));
-  }, []);
-
-  /**
    * Validate entire form
    * @returns {Object} Validation result {isValid: boolean, errors: string[]}
    */
@@ -149,10 +73,10 @@ export const useFormState = () => {
       width: '',
       length: '', 
       height: '',
-      extras: [],
       colorPalette: null,
       productCategories: null,
-      doorWindow: null
+      doorWindow: null,
+      price: ''
     });
     setNewBlock({ width: '', length: '', x: '', y: '' });
   }, []);
@@ -178,13 +102,7 @@ export const useFormState = () => {
       width: parseInt(form.width) || 0,
       length: parseInt(form.length) || 0,
       height: parseInt(form.height) || 0,
-      extras: form.extras.map(extra => ({
-        ...extra,
-        width: parseInt(extra.width),
-        length: parseInt(extra.length),
-        x: parseInt(extra.x) || 0,
-        y: parseInt(extra.y) || 0
-      }))
+      price: parseFloat(form.price) || 0
     };
   }, [form]);
 
@@ -194,19 +112,15 @@ export const useFormState = () => {
    */
   const isDirty = useCallback(() => {
     return form.width || form.length || form.height || 
-           form.notes.trim() || form.extras.length > 0;
-  }, [form.width, form.length, form.height, form.notes, form.extras.length]);
+           form.notes.trim();
+  }, [form.width, form.length, form.height, form.notes]);
 
   return {
     // State
     form,
-    newBlock,
     
     // Actions
     handleFormChange,
-    handleBlockChange, 
-    addBlock,
-    removeBlock,
     validateForm,
     resetForm,
     updateForm,

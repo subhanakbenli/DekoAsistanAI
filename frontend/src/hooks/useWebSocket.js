@@ -60,14 +60,12 @@ export const useWebSocket = () => {
     switch (data.type) {
       case 'connection_established':
         setConnectionId(data.connection_id);
-        console.log('✅ WebSocket connection ID received:', data.connection_id);
         break;
 
       case 'room_visualization_progress':
       case 'mood_board_progress': // Backward compatibility
         setProgress(data.progress);
         setIsMoodBoardLoading(true);
-        console.log('📊 Room visualization progress:', data.progress);
         break;
 
       case 'room_visualization_completed':
@@ -75,7 +73,6 @@ export const useWebSocket = () => {
         setMoodBoard(data.room_visualization || data.mood_board);
         setProgress(null);
         setIsMoodBoardLoading(false);
-        console.log('🎨 Room visualization completed');
         break;
 
       case 'room_visualization_error':

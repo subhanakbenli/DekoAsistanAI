@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { designService } from '../services/designService';
 import { ErrorHandler } from '../utils/ErrorHandler';
-import { generateDesignSuggestion } from '../utils/roomDesignUtils';
 
 /**
  * Design submission and result management hook
@@ -51,20 +50,6 @@ export const useDesignSubmission = () => {
       });
       
       setError(userError);
-      
-      // Fallback: Generate local design suggestion
-      try {
-        const fallbackResult = generateDesignSuggestion(formData);
-        setResult({
-          ...fallbackResult,
-          isFromFallback: true,
-          success: false,
-          message: 'Çevrimdışı mod: Yerel tasarım önerisi gösteriliyor'
-        });
-      } catch (fallbackError) {
-        console.error('Fallback generation failed:', fallbackError);
-      }
-      
       return false;
       
     } finally {
@@ -95,7 +80,7 @@ export const useDesignSubmission = () => {
    * @returns {boolean} Whether result exists and is valid
    */
   const hasValidResult = () => {
-    return result && (result.success || result.isFromFallback);
+    return result && result.success;
   };
 
   /**
@@ -104,13 +89,6 @@ export const useDesignSubmission = () => {
    */
   const getResultStatus = () => {
     if (!result) return { status: 'none', message: null };
-    
-    if (result.isFromFallback) {
-      return { 
-        status: 'fallback', 
-        message: 'Çevrimdışı tasarım önerisi' 
-      };
-    }
     
     if (result.success) {
       return { 

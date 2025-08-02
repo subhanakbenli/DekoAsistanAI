@@ -93,14 +93,10 @@ export const useRoomDesign = () => {
   return {
     // Form State
     form: formState.form,
-    newBlock: formState.newBlock,
     isDirty: formState.isDirty,
     
     // Form Actions
     handleChange: directHandleChange,
-    handleExtraChange: formState.handleBlockChange,
-    addBlock: formState.addBlock,
-    removeBlock: formState.removeBlock,
     resetForm: formState.resetForm,
     updateForm: formState.updateForm,
     
