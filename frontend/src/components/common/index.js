@@ -7,6 +7,4 @@ export { default as ProductCategorySelector } from './ProductCategorySelector';
 export { default as RoomBuilderTabs } from './RoomBuilderTabs';
 export { default as ShareToBlog } from './ShareToBlog';
 export { default as Tooltip } from './Tooltip';
-export { default as ExtraBlock } from './ExtraBlock';
-export { default as RoomVisualization } from './RoomVisualization';
 export { default as ProductCard } from './ProductCard';
