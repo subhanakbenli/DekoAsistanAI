@@ -7,6 +7,7 @@ from fastapi.security import HTTPBearer
 from typing import Optional, Union
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from config import logger
 
 from config.database import get_async_session
 from models.user_models import User
@@ -38,6 +39,9 @@ class OptionalAuth:
             # Verify token
             payload = AuthService.verify_token(token)
             user_id = payload.get("user_id")
+            
+            # Debug log to check user_id from token
+            logger.info(f"Auth middleware - user_id from token: {user_id} (type: {type(user_id)})")
             
             if not user_id:
                 return {"user": None}

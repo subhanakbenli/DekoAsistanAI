@@ -28,7 +28,11 @@ class GeminiService(BaseService):
         self.gemini_client = GeminiClient()
         self.hashtag_service = HashtagService()
         
-        self.log_operation("GeminiService initialized with specialized components")
+        # Initialize product service for Function Calling
+        from .product_service import ProductService
+        self.product_service = ProductService()
+        
+        self.log_operation("GeminiService initialized with Function Calling support")
     
     def generate_design_suggestion(self, room_type: str, design_style: str, notes: str) -> Dict[str, Any]:
         """
@@ -72,6 +76,53 @@ class GeminiService(BaseService):
             logger.error(f"Error generating design suggestion: {str(e)}")
             return self._create_fallback_response(room_type, design_style)
     
+    async def generate_hybrid_design_suggestion(self, room_type: str, design_style: str, notes: str, db_session) -> Dict[str, Any]:
+        """
+        Generate hybrid design suggestion using Function Calling for real products.
+        
+        Args:
+            room_type: Type of room (Living Room, Bedroom, etc.)
+            design_style: Design style (Modern, Classic, etc.)
+            notes: User's special requests and room information
+            db_session: Database session for product search
+            
+        Returns:
+            Dict: Hybrid design suggestion with real + fake products
+        """
+        try:
+            logger.info(f"Generating HYBRID design suggestion: {room_type} - {design_style}")
+            
+            # Step 1: Parse notes for additional info
+            parsed_info = self.notes_parser.parse_notes(notes) if notes.strip() else {}
+            logger.debug(f"Parsed notes: {parsed_info}")
+            
+            # Step 2: Create hybrid prompt
+            prompt = self._create_hybrid_design_prompt(room_type, design_style, notes, parsed_info)
+            
+            # Step 3: Get response from Gemini with Function Calling
+            response_text = await self.gemini_client.generate_content_with_function_calling(
+                prompt, db_session, self.product_service
+            )
+            
+            if not response_text:
+                logger.error("No response from Gemini Function Calling")
+                return self._create_fallback_response(room_type, design_style)
+            
+            # Step 4: Process hybrid response
+            design_result = self.response_processor.process_design_response(
+                response_text, room_type, design_style
+            )
+            
+            # Step 5: Enhance with real product information
+            design_result = await self._enhance_with_real_product_info(design_result, db_session)
+            
+            logger.info("Hybrid design suggestion generated successfully")
+            return design_result
+            
+        except Exception as e:
+            logger.error(f"Error generating hybrid design suggestion: {str(e)}")
+            return self._create_fallback_response(room_type, design_style)
+    
     def _create_design_prompt(self, room_type: str, design_style: str, notes: str, parsed_info: Dict[str, Any]) -> str:
         """Create design prompt using centralized prompt management."""
         # Build additional context from parsed info
@@ -84,6 +135,90 @@ class GeminiService(BaseService):
             notes=notes,
             additional_context=additional_context
         )
+    
+    def _create_hybrid_design_prompt(self, room_type: str, design_style: str, notes: str, parsed_info: Dict[str, Any]) -> str:
+        """Create hybrid design prompt with Function Calling instructions."""
+        # Build additional context from parsed info
+        additional_context = PromptUtils.build_additional_context(parsed_info)
+        
+        # Use hybrid prompt template
+        return GeminiPrompts.get_hybrid_design_suggestion_prompt(
+            room_type=room_type,
+            design_style=design_style,
+            notes=notes,
+            additional_context=additional_context
+        )
+    
+    async def _enhance_with_real_product_info(self, design_result: Dict[str, Any], db_session) -> Dict[str, Any]:
+        """
+        Enhance design result with real product information and flags.
+        Marks products as real/fake and adds image availability info.
+        """
+        try:
+            enhanced_products = []
+            
+            for product in design_result.get("products", []):
+                enhanced_product = product.copy()
+                
+                # Try to find matching real product in database
+                real_products = await self.product_service.find_products_by_criteria(
+                    db=db_session,
+                    category=product.get("category", ""),
+                    style=product.get("style"),
+                    color=product.get("color"),
+                    limit=1
+                )
+                
+                if real_products:
+                    # Product found in database - mark as real and use real product name
+                    real_product = real_products[0]
+                    enhanced_product.update({
+                        "is_real": True,
+                        "name": real_product.get("product_name"),  # Use real product name
+                        "image_available": bool(real_product.get("image_path")),
+                        "image_path": real_product.get("image_path"),
+                        "product_link": real_product.get("product_link"),
+                        "real_product_id": real_product.get("id"),
+                        "dimensions": {
+                            "width_cm": real_product.get("width_cm"),
+                            "depth_cm": real_product.get("depth_cm"),
+                            "height_cm": real_product.get("height_cm")
+                        }
+                    })
+                    logger.info(f"Enhanced product with real data: {real_product.get('product_name')}")
+                else:
+                    # Product not found - mark as fake
+                    enhanced_product.update({
+                        "is_real": False,
+                        "image_available": False,
+                        "image_path": None,
+                        "product_link": None,
+                        "real_product_id": None
+                    })
+                    logger.info(f"Product marked as fake: {product.get('name')}")
+                
+                enhanced_products.append(enhanced_product)
+            
+            # Update design result
+            design_result["products"] = enhanced_products
+            
+            # Add summary statistics
+            real_count = sum(1 for p in enhanced_products if p.get("is_real", False))
+            fake_count = len(enhanced_products) - real_count
+            
+            design_result["product_stats"] = {
+                "total": len(enhanced_products),
+                "real": real_count,
+                "fake": fake_count,
+                "real_percentage": round((real_count / len(enhanced_products)) * 100) if enhanced_products else 0
+            }
+            
+            logger.info(f"Product enhancement complete: {real_count} real, {fake_count} fake products")
+            return design_result
+            
+        except Exception as e:
+            logger.error(f"Error enhancing products with real data: {str(e)}")
+            return design_result
     
     def _create_fallback_response(self, room_type: str, design_style: str) -> Dict[str, Any]:
         """Create fallback response when API fails."""

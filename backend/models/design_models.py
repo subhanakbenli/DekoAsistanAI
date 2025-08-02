@@ -5,11 +5,23 @@ from typing import List, Dict, Any, Optional, Union
 class ProductModel(BaseModel):
     """
     Model for individual product information.
+    Enhanced to support hybrid real/fake product system.
     """
     category: str = Field(..., description="Product category")
     name: str = Field(..., description="Product name")
     description: str = Field(..., description="Product description")
     type: str = Field(default="product", description="Product type")
+    
+    # Enhanced fields for hybrid system
+    is_real: Optional[bool] = Field(None, description="Whether this is a real product from database")
+    image_path: Optional[str] = Field(None, description="Product image URL (for real products)")
+    product_link: Optional[str] = Field(None, description="Product purchase link (for real products)")
+    image_available: Optional[bool] = Field(None, description="Whether product image is available")
+    real_product_id: Optional[str] = Field(None, description="Database ID of real product (UUID)")
+    
+    # Additional product information
+    dimensions: Optional[Dict[str, Any]] = Field(None, description="Product dimensions (width, depth, height)")
+    price: Optional[float] = Field(None, description="Product price")
 
 
 class DesignRequestModel(BaseModel):

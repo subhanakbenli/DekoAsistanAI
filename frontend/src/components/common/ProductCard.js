@@ -1,8 +1,8 @@
 import React from 'react';
 
 /**
- * Single product card component - Enhanced for individual product display
- * @param {Object} product - Product data with category, name, description
+ * Single product card component - Enhanced for individual product display with image and link support
+ * @param {Object} product - Product data with category, name, description, image_path, product_link, is_real
  * @param {number} index - Product index for key
  * @param {Object} categoryIcons - Category icons mapping
  */
@@ -33,6 +33,29 @@ const ProductCard = ({ product, index, categoryIcons }) => {
   const cardColor = categoryColors[product.category] || 'border-gray-500 bg-gray-900/20';
   const textColor = categoryTextColors[product.category] || 'text-gray-300';
 
+  // Render product name with link if available
+  const renderProductName = () => {
+    const productName = (
+      <h5 className="text-sm font-semibold text-white leading-tight hover:text-purple-300 transition-colors cursor-pointer">
+        {product.name}
+      </h5>
+    );
+
+    // If real product with link, make it clickable
+    if (product.is_real && product.product_link) {
+      return (
+        <div 
+          onClick={() => window.open(product.product_link, '_blank', 'noopener,noreferrer')}
+          className="block cursor-pointer"
+        >
+          {productName}
+        </div>
+      );
+    }
+
+    return productName;
+  };
+
   return (
     <div className={`bg-gray-800 p-4 rounded-lg border-l-4 ${cardColor} hover:bg-gray-750 transition-colors duration-200`}>
       {/* Category Header */}
@@ -42,14 +65,32 @@ const ProductCard = ({ product, index, categoryIcons }) => {
           <span className={`text-xs font-semibold px-2 py-1 rounded-full bg-gray-700 ${textColor}`}>
             {product.category}
           </span>
+          {/* Real product indicator */}
+          {product.is_real && (
+            <span className="text-xs font-semibold px-2 py-1 rounded-full bg-green-600 text-white">
+              ✓ Gerçek
+            </span>
+          )}
         </div>
       </div>
 
+      {/* Product Image */}
+      {product.is_real && product.image_path && (
+        <div className="mb-3">
+          <img 
+            src={product.image_path} 
+            alt={product.name}
+            className="w-full h-32 object-cover rounded-lg border border-gray-600"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        </div>
+      )}
+
       {/* Product Info */}
       <div className="space-y-2">
-        <h5 className="text-sm font-semibold text-white leading-tight">
-          {product.name}
-        </h5>
+        {renderProductName()}
         <p className="text-xs text-gray-300 leading-relaxed">
           {product.description}
         </p>
@@ -61,7 +102,12 @@ const ProductCard = ({ product, index, categoryIcons }) => {
           <span className="text-xs text-gray-400">
             #{index + 1} önerisi
           </span>
-          <div className={`w-2 h-2 rounded-full ${cardColor.split(' ')[0].replace('border-', 'bg-')}`}></div>
+          <div className="flex items-center space-x-2">
+            {product.is_real && product.product_link && (
+              <span className="text-xs text-blue-400">🔗 Tıklanabilir</span>
+            )}
+            <div className={`w-2 h-2 rounded-full ${cardColor.split(' ')[0].replace('border-', 'bg-')}`}></div>
+          </div>
         </div>
       </div>
     </div>

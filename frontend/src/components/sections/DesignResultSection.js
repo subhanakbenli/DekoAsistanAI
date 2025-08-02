@@ -187,7 +187,13 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
                             designTitle: result.design_title,
                             designDescription: result.design_description,
                             hashtags: result.hashtags,
-                            imageUrl: moodBoard ? `data:image/png;base64,${moodBoard.image_data.base64}` : null
+                            imageUrl: moodBoard ? (
+                              moodBoard.image_data?.base64 
+                                ? `data:image/png;base64,${moodBoard.image_data.base64}`
+                                : moodBoard.image_data?.file_path 
+                                  ? `http://localhost:8000/static/mood_boards/${moodBoard.image_data.file_path.split('\\').pop().split('/').pop()}`
+                                  : null
+                            ) : null
                           }}
                           designId={result.design_id}
                           variant="card"
@@ -325,7 +331,13 @@ const MoodBoardSection = ({
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-xl filter blur-lg opacity-50 group-hover:opacity-70 transition-opacity"></div>
             <img 
-              src={`data:image/png;base64,${moodBoard.image_data.base64}`}
+              src={
+                moodBoard.image_data?.base64 
+                  ? `data:image/png;base64,${moodBoard.image_data.base64}`
+                  : moodBoard.image_data?.file_path 
+                    ? `http://localhost:8000/static/mood_boards/${moodBoard.image_data.file_path.split('\\').pop().split('/').pop()}`
+                    : null
+              }
               alt="Oda Görselleştirmesi"
               className="relative w-full rounded-xl shadow-2xl border border-white/10 hover:border-white/20 transition-all duration-300"
               onError={(e) => {
@@ -357,7 +369,7 @@ const MoodBoardSection = ({
                     <span className="text-purple-400">🖼️</span>
                     <span className="text-purple-300 text-sm font-medium">Format</span>
                   </div>
-                  <p className="text-white font-semibold">{moodBoard.image_data.format}</p>
+                  <p className="text-white font-semibold">{moodBoard.image_data?.format || 'PNG'}</p>
                 </div>
               </div>
             </>

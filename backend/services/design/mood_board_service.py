@@ -174,6 +174,9 @@ class MoodBoardService:
                     "mood_board_id": mood_board_id
                 })
                 image_file_path = self._save_mood_board_image(mood_board_id, image_data["base64"])
+                
+                # Debug log to verify image_file_path type
+                logger.info(f"Image saved to: {image_file_path} (type: {type(image_file_path)})")
             
             # Stage 4: Finalizing room visualization (85-95%)
             await websocket_manager.update_mood_board_progress(connection_id, {
@@ -197,7 +200,7 @@ class MoodBoardService:
                     "description": design_description
                 },
                 "image_data": {
-                    "base64": image_data["base64"] if image_data else None,
+                    "base64": None,  # Remove base64 to avoid huge dict size
                     "format": "PNG",
                     "generated_with": "Imagen 4",
                     "file_path": image_file_path
@@ -246,6 +249,19 @@ class MoodBoardService:
             
             # Save room visualization to database and update design
             try:
+                # Debug log before calling _save_mood_board_to_database
+                logger.info(f"Calling _save_mood_board_to_database with parameters:")
+                logger.info(f"  mood_board_id: {mood_board_id}")
+                logger.info(f"  user_id: {user_id} (type: {type(user_id)})")
+                logger.info(f"  design_id: {design_id} (type: {type(design_id)})")
+                logger.info(f"  image_file_path: {str(image_file_path)[:100]}... (type: {type(image_file_path)})")
+                logger.info(f"  enhanced_prompt length: {len(str(enhanced_prompt))}")
+                
+                # Additional safety check - make sure image_file_path is a string
+                if image_file_path and not isinstance(image_file_path, str):
+                    logger.error(f"image_file_path is not a string! Type: {type(image_file_path)}, Setting to None")
+                    image_file_path = None
+                
                 await self._save_mood_board_to_database(
                     mood_board_id=mood_board_id,
                     user_id=user_id,
@@ -721,16 +737,52 @@ class MoodBoardService:
             image_file_path: Path to saved image file
             prompt_used: AI prompt used for generation
         """
+        # Debug log to check parameters before database operation
+        logger.info(f"Saving mood board to database - user_id: {user_id} (type: {type(user_id)}), design_id: {design_id} (type: {type(design_id)})")
+        
         async for db in get_async_session():
             try:
-                # Create mood board record
-                db_mood_board = MoodBoard(
-                    user_id=user_id,
-                    design_id=design_id,
-                    mood_board_id=mood_board_id,
-                    image_path=image_file_path or "",
-                    prompt_used=prompt_used or ""
-                )
+                # Debug log individual parameters
+                logger.info(f"Creating MoodBoard with:")
+                logger.info(f"  user_id: {user_id} (type: {type(user_id)})")
+                logger.info(f"  design_id: {design_id} (type: {type(design_id)})")
+                logger.info(f"  mood_board_id: {mood_board_id} (type: {type(mood_board_id)})")
+                logger.info(f"  image_file_path: {str(image_file_path)[:100]}... (type: {type(image_file_path)})")
+                logger.info(f"  prompt_used: {str(prompt_used)[:100]}... (type: {type(prompt_used)})")
+                
+                # Validate and fix parameters
+                if user_id is not None:
+                    if isinstance(user_id, str):
+                        logger.warning(f"user_id is string ('{user_id}'), but should be integer. Setting to None for guest user.")
+                        user_id = None
+                    elif not isinstance(user_id, int):
+                        logger.warning(f"user_id has unexpected type {type(user_id)}. Setting to None.")
+                        user_id = None
+                
+                # Validate design_id type and existence
+                if design_id is not None:
+                    if not isinstance(design_id, str):
+                        logger.warning(f"design_id is not string (value: {design_id}, type: {type(design_id)}). Converting to string.")
+                        design_id = str(design_id)
+                    
+                    # Check if design exists in database
+                    design_exists = await db.execute(select(Design.id).where(Design.id == design_id))
+                    if not design_exists.scalar_one_or_none():
+                        logger.warning(f"design_id '{design_id}' does not exist in designs table. Setting to None.")
+                        design_id = None
+                
+                # Validate image_file_path type
+                if image_file_path is not None and not isinstance(image_file_path, str):
+                    logger.error(f"image_file_path is not string (type: {type(image_file_path)}). Setting to None.")
+                    image_file_path = None
+                
+                # Create mood board record with explicit field assignments
+                db_mood_board = MoodBoard()
+                db_mood_board.user_id = user_id
+                db_mood_board.design_id = design_id
+                db_mood_board.mood_board_id = mood_board_id
+                db_mood_board.image_path = image_file_path or ""
+                db_mood_board.prompt_used = prompt_used or ""
                 
                 db.add(db_mood_board)
                 await db.flush()  # Flush to get the ID
@@ -752,6 +804,264 @@ class MoodBoardService:
                 raise
             finally:
                 await db.close()
+    
+    async def generate_hybrid_mood_board(
+        self,
+        connection_id: str,
+        room_type: str,
+        design_style: str,
+        notes: str,
+        design_title: str,
+        design_description: str,
+        products: list = None,
+        design_id: str = None,
+        user_id: int = None,
+        color_info: str = "",
+        dimensions_info: str = ""
+    ) -> Dict[str, Any]:
+        """
+        Generate room visualization using HYBRID system with real product images + fake product descriptions.
+        
+        This method combines:
+        - Real product images from database for visual reference
+        - AI-generated fake product descriptions for creative freedom
+        - Enhanced prompt with both real visual elements and AI creativity
+        
+        Args:
+            connection_id: WebSocket connection ID for real-time progress
+            room_type: Type of room
+            design_style: Interior design style  
+            notes: User preferences
+            design_title: AI-generated design title
+            design_description: AI-generated design description
+            products: List of hybrid products (mix of real and fake)
+            design_id: Design ID to link visualization
+            user_id: User ID for database record
+            color_info: Color palette information
+            dimensions_info: Room dimensions
+        
+        Returns:
+            Dict with mood board data including generated image
+        """
+        mood_board_id = str(uuid.uuid4())
+        
+        # Debug log to check user_id type
+        logger.info(f"Hybrid mood board generation - User ID: {user_id} (type: {type(user_id)})")
+        logger.info(f"Hybrid mood board generation - Design ID: {design_id} (type: {type(design_id)})")
+        
+        try:
+            # Stage 1: Preparing hybrid prompt with real images + fake descriptions (5-15%)
+            await websocket_manager.update_mood_board_progress(connection_id, {
+                "stage": "preparing_prompt",
+                "progress_percentage": 5,
+                "message": "Hibrit tasarım promtu hazırlanıyor (gerçek ürün fotoğrafları + AI açıklamaları)...",
+                "mood_board_id": mood_board_id
+            })
+            
+            # Process products to separate real and fake
+            real_product_images = []
+            fake_product_descriptions = []
+            
+            if products:
+                for product in products:
+                    if product.get('is_real') and product.get('image_path'):
+                        # Real product - extract image for Imagen reference
+                        real_product_images.append({
+                            'name': product.get('name'),
+                            'category': product.get('category'),
+                            'image_url': product.get('image_path')
+                        })
+                    else:
+                        # Fake product - use description for creative prompt
+                        fake_product_descriptions.append({
+                            'name': product.get('name'),
+                            'category': product.get('category'),
+                            'description': product.get('description')
+                        })
+            
+            await websocket_manager.update_mood_board_progress(connection_id, {
+                "stage": "preparing_prompt",
+                "progress_percentage": 10,
+                "message": f"Hibrit içerik hazırlandı: {len(real_product_images)} gerçek ürün fotoğrafı + {len(fake_product_descriptions)} AI açıklaması",
+                "mood_board_id": mood_board_id
+            })
+            
+            # Create hybrid prompt combining real product references and AI descriptions
+            enhanced_prompt = await self._create_hybrid_imagen_prompt(
+                room_type, design_style, notes, design_title, design_description,
+                real_product_images, fake_product_descriptions, color_info, dimensions_info
+            )
+            
+            await websocket_manager.update_mood_board_progress(connection_id, {
+                "stage": "optimizing_prompt", 
+                "progress_percentage": 15,
+                "message": "Hibrit tasarım promtu optimize ediliyor...",
+                "mood_board_id": mood_board_id
+            })
+            
+            # Stage 2: Generate image with Imagen 4 (20-70%)
+            await websocket_manager.update_mood_board_progress(connection_id, {
+                "stage": "generating_image",
+                "progress_percentage": 20,
+                "message": "AI hibrit görsel oluşturuyor (gerçek ürünler + yaratıcı tasarım)...",
+                "mood_board_id": mood_board_id
+            })
+            
+            # Generate image using Imagen 4 with hybrid prompt
+            image_data = await self._generate_image_with_imagen(enhanced_prompt, connection_id, mood_board_id)
+            
+            # Stage 3: Processing hybrid image (70-85%)
+            await websocket_manager.update_mood_board_progress(connection_id, {
+                "stage": "processing_image",
+                "progress_percentage": 75,
+                "message": "Hibrit görsel işleniyor...",
+                "mood_board_id": mood_board_id
+            })
+            
+            # Save image
+            image_file_path = None
+            if image_data and image_data.get("base64"):
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "processing_image",
+                    "progress_percentage": 80,
+                    "message": "Hibrit görsel kaydediliyor...",
+                    "mood_board_id": mood_board_id
+                })
+                image_file_path = self._save_mood_board_image(mood_board_id, image_data["base64"])
+            
+            # Stage 4: Finalizing (85-95%)
+            await websocket_manager.update_mood_board_progress(connection_id, {
+                "stage": "finalizing",
+                "progress_percentage": 90,
+                "message": "Hibrit oda görseli tamamlanıyor...",
+                "mood_board_id": mood_board_id
+            })
+            
+            # Create mood board data
+            mood_board_data = {
+                "mood_board_id": mood_board_id,
+                "created_at": datetime.now().isoformat(),
+                "user_input": {
+                    "room_type": room_type,
+                    "design_style": design_style,
+                    "notes": notes
+                },
+                "design_content": {
+                    "title": design_title,
+                    "description": design_description
+                },
+                "hybrid_info": {
+                    "real_products": len(real_product_images),
+                    "fake_products": len(fake_product_descriptions),
+                    "real_product_images": real_product_images,
+                    "fake_descriptions": fake_product_descriptions
+                },
+                "image_data": {
+                    "base64": image_data["base64"] if image_data else None,
+                    "status": "success" if image_data else "failed",
+                    "file_path": image_file_path
+                }
+            }
+            
+            # Stage 5: Completed (100%)
+            # Debug log for completed message
+            image_data_status = mood_board_data.get("image_data", {}).get("status", "unknown")
+            has_base64 = bool(mood_board_data.get("image_data", {}).get("base64"))
+            file_path = mood_board_data.get("image_data", {}).get("file_path", "none")
+            
+            logger.info(f"Sending completed message - status: {image_data_status}, has_base64: {has_base64}, file_path: {file_path}")
+            
+            await websocket_manager.update_mood_board_progress(connection_id, {
+                "stage": "completed",
+                "progress_percentage": 100,
+                "message": "Hibrit oda görseli başarıyla oluşturuldu!",
+                "mood_board_id": mood_board_id,
+                "image_data": mood_board_data["image_data"]
+            })
+            
+            # Save to database if design_id provided
+            if design_id:
+                await self._save_mood_board_to_database(
+                    mood_board_id=mood_board_id,
+                    user_id=user_id,
+                    design_id=design_id,
+                    image_file_path=image_file_path,
+                    prompt_used=enhanced_prompt
+                )
+            
+            logger.info(f"Hybrid mood board generated successfully: {mood_board_id} with {len(real_product_images)} real + {len(fake_product_descriptions)} fake products")
+            return mood_board_data
+            
+        except Exception as e:
+            logger.error(f"Error generating hybrid mood board: {str(e)}")
+            await websocket_manager.update_mood_board_progress(connection_id, {
+                "stage": "error",
+                "progress_percentage": 0,
+                "message": f"Hibrit görsel oluşturma hatası: {str(e)}",
+                "mood_board_id": mood_board_id
+            })
+            raise
+    
+    async def _create_hybrid_imagen_prompt(
+        self,
+        room_type: str,
+        design_style: str,
+        notes: str,
+        design_title: str,
+        design_description: str,
+        real_product_images: list,
+        fake_product_descriptions: list,
+        color_info: str = "",
+        dimensions_info: str = ""
+    ) -> str:
+        """
+        Create enhanced Imagen prompt for hybrid system.
+        Combines real product visual references with AI-generated descriptions.
+        """
+        
+        # Base room prompt
+        base_prompt = f"""
+Create a photorealistic interior design image of a {room_type} in {design_style} style.
+
+Design Concept: {design_title}
+{design_description}
+
+User Requirements: {notes}
+"""
+        
+        # Add color and dimension info if available
+        if color_info:
+            base_prompt += f"\nColor Palette: {color_info}"
+        if dimensions_info:
+            base_prompt += f"\nRoom Dimensions: {dimensions_info}"
+        
+        # Add real product references
+        if real_product_images:
+            base_prompt += f"\n\nReal Product References (use these as visual inspiration):"
+            for product in real_product_images:
+                base_prompt += f"\n- {product['category']}: {product['name']} (reference: {product['image_url']})"
+        
+        # Add fake product descriptions for creativity
+        if fake_product_descriptions:
+            base_prompt += f"\n\nAdditional Design Elements (creative interpretation):"
+            for product in fake_product_descriptions:
+                base_prompt += f"\n- {product['category']}: {product['name']} - {product['description']}"
+        
+        base_prompt += f"""
+
+Image Requirements:
+- Photorealistic, high-quality interior photography style
+- Professional lighting and composition
+- {design_style} aesthetic with modern touches
+- Include both referenced real products and creatively interpreted elements
+- Natural lighting, realistic textures and materials
+- Wide-angle view showing the complete room layout
+- 4K quality with sharp details and vibrant colors
+
+Style: Professional interior photography, architectural visualization, realistic rendering
+"""
+        
+        return base_prompt
 
 
 # Global room visualization service instance

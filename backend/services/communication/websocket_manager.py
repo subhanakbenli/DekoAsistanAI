@@ -89,13 +89,22 @@ class WebSocketManager:
         # Update progress data
         self.mood_board_progress[connection_id].update(progress_data)
         
+        # Determine message type based on stage
+        message_type = "room_visualization_progress"
+        if progress_data.get("stage") == "completed":
+            message_type = "room_visualization_completed"
+        
         # Send progress update to client
         progress_message = {
-            "type": "room_visualization_progress",
+            "type": message_type,
             "connection_id": connection_id,
             "progress": progress_data,
             "timestamp": datetime.now().isoformat()
         }
+        
+        # For completed messages, also include room_visualization data
+        if message_type == "room_visualization_completed":
+            progress_message["room_visualization"] = progress_data.get("image_data", {})
         
         await self.send_personal_message(progress_message, connection_id)
         logger.info(f"Mood board progress updated for {connection_id}: {progress_data.get('stage', 'unknown')}")

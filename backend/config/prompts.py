@@ -11,7 +11,7 @@ class GeminiPrompts:
     @staticmethod
     def get_design_suggestion_prompt(room_type: str, design_style: str, notes: str, additional_context: str = "") -> str:
         """
-        Tasarım önerisi için ana prompt şablonu
+        Tasarım önerisi için ana prompt şablonu (ESKİ VERSİYON - HİBRİT OLMAYAN)
         
         Args:
             room_type: Oda tipi
@@ -83,6 +83,77 @@ Sen bir uzman iç mimar ve dekorasyon danışmanısın. Türkiye'de yaşayan bir
 - Kaç ürün önereceğin sana kalmış (önerilen: 6-12 ürün)
 - Sadece JSON formatında cevap ver, başka hiçbir metin ekleme
 - Kullanıcının özel isteklerini dikkate al
+"""
+
+    @staticmethod
+    def get_hybrid_design_suggestion_prompt(room_type: str, design_style: str, notes: str, additional_context: str = "") -> str:
+        """
+        HİBRİT tasarım önerisi için prompt şablonu - Function Calling ile gerçek ürün arama
+        
+        Args:
+            room_type: Oda tipi
+            design_style: Tasarım stili
+            notes: Kullanıcı notları
+            additional_context: Ek bağlam bilgisi (renk paleti, ürün kategorileri vs.)
+            
+        Returns:
+            str: Hibrit yaklaşım için formatlanmış prompt
+        """
+        return f"""
+Sen bir uzman iç mimar ve dekorasyon danışmanısın. Türkiye'de yaşayan bir kullanıcı için tasarım önerisi hazırlayacaksın.
+
+**Kullanıcı Bilgileri:**
+- Oda Tipi: {room_type}
+- Tasarım Stili: {design_style}
+{additional_context}- Özel İstekler: {notes}
+
+**ÖNEMLİ HİBRİT ÜRÜN STRATEJİSİ:**
+1. **ÖNCE GERÇEK ÜRÜN ARA**: Her ürün kategorisi için find_product fonksiyonunu kullanarak veritabanında ürün ara
+2. **BULAMAZSAN HAYALİ OLUŞTUR**: Eğer find_product fonksiyonu ürün bulamazsa, tasarıma uygun hayali ürün oluştur
+3. **6-10 ÜRÜN ÖNER**: Toplam 6-10 ürün önerisi yap (gerçek + hayali karışım olabilir)
+4. **TUTARLI TASARIM**: Tüm ürünler (gerçek ve hayali) birbirleriyle ve genel tasarım konseptiyle uyumlu olsun
+
+**GERÇEK ÜRÜN ARAMA KURALLARI:**
+- Her ürün kategorisi için find_product(category="kategori_adi", style="{design_style}", color="renk_tercihi") çağır
+- Kategori zorunlu, style ve color opsiyonel
+- Bulunan ürünleri tasarımda kullan
+
+**HAYALİ ÜRÜN OLUŞTURMA KURALLARI:**
+- Veritabanı şemasına uygun olsun (product_name, category, style, color, description, price)
+- Türkiye pazarına uygun gerçekçi fiyat belirle (TL cinsinden)
+- Diğer ürünlerle stil ve renk uyumu olsun
+- Oda boyutları ve kullanım amacına uygun boyutlar ver
+
+**CEVAP FORMATI:**
+Mutlaka aşağıdaki JSON formatında cevap ver:
+
+{{
+  "title": "Tasarım başlığı (maksimum 60 karakter)",
+  "description": "Detaylı tasarım açıklaması (2-4 cümle). Renk paleti, atmosfer, stil özelliklerini açıkla.",
+  "hashtags": ["#genel_kategori", "#stil", "#oda_tipi", "#renk", "#atmosfer", "#malzeme", "#ozellik1", "#ozellik2", "#detay1", "#detay2"],
+  "products": [
+    {{
+      "category": "Kategori adı",
+      "name": "Ürün adı", 
+      "description": "Ürün detayları ve neden önerildiği",
+      "price": 2500,
+      "style": "modern",
+      "color": "beyaz"
+    }}
+  ]
+}}
+
+**Hashtag Kuralları:**
+- TAM 10 ADET hashtag (genelden özele sıralı)
+- # ile başlayan İngilizce kelimeler
+- snake_case kullan (örn: #living_room, #neutral_colors)
+- Sıralama: En genel kategoriden en spesifik detaya
+
+**Son Hatırlatma:**
+- ÖNCE find_product fonksiyonunu kullan
+- Bulamazsan hayali ürün oluştur
+- Sadece JSON formatında cevap ver
+- Gerçek ve hayali ürünler arasında tutarlılık sağla
 """
 
     @staticmethod

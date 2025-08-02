@@ -53,6 +53,7 @@ class DesignServices:
             cls._instance = super().__new__(cls)
             cls._instance.gemini_service = GeminiService()
             cls._instance.history_service = DesignHistoryService()
+            cls._instance.mood_board_service = mood_board_service
         return cls._instance
 
 services = DesignServices()
@@ -90,37 +91,62 @@ async def design_request_endpoint(
     user_id = user.id if user else None
     user_email = user.email if user else "guest"
     
-    logger.info(f"Design request from {user_email}: {room_type} - {design_style}")
+    # Debug log to check user_id type and validate
+    logger.info(f"User ID: {user_id} (type: {type(user_id)})")
+    
+    # Validate user_id type - it should be integer
+    if user_id is not None and not isinstance(user_id, int):
+        logger.warning(f"user_id is not integer (value: {user_id}, type: {type(user_id)}). Setting to None for guest mode.")
+        user_id = None
+        user_email = "guest"
+    
+    logger.info(f"HYBRID design request from {user_email}: {room_type} - {design_style}")
     
     try:
-        # Generate design suggestion using Gemini service
-        design_result = services.gemini_service.generate_design_suggestion(
+        # Generate HYBRID design suggestion using Function Calling
+        design_result = await services.gemini_service.generate_hybrid_design_suggestion(
             room_type=room_type,
             design_style=design_style,
-            notes=notes
+            notes=notes,
+            db_session=db
         )
         
-        logger.info(f"Design suggestion created successfully for {user_email}: {design_result['title']}")
+        logger.info(f"HYBRID design suggestion created successfully for {user_email}: {design_result['title']}")
+        
+        # Log product statistics
+        if "product_stats" in design_result:
+            stats = design_result["product_stats"]
+            logger.info(f"Product mix: {stats['real']} real + {stats['fake']} fake = {stats['total']} total ({stats['real_percentage']}% real)")
         
         # Generate design ID for response
         design_id = str(uuid.uuid4())
         
-        # Start room visualization generation in background if connection_id is provided
+        # Start HYBRID room visualization generation in background if connection_id is provided
         if connection_id:
-            logger.info(f"Starting background room visualization generation for connection: {connection_id}")
+            logger.info(f"Starting HYBRID background room visualization generation for connection: {connection_id}")
+            
+            # Prepare hybrid mood board data (real images + fake descriptions)
+            real_product_images = []
+            for product in design_result.get("products", []):
+                if product.get("is_real") and product.get("image_path"):
+                    real_product_images.append(product.get("image_path"))
+            
+            logger.info(f"Mood board will use {len(real_product_images)} real product images for visual reference")
+            
+            # Start hybrid mood board generation in background
             background_tasks.add_task(
-                mood_board_service.generate_mood_board,
+                services.mood_board_service.generate_hybrid_mood_board,
                 connection_id=connection_id,
                 room_type=room_type,
                 design_style=design_style,
                 notes=notes,
                 design_title=design_result["title"],
                 design_description=design_result["description"],
-                products=design_result.get("products", []),  # Pass products for room visualization
-                design_id=design_id,  # Link visualization to design record
-                user_id=user_id,      # User ID for database tracking
-                color_info=color_info,  # Frontend'den gelen renk bilgisi
-                dimensions_info=dimensions_info  # Frontend'den gelen boyut bilgisi
+                products=design_result.get("products", []),
+                design_id=design_id,
+                user_id=user_id,
+                color_info=color_info,
+                dimensions_info=dimensions_info
             )
         
         # If user is authenticated, save to database

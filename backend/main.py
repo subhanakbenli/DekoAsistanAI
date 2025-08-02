@@ -47,6 +47,14 @@ if os.path.exists(static_path):
 else:
     logger.warning(f"Static files directory not found: {static_path}")
 
+# Mount static files for product images
+products_static_path = os.path.join(os.path.dirname(__file__), "data", "products")
+if os.path.exists(products_static_path):
+    app.mount("/static/products", StaticFiles(directory=products_static_path), name="products")
+    logger.debug(f"Static files mounted: /static/products -> {products_static_path}")
+else:
+    logger.warning(f"Products static files directory not found: {products_static_path}")
+
 # Include routers
 app.include_router(health_router, tags=["Health"])
 app.include_router(auth_router, prefix="/api", tags=["Authentication"])
