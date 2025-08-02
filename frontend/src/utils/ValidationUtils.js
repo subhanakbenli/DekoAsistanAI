@@ -47,22 +47,14 @@ export class ValidationUtils {
     const heightError = this.validateRoomDimension(form.height, 'Oda yüksekliği', this.LIMITS.ROOM.MAX_HEIGHT);
     if (heightError) errors.push(heightError);
     
-    // Notes validation
-    if (!this.isValidNotes(form.notes)) {
-      errors.push('Tasarım notları gerekli');
-    }
+    // Notes validation - OPTIONAL (removed from required fields)
+    // Notes are now optional - user can create designs without notes
     
     // Color palette validation (optional but recommended)
-    if (!form.colorPalette) {
-      // This is a warning, not an error
-      console.warn('Color palette not selected');
-    }
-
-    // Product categories validation (optional but recommended)
-    if (!form.productCategories) {
-      // This is a warning, not an error
-      console.warn('Product categories not selected');
-    }
+    // Removed console.warn to reduce noise
+    
+    // Product categories validation (optional but recommended)  
+    // Removed console.warn to reduce noise
 
     // Door/window validation (check for conflicts)
     if (form.doorWindow) {
@@ -105,63 +97,7 @@ export class ValidationUtils {
     return null;
   }
 
-  /**
-   * Validate room protrusion/block
-   * @param {Object} block - Block data
-   * @param {Object} roomDimensions - Room dimensions {width, length}
-   * @returns {Object} {isValid: boolean, error: string}
-   */
-  static validateRoomBlock(block, roomDimensions) {
-    const { width, length, x = 0, y = 0 } = block;
-    const { width: roomWidth, length: roomLength } = roomDimensions;
-    
-    // Required fields check
-    if (!width || !length) {
-      return {
-        isValid: false,
-        error: '❌ Lütfen çıkıntının genişlik ve uzunluk değerlerini girin.\n\n💡 İpucu: Bu değerler zorunludur.'
-      };
-    }
-    
-    const blockWidth = parseInt(width);
-    const blockLength = parseInt(length);
-    const blockX = parseInt(x) || 0;
-    const blockY = parseInt(y) || 0;
-    
-    // Dimension limits check
-    if (blockWidth > this.LIMITS.ROOM.MAX_WIDTH) {
-      return {
-        isValid: false,
-        error: `❌ Çıkıntı genişliği çok büyük!\n\n📐 Girilen değer: ${blockWidth}cm\n🚫 Maksimum limit: ${this.LIMITS.ROOM.MAX_WIDTH}cm (50m)\n\n💡 Çözüm: Daha küçük bir genişlik değeri girin.`
-      };
-    }
-    
-    if (blockLength > this.LIMITS.ROOM.MAX_LENGTH) {
-      return {
-        isValid: false,
-        error: `❌ Çıkıntı uzunluğu çok büyük!\n\n📐 Girilen değer: ${blockLength}cm\n🚫 Maksimum limit: ${this.LIMITS.ROOM.MAX_LENGTH}cm (50m)\n\n💡 Çözüm: Daha küçük bir uzunluk değeri girin.`
-      };
-    }
 
-    // Room boundary check
-    if (roomWidth > 0 && roomLength > 0) {
-      if (blockX + blockWidth > roomWidth) {
-        return {
-          isValid: false,
-          error: `❌ Çıkıntı oda sınırlarını aşıyor!\n\n🔍 Problem: Çıkıntı oda genişliğini aşıyor\n📐 Hesaplama: ${blockX} (X pozisyonu) + ${blockWidth} (genişlik) = ${blockX + blockWidth}cm\n🏠 Oda genişliği: ${roomWidth}cm\n\n💡 Çözüm: X pozisyonunu küçültün veya çıkıntı genişliğini azaltın.`
-        };
-      }
-      
-      if (blockY + blockLength > roomLength) {
-        return {
-          isValid: false,
-          error: `❌ Çıkıntı oda sınırlarını aşıyor!\n\n🔍 Problem: Çıkıntı oda uzunluğunu aşıyor\n📐 Hesaplama: ${blockY} (Y pozisyonu) + ${blockLength} (uzunluk) = ${blockY + blockLength}cm\n🏠 Oda uzunluğu: ${roomLength}cm\n\n💡 Çözüm: Y pozisyonunu küçültün veya çıkıntı uzunluğunu azaltın.`
-        };
-      }
-    }
-    
-    return { isValid: true };
-  }
 
   /**
    * Validate email address

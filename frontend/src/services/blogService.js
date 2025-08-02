@@ -88,6 +88,21 @@ class BlogService extends BaseService {
   }
 
   /**
+   * Check if design is already published to blog
+   * @param {string} designId - Design ID to check
+   * @returns {Promise<boolean>} True if design is published
+   */
+  isDesignPublished = async (designId) => {
+    try {
+      const response = await this.api.get(`/blog/designs/${designId}/published-status`);
+      return response.data.is_published || false;
+    } catch (error) {
+      console.warn('Error checking design publish status:', error);
+      return false;
+    }
+  }
+
+  /**
    * Publish design to blog
    * @param {string} designId - Design ID to publish
    * @param {Object} blogPostData - Blog post data

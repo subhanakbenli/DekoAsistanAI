@@ -38,15 +38,7 @@ class RoomDesignUtils {
     return ValidationUtils.validateRoomForm(form);
   }
 
-  /**
-   * Validate room block/extension
-   * @param {Object} block - Block data
-   * @param {Object} roomDimensions - Room dimensions {width, length}
-   * @returns {Object} {isValid: boolean, error: string}
-   */
-  static validateBlock(block, roomDimensions) {
-    return ValidationUtils.validateRoomBlock(block, roomDimensions);
-  }
+
 
   /**
    * Calculate room area
@@ -138,5 +130,4 @@ export default RoomDesignUtils;
 
 // Legacy exports for backward compatibility
 export const validateForm = RoomDesignUtils.validateForm;
-export const validateBlock = RoomDesignUtils.validateBlock;
 export const generateDesignSuggestion = RoomDesignUtils.generateDesignSuggestion;

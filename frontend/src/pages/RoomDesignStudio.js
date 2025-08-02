@@ -21,7 +21,6 @@ const RoomDesignStudio = memo(() => {
   // Extract needed props - cleaner destructuring ✨
   const {
     form,
-    newBlock,
     result,
     isLoading,
     moodBoard,
@@ -29,9 +28,6 @@ const RoomDesignStudio = memo(() => {
     isMoodBoardLoading,
     isConnected,
     handleChange,
-    handleExtraChange,
-    addBlock,
-    removeBlock,
     handleSubmit
   } = roomDesignState;
 
@@ -71,13 +67,9 @@ const RoomDesignStudio = memo(() => {
               <div className="space-y-6">
                 <StudioSidebar
                   form={form}
-                  newBlock={newBlock}
                   result={result}
                   isLoading={isLoading}
                   handleChange={handleChange}
-                  handleExtraChange={handleExtraChange}
-                  addBlock={addBlock}
-                  removeBlock={removeBlock}
                   handleSubmit={handleSubmit}
                 />
               </div>
