@@ -19,7 +19,7 @@ const BlogFilters = memo(({
   const hasActiveFilters = filters.room_type || filters.design_style || filters.search;
 
   return (
-    <div className="bg-gray-800 rounded-xl border border-gray-700 p-6 sticky top-24">
+    <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
       
       {/* Header */}
       <div className="flex items-center justify-between mb-6">

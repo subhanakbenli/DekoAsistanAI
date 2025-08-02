@@ -32,6 +32,7 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
   const tabs = [
     { id: 'overview', label: 'Genel Bakış', icon: '🎨' },
     { id: 'moodboard', label: "Deko'nun Hayali", icon: '🖼️' },
+    { id: 'userinput', label: 'Kullanıcı Girdileri', icon: '📝' },
     { id: 'products', label: 'Ürünler', icon: '🛍️' }
   ];
 
@@ -234,6 +235,13 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
               </div>
             )}
 
+            {/* User Input Tab */}
+            {activeTab === 'userinput' && (
+              <div className="animate-fadeIn">
+                <UserInputSection result={result} />
+              </div>
+            )}
+
           </div>
         </div>
       ) : (
@@ -330,21 +338,25 @@ const MoodBoardSection = ({
         <div className="space-y-6 animate-fadeIn">
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-xl filter blur-lg opacity-50 group-hover:opacity-70 transition-opacity"></div>
-            <img 
-              src={
-                moodBoard.image_data?.base64 
-                  ? `data:image/png;base64,${moodBoard.image_data.base64}`
-                  : moodBoard.image_data?.file_path 
-                    ? `http://localhost:8000/static/mood_boards/${moodBoard.image_data.file_path.split('\\').pop().split('/').pop()}`
-                    : null
-              }
-              alt="Oda Görselleştirmesi"
-              className="relative w-full rounded-xl shadow-2xl border border-white/10 hover:border-white/20 transition-all duration-300"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
-            />
+            {(() => {
+              const imageSrc = moodBoard.image_data?.base64 
+                ? `data:image/png;base64,${moodBoard.image_data.base64}`
+                : moodBoard.image_data?.file_path 
+                  ? `http://localhost:8000/static/mood_boards/${moodBoard.image_data.file_path.split('\\').pop().split('/').pop()}`
+                  : moodBoard.image_data;
+              
+              return (
+                <img 
+                  src={imageSrc}
+                  alt="Oda Görselleştirmesi"
+                  className="relative w-full rounded-xl shadow-2xl border border-white/10 hover:border-white/20 transition-all duration-300"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'block';
+                  }}
+                />
+              );
+            })()}
             <div className="hidden bg-red-900/80 backdrop-blur-sm border border-red-500/30 p-6 rounded-xl text-center">
               <span className="text-red-200">❌ Deko'nun hayali yüklenemedi</span>
             </div>
@@ -411,6 +423,124 @@ const MoodBoardSection = ({
           </p>
         </div>
       )}
+    </div>
+  );
+};
+
+/**
+ * User Input Section - Kullanıcının girdiği bilgileri gösterir
+ */
+const UserInputSection = ({ result }) => {
+  const hasUserInput = result.notes || result.width || result.length || result.height;
+
+  if (!hasUserInput) {
+    return (
+      <div className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-2xl p-12 border border-white/10 text-center">
+        <div className="space-y-4">
+          <div className="bg-gradient-to-br from-yellow-500/20 to-amber-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
+            <span className="text-4xl">📝</span>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-gray-300 mb-2">Kullanıcı Girdisi Yok</h3>
+            <p className="text-gray-500 text-sm">
+              Bu tasarım için kullanıcı tarafından<br />
+              özel not veya boyut bilgisi verilmemiş
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center space-x-3">
+          <div className="bg-gradient-to-br from-yellow-500 to-amber-500 p-3 rounded-lg">
+            <span className="text-xl">📝</span>
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-white">Kullanıcı Girdileri</h3>
+            <p className="text-gray-400 text-sm">Tasarım oluşturulurken verilen özel bilgiler</p>
+          </div>
+        </div>
+
+        {/* Kullanıcı Notları */}
+        {result.notes && (
+          <div className="bg-gradient-to-br from-yellow-900/40 to-amber-900/40 backdrop-blur-sm rounded-xl p-4 border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300">
+            <div className="flex items-start space-x-3">
+              <div className="bg-yellow-500/20 p-2 rounded-lg flex-shrink-0 mt-1">
+                <span className="text-lg">💭</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-yellow-300 font-semibold mb-3">Özel Notlar & İstekler</h4>
+                <div className="bg-yellow-950/30 rounded-lg p-4 border border-yellow-500/20">
+                  <p className="text-white leading-relaxed">{result.notes}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Oda Boyutları */}
+        {(result.width || result.length || result.height) && (
+          <div className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 backdrop-blur-sm rounded-xl p-4 border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-cyan-500/20 p-2 rounded-lg">
+                <span className="text-lg">📐</span>
+              </div>
+              <h4 className="text-cyan-300 font-semibold">Belirtilen Oda Boyutları</h4>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {result.width && (
+                <div className="bg-cyan-950/30 rounded-lg p-4 text-center border border-cyan-500/20">
+                  <div className="text-cyan-400 text-sm font-medium mb-1">Genişlik</div>
+                  <div className="text-2xl font-bold text-white">{result.width}</div>
+                  <div className="text-cyan-300 text-sm">metre</div>
+                </div>
+              )}
+              {result.length && (
+                <div className="bg-cyan-950/30 rounded-lg p-4 text-center border border-cyan-500/20">
+                  <div className="text-cyan-400 text-sm font-medium mb-1">Uzunluk</div>
+                  <div className="text-2xl font-bold text-white">{result.length}</div>
+                  <div className="text-cyan-300 text-sm">metre</div>
+                </div>
+              )}
+              {result.height && (
+                <div className="bg-cyan-950/30 rounded-lg p-4 text-center border border-cyan-500/20">
+                  <div className="text-cyan-400 text-sm font-medium mb-1">Yükseklik</div>
+                  <div className="text-2xl font-bold text-white">{result.height}</div>
+                  <div className="text-cyan-300 text-sm">metre</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Ek Bilgi */}
+        <div className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 backdrop-blur-sm rounded-xl p-4 border border-indigo-500/20">
+          <div className="flex items-center space-x-3">
+            <div className="bg-indigo-500/20 p-2 rounded-lg">
+              <span className="text-lg">💡</span>
+            </div>
+            <div>
+              <h4 className="text-indigo-300 font-semibold mb-2">Tasarım Bilgileri</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-indigo-400">Oda Tipi:</span>
+                  <span className="text-white ml-2 font-medium">{result.room_type}</span>
+                </div>
+                <div>
+                  <span className="text-indigo-400">Tasarım Stili:</span>
+                  <span className="text-white ml-2 font-medium">{result.design_style}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
