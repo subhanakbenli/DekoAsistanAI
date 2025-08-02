@@ -23,66 +23,76 @@ class GeminiPrompts:
             str: Formatlanmış prompt
         """
         return f"""
-Sen bir uzman iç mimar ve dekorasyon danışmanısın. Türkiye'de yaşayan bir kullanıcı için tasarım önerisi hazırlayacaksın.
+Sen bir konut iç mimarı ve ev dekorasyon uzmanısın. Türkiye'de yaşayan bir aile/kişi için **EV İÇİ KONUT ODASI** tasarım önerisi hazırlayacaksın.
 
-**Kullanıcı Bilgileri:**
-- Oda Tipi: {room_type}
+**KONUT BİLGİLERİ:**
+- Ev Odası Tipi: {room_type} (bu bir konut/ev odası - otel, ofis, restoran değil)
 - Tasarım Stili: {design_style}
 {additional_context}- Özel İstekler: {notes}
+
+**ÖNEMLİ KONUT KURALLARI:**
+- Bu bir EV/KONUT içi tasarımıdır - ticari mekan değil
+- Aile yaşamına uygun, ev konforu odaklı olmalı
+- Yaşanabilir, fonksiyonel ev odası tasarımı yapacaksın
+- Salon = Oturma odası/living room (düğün salonu değil!)
 
 **ÖNEMLİ:** Cevabını mutlaka aşağıdaki JSON formatında ver. Başka hiçbir metin ekleme, sadece JSON:
 
 {{
-  "title": "Tasarım başlığı (maksimum 60 karakter)",
-  "description": "Bu tasarım hakkında detaylı açıklama. Renk paleti, atmosfer, stil özellikleri hakkında bilgi ver. Kullanıcının renk tercihlerini ve ürün kategorilerini de dikkate al.",
-  "hashtags": ["#genel_kategori", "#stil", "#oda_tipi", "#renk", "#atmosfer", "#malzeme", "#ozellik1", "#ozellik2", "#detay1", "#detay2"],
+  "title": "Ev odası tasarım başlığı (maksimum 60 karakter)",
+  "description": "Bu konut odası tasarımı hakkında detaylı açıklama. Ev yaşamına uygun renk paleti, aile atmosferi, konut stil özellikleri hakkında bilgi ver. Kullanıcının renk tercihlerini ve ev ürün kategorilerini de dikkate al.",
+  "hashtags": ["#home_interior", "#residential_design", "#oda_tipi", "#renk", "#atmosfer", "#malzeme", "#ozellik1", "#ozellik2", "#detay1", "#detay2"],
   "products": [
     {{
-      "category": "Kategori adı",
-      "name": "Ürün adı",
-      "description": "Ürün detayları ve neden önerildiği"
+      "category": "Ev Mobilyaları",
+      "name": "Konut ürün adı",
+      "description": "Ev yaşamına uygun ürün detayları ve neden ev için önerildiği"
     }},
     {{
-      "category": "Kategori adı",
-      "name": "Ürün adı",
-      "description": "Ürün detayları ve neden önerildiği"
+      "category": "Ev Tekstili",
+      "name": "Ev ürün adı", 
+      "description": "Aile yaşamına uygun ürün detayları"
     }}
   ]
 }}
 
 **Format Kuralları:**
-- "title": Kısa ve çekici başlık (maksimum 60 karakter)
-- "description": Tasarım konsepti hakkında kapsamlı açıklama (2-4 cümle). Kullanıcının seçtiği renk paletini ve ürün tercihlerini de açıklamaya dahil et.
-- "hashtags": TAM 10 ADET hashtag listesi - GENELDEN ÖZELE SIRALI
-  - # ile başlamalı (örn: "#modern", "#living_room")
-  - snake_case kullan (örn: "#living_room", "#neutral_colors")
-  - İngilizce kelimeler kullan, Türkçe karakter yok
+- "title": Kısa ve çekici **EV ODASI** başlığı (maksimum 60 karakter)
+- "description": **KONUT ODASI** tasarım konsepti hakkında kapsamlı açıklama (2-4 cümle). Ev yaşamı, aile konforu vurgula. Kullanıcının seçtiği renk paletini ve ev ürün tercihlerini açıklamaya dahil et.
+- "hashtags": TAM 10 ADET TÜRKÇE hashtag listesi - GENELDEN ÖZELE SIRALI
+  - # ile başlamalı (örn: "#ic_tasarim", "#oturma_odasi", "#aile_evi")
+  - snake_case kullan (örn: "#oturma_odasi", "#notr_renkler", "#aile_dostu")
+  - Sadece Türkçe kelimeler kullan, İngilizce kelime yasak
+  - İlk hashtag mutlaka #ic_tasarim veya #ev_tasarimi olsun
   - Sıralama: En genel kategoriden en spesifik detaya doğru
-  - Renk tercihlerini hashtaslarda da yansıt (örn: "#warm_colors", "#neutral_tones", "#bold_colors")
-  - Örnek sıralama: #interior_design, #modern, #living_room, #neutral_tones, #minimalist, #scandinavian, #cozy, #functional, #natural_light, #urban_style
-- "products": Ürün listesi array'i - Kullanıcının seçtiği ürün kategorilerine odaklan
-  - "category": Ürün kategorisi (örn: "Mobilyalar", "Aydınlatma", "Tekstil", "Dekoratif Objeler" vs.)
-  - "name": Ürün adı (maksimum 40 karakter)
-  - "description": Ürün açıklaması (maksimum 120 karakter) - Renk paleti ile uyumunu da belirt
+  - Renk tercihlerini hashtaslarda da yansıt (örn: "#sicak_renkler", "#notr_tonlar")
+  - Örnek sıralama: #ic_tasarim, #modern, #oturma_odasi, #notr_tonlar, #aile_dostu, #rahat, #fonksiyonel, #dogal_isik, #konforlu, #ev_tasarimi
+- "products": **EV ÜRÜN** listesi array'i - Kullanıcının seçtiği ev ürün kategorilerine odaklan
+  - "category": Ev ürün kategorisi (örn: "Ev Mobilyaları", "Ev Aydınlatması", "Ev Tekstili", "Ev Dekoratif Objeler" vs.)
+  - "name": Ev ürün adı (maksimum 40 karakter)
+  - "description": Ev ürün açıklaması (maksimum 120 karakter) - Ev yaşamına uygunluğu ve renk paleti uyumunu belirt
 
 **Hashtag Örnekleri:**
-- Genel: #interior_design, #home_decor, #room_design
-- Stil: #modern, #classic, #contemporary, #minimalist, #industrial, #scandinavian
-- Oda: #living_room, #bedroom, #kitchen, #bathroom, #office
-- Renk: #neutral_tones, #warm_colors, #cool_colors, #monochrome, #colorful, #earth_tones, #bold_colors, #pastel_colors
-- Atmosfer: #cozy, #elegant, #luxurious, #rustic, #urban, #vintage
-- Malzeme: #wood, #metal, #glass, #stone, #fabric, #leather
-- Özellikler: #spacious, #compact, #bright, #natural_light, #functional, #artistic
+- Genel: #ic_tasarim, #ev_tasarimi, #aile_evi, #konut_tasarimi
+- Stil: #modern_ev, #klasik_ev, #cagdas_konut, #minimalist_ev, #iskandinavya_evi
+- Oda: #oturma_odasi, #ev_yatak_odasi, #aile_mutfagi, #ev_banyosu, #calisma_odasi
+- Renk: #notr_ev, #sicak_ev_renkleri, #soguk_ev_tonlari, #rahat_renkler, #aile_dostu_renkler
+- Atmosfer: #rahat_ev, #sik_konut, #konforlu_yasam, #aile_konforu, #ev_sicakligi
+- Malzeme: #ev_ahsap, #konut_malzemeleri, #aile_guvenli_malzemeler
+- Özellikler: #ferah_ev, #kompakt_yasam, #aydinlik_ev, #fonksiyonel_aile, #konforlu_ev
 
 **Önemli:**
-- TAM 10 adet hashtag oluştur, eksik veya fazla olmasın
-- Hashtag sıralaması çok önemli: en genel kategoriden başla, en spesifik detaylarla bitir
-- Kullanıcının seçtiği renk paletini ve ürün kategorilerini öncelikle dikkate al
-- Renk tercihlerini hem description'da hem hashtag'lerde yansıt
-- Sadece kullanıcının seçtiği ürün kategorilerinden önerilerde bulun (seçim yapmışlarsa)
-- Kaç ürün önereceğin sana kalmış (önerilen: 6-12 ürün)
+- TAM 10 adet TÜRKÇE hashtag oluştur, eksik veya fazla olmasın
+- İlk hashtag mutlaka #ic_tasarim veya #ev_tasarimi olsun
+- Hashtag sıralaması: en genel ev kategorisinden başla, en spesifik ev detaylarıyla bitir
+- Kullanıcının seçtiği renk paletini ve ev ürün kategorilerini öncelikle dikkate al
+- Renk tercihlerini hem description'da hem hashtag'lerde ev yaşamı bağlamında yansıt
+- Sadece kullanıcının seçtiği ev ürün kategorilerinden önerilerde bulun (seçim yapmışlarsa)
+- Hashtag'lar sadece Türkçe olmalı, İngilizce kelime kullanma
+- Kaç ürün önereceğin sana kalmış (önerilen: 6-12 ev ürünü)
 - Sadece JSON formatında cevap ver, başka hiçbir metin ekleme
-- Kullanıcının özel isteklerini dikkate al
+- Kullanıcının özel isteklerini ev yaşamı bağlamında dikkate al
+- SALON = OTURMA ODASI/LİVİNG ROOM (düğün salonu değil!)
 """
 
     @staticmethod
@@ -100,42 +110,49 @@ Sen bir uzman iç mimar ve dekorasyon danışmanısın. Türkiye'de yaşayan bir
             str: Hibrit yaklaşım için formatlanmış prompt
         """
         return f"""
-Sen bir uzman iç mimar ve dekorasyon danışmanısın. Türkiye'de yaşayan bir kullanıcı için tasarım önerisi hazırlayacaksın.
+Sen bir konut iç mimarı ve ev dekorasyon uzmanısın. Türkiye'de yaşayan bir aile/kişi için **EV İÇİ KONUT ODASI** hibrit tasarım önerisi hazırlayacaksın.
 
-**Kullanıcı Bilgileri:**
-- Oda Tipi: {room_type}
+**KONUT BİLGİLERİ:**
+- Ev Odası Tipi: {room_type} (bu bir konut/ev odası - otel, ofis, restoran değil)
 - Tasarım Stili: {design_style}
 {additional_context}- Özel İstekler: {notes}
 
-**ÖNEMLİ HİBRİT ÜRÜN STRATEJİSİ:**
-1. **ÖNCE GERÇEK ÜRÜN ARA**: Her ürün kategorisi için find_product fonksiyonunu kullanarak veritabanında ürün ara
-2. **BULAMAZSAN HAYALİ OLUŞTUR**: Eğer find_product fonksiyonu ürün bulamazsa, tasarıma uygun hayali ürün oluştur
-3. **6-10 ÜRÜN ÖNER**: Toplam 6-10 ürün önerisi yap (gerçek + hayali karışım olabilir)
-4. **TUTARLI TASARIM**: Tüm ürünler (gerçek ve hayali) birbirleriyle ve genel tasarım konseptiyle uyumlu olsun
+**ÖNEMLİ KONUT KURALLARI:**
+- Bu bir EV/KONUT içi tasarımıdır - ticari mekan değil
+- Aile yaşamına uygun, ev konforu odaklı olmalı
+- Yaşanabilir, fonksiyonel ev odası tasarımı yapacaksın
+- Salon = Oturma odası/living room (düğün salonu değil!)
 
-**GERÇEK ÜRÜN ARAMA KURALLARI:**
-- Her ürün kategorisi için find_product(category="kategori_adi", style="{design_style}", color="renk_tercihi") çağır
+**ÖNEMLİ HİBRİT EV ÜRÜN STRATEJİSİ:**
+1. **ÖNCE GERÇEK EV ÜRÜN ARA**: Her ev ürün kategorisi için find_product fonksiyonunu kullanarak veritabanında ürün ara
+2. **BULAMAZSAN HAYALİ EV ÜRÜN OLUŞTUR**: Eğer find_product fonksiyonu ürün bulamazsa, ev tasarımına uygun hayali ürün oluştur
+3. **6-10 EV ÜRÜN ÖNER**: Toplam 6-10 ev ürün önerisi yap (gerçek + hayali karışım olabilir)
+4. **TUTARLI EV TASARIM**: Tüm ürünler (gerçek ve hayali) birbirleriyle ve genel ev tasarım konseptiyle uyumlu olsun
+
+**GERÇEK EV ÜRÜN ARAMA KURALLARI:**
+- Her ev ürün kategorisi için find_product(category="kategori_adi", style="{design_style}", color="renk_tercihi") çağır
 - Kategori zorunlu, style ve color opsiyonel
-- Bulunan ürünleri tasarımda kullan
+- Bulunan ev ürünlerini konut tasarımında kullan
 
-**HAYALİ ÜRÜN OLUŞTURMA KURALLARI:**
+**HAYALİ EV ÜRÜN OLUŞTURMA KURALLARI:**
 - Veritabanı şemasına uygun olsun (product_name, category, style, color, description, price)
-- Türkiye pazarına uygun gerçekçi fiyat belirle (TL cinsinden)
-- Diğer ürünlerle stil ve renk uyumu olsun
-- Oda boyutları ve kullanım amacına uygun boyutlar ver
+- Türkiye pazarına uygun gerçekçi ev ürün fiyatı belirle (TL cinsinden)
+- Diğer ev ürünleriyle stil ve renk uyumu olsun
+- Ev oda boyutları ve aile kullanım amacına uygun boyutlar ver
+- Aile yaşamına uygun güvenli malzemeler seç (çocuk güvenliği vs.)
 
 **CEVAP FORMATI:**
 Mutlaka aşağıdaki JSON formatında cevap ver:
 
 {{
-  "title": "Tasarım başlığı (maksimum 60 karakter)",
-  "description": "Detaylı tasarım açıklaması (2-4 cümle). Renk paleti, atmosfer, stil özelliklerini açıkla.",
-  "hashtags": ["#genel_kategori", "#stil", "#oda_tipi", "#renk", "#atmosfer", "#malzeme", "#ozellik1", "#ozellik2", "#detay1", "#detay2"],
+  "title": "Ev odası tasarım başlığı (maksimum 60 karakter)",
+  "description": "Detaylı konut odası tasarım açıklaması (2-4 cümle). Ev yaşamı, aile konforu, renk paleti, atmosfer, stil özelliklerini açıkla.",
+  "hashtags": ["#ic_tasarim", "#ev_tasarimi", "#oda_tipi", "#renk", "#atmosfer", "#malzeme", "#ozellik1", "#ozellik2", "#detay1", "#detay2"],
   "products": [
     {{
-      "category": "Kategori adı",
-      "name": "Ürün adı", 
-      "description": "Ürün detayları ve neden önerildiği",
+      "category": "Ev Mobilyaları",
+      "name": "Ev ürün adı", 
+      "description": "Ev ürün detayları ve neden ev için önerildiği",
       "price": 2500,
       "style": "modern",
       "color": "beyaz"
@@ -144,16 +161,19 @@ Mutlaka aşağıdaki JSON formatında cevap ver:
 }}
 
 **Hashtag Kuralları:**
-- TAM 10 ADET hashtag (genelden özele sıralı)
-- # ile başlayan İngilizce kelimeler
-- snake_case kullan (örn: #living_room, #neutral_colors)
-- Sıralama: En genel kategoriden en spesifik detaya
+- TAM 10 ADET TÜRKÇE hashtag (genelden özele sıralı)
+- # ile başlayan Türkçe kelimeler, İngilizce yasak
+- snake_case kullan (örn: #oturma_odasi, #notr_renkler, #aile_dostu)
+- İlk hashtag mutlaka #ic_tasarim veya #ev_tasarimi olsun
+- Sıralama: En genel ev kategorisinden en spesifik ev detayına
 
-**Son Hatırlatma:**
-- ÖNCE find_product fonksiyonunu kullan
-- Bulamazsan hayali ürün oluştur
+**Son EV TASARIM Hatırlatması:**
+- ÖNCE find_product fonksiyonunu kullanarak ev ürünü ara
+- Bulamazsan aile yaşamına uygun hayali ev ürün oluştur
 - Sadece JSON formatında cevap ver
-- Gerçek ve hayali ürünler arasında tutarlılık sağla
+- Gerçek ve hayali ev ürünleri arasında tutarlılık sağla
+- SALON = OTURMA ODASI/LİVİNG ROOM (düğün salonu değil!)
+- Ev yaşamı ve aile konforu odaklı tasarım yap
 """
 
     @staticmethod
@@ -183,11 +203,19 @@ Mutlaka aşağıdaki JSON formatında cevap ver:
         Returns:
             str: Imagen prompt geliştirme talebi
         """
+        # Map room type to clear home terminology
+        home_room_type = PromptUtils.map_room_type_to_home_english(room_type)
+        
         return f"""
-Sen bir AI görsel üretim uzmanısın. Aşağıdaki iç mekan tasarım bilgilerini kullanarak Imagen 4 modeli için optimize edilmiş bir prompt oluştur.
+Sen bir AI görsel üretim uzmanısın. Aşağıdaki **KONUT İÇ MEKAN** tasarım bilgilerini kullanarak Imagen 4 modeli için optimize edilmiş bir prompt oluştur.
 
-**Tasarım Bilgileri:**
-- Oda Tipi: {room_type}
+**ÖNEMLİ KONUT KURALLARI:**
+- Bu bir EV/KONUT içi tasarımıdır - otel, ofis, restoran, düğün salonu değil
+- Yaşam alanı, aile kullanımı için tasarlanmış ev odası olmalı
+- Konut mobilyaları ve ev yaşam tarzını yansıtmalı
+
+**Konut İç Mekan Tasarım Bilgileri:**
+- Ev Odası Tipi: {home_room_type}
 - Tasarım Stili: {design_style}
 {dimensions_info}{color_info}- Kullanıcı Notları: {notes}
 - Tasarım Başlığı: {design_title}
@@ -196,21 +224,23 @@ Sen bir AI görsel üretim uzmanısın. Aşağıdaki iç mekan tasarım bilgiler
 {products_text}
 
 **Görevin:**
-Bu bilgileri kullanarak Imagen 4 için optimize edilmiş bir oda görseli prompt'u oluştur. Prompt:
+Bu bilgileri kullanarak Imagen 4 için **EV İÇİ KONUT ODASI** görseli prompt'u oluştur. Prompt:
 
-1. **Görsel Stil**: Photo-realistic interior room visualization  
-2. **İçerik**: A complete {design_style.lower()} style {room_type.lower()} interior room
-3. **Renkler**: Seçilen renk paletini odada doğal şekilde kullan
-4. **Ürünler**: Include the suggested products naturally in the room scene
-5. **Detaylar**: Specific colors, materials, furniture pieces, lighting, textures from design description
-6. **Kalite**: High-quality, professional interior photography style, realistic lighting
-7. **Kompozisyon**: Well-furnished room with proper perspective and natural arrangement
+1. **Görsel Stil**: Photo-realistic HOME interior room visualization  
+2. **İçerik**: A complete residential {design_style.lower()} style {home_room_type.lower()} interior
+3. **Konut Atmosferi**: Family-friendly home environment, not commercial space
+4. **Renkler**: Seçilen renk paletini ev odasında doğal şekilde kullan
+5. **Ev Mobilyaları**: Include home furniture and residential products naturally
+6. **Detaylar**: Home-specific colors, materials, residential furniture, cozy lighting
+7. **Kalite**: High-quality residential interior photography, warm home lighting
+8. **Kompozisyon**: Well-furnished family home room with lived-in comfort
 
-**Önemli**: 
-- Mood board DEĞİL, gerçekçi oda görseli oluştur
-- Seçilen renk paletini odanın ana renk şeması olarak kullan
-- Önerilen ürünleri odada doğal şekilde yerleştir
-- Prompt'u İngilizce olarak yaz ve Imagen 4'ün anlayabileceği şekilde düzenle
+**Kritik Konut Vurguları**: 
+- "residential home interior" kelimelerini kullan
+- "family home", "house interior", "domestic space" terimleri ekle  
+- Commercial, hotel, restaurant, office, venue terimlerinden kaçın
+- Ev yaşamına uygun, aile dostu atmosfer oluştur
+- Prompt'u İngilizce olarak yaz ve konut odası vurgusunu unutma
 - Maksimum 500 karakter olsun
 
 Sadece prompt'u döndür, açıklama yapma.
@@ -219,21 +249,68 @@ Sadece prompt'u döndür, açıklama yapma.
     @staticmethod
     def get_fallback_imagen_prompt(room_type: str, design_style: str) -> str:
         """
-        Imagen 4 için yedek prompt (Gemini başarısız olursa)
+        Imagen 4 için yedek konut odası prompt'u (Gemini başarısız olursa)
         
         Args:
-            room_type: Oda tipi
+            room_type: Ev odası tipi
             design_style: Tasarım stili
             
         Returns:
-            str: Yedek Imagen prompt'u
+            str: Yedek konut Imagen prompt'u
         """
-        return f"Photo-realistic {design_style.lower()} style {room_type.lower()} interior, complete furnished room, professional photography, natural lighting, modern composition"
+        # Room type'ı ev odası terminolojisine çevir
+        home_room_type = room_type.lower()
+        if 'salon' in home_room_type or 'oturma' in home_room_type:
+            home_room_type = 'living room'
+        elif 'yatak' in home_room_type:
+            home_room_type = 'bedroom'
+        elif 'mutfak' in home_room_type:
+            home_room_type = 'kitchen'
+        elif 'banyo' in home_room_type:
+            home_room_type = 'bathroom'
+        
+        return f"Photo-realistic residential {design_style.lower()} style home {home_room_type} interior, family house room, cozy domestic space, home furniture, warm lighting, lived-in comfort"
 
 class PromptUtils:
     """
     Prompt'lar için yardımcı fonksiyonlar
     """
+    
+    @staticmethod
+    def map_room_type_to_home_english(room_type: str) -> str:
+        """
+        Türkçe oda tiplerini ev odası İngilizce terimlerine çevirir
+        
+        Args:
+            room_type: Türkçe oda tipi
+            
+        Returns:
+            str: İngilizce ev odası terimi
+        """
+        room_mapping = {
+            'salon': 'home living room',
+            'oturma odası': 'family living room', 
+            'oturma': 'living room',
+            'yatak odası': 'home bedroom',
+            'yatak': 'bedroom',
+            'mutfak': 'home kitchen',
+            'banyo': 'home bathroom',
+            'çalışma odası': 'home office',
+            'ofis': 'home office',
+            'yemek odası': 'dining room',
+            'balkon': 'home balcony',
+            'teras': 'home terrace',
+            'çocuk odası': 'children bedroom',
+            'misafir odası': 'guest bedroom'
+        }
+        
+        room_lower = room_type.lower()
+        for turkish_term, english_term in room_mapping.items():
+            if turkish_term in room_lower:
+                return english_term
+        
+        # Fallback: add "home" prefix to make it clear it's residential
+        return f"home {room_type.lower()}"
     
     @staticmethod
     def build_additional_context(parsed_info: dict) -> str:

@@ -76,7 +76,7 @@ class GeminiService(BaseService):
             logger.error(f"Error generating design suggestion: {str(e)}")
             return self._create_fallback_response(room_type, design_style)
     
-    async def generate_hybrid_design_suggestion(self, room_type: str, design_style: str, notes: str, db_session) -> Dict[str, Any]:
+    async def generate_hybrid_design_suggestion(self, room_type: str, design_style: str, notes: str, price: float, db_session) -> Dict[str, Any]:
         """
         Generate hybrid design suggestion using Function Calling for real products.
         
@@ -84,6 +84,7 @@ class GeminiService(BaseService):
             room_type: Type of room (Living Room, Bedroom, etc.)
             design_style: Design style (Modern, Classic, etc.)
             notes: User's special requests and room information
+            price: Price limit in TL (optional)
             db_session: Database session for product search
             
         Returns:
@@ -96,12 +97,12 @@ class GeminiService(BaseService):
             parsed_info = self.notes_parser.parse_notes(notes) if notes.strip() else {}
             logger.debug(f"Parsed notes: {parsed_info}")
             
-            # Step 2: Create hybrid prompt
-            prompt = self._create_hybrid_design_prompt(room_type, design_style, notes, parsed_info)
+            # Step 2: Create hybrid prompt with price constraint
+            prompt = self._create_hybrid_design_prompt(room_type, design_style, notes, parsed_info, price)
             
-            # Step 3: Get response from Gemini with Function Calling
+            # Step 3: Get response from Gemini with Function Calling (pass price constraint)
             response_text = await self.gemini_client.generate_content_with_function_calling(
-                prompt, db_session, self.product_service
+                prompt, db_session, self.product_service, price
             )
             
             if not response_text:
@@ -136,10 +137,15 @@ class GeminiService(BaseService):
             additional_context=additional_context
         )
     
-    def _create_hybrid_design_prompt(self, room_type: str, design_style: str, notes: str, parsed_info: Dict[str, Any]) -> str:
+    def _create_hybrid_design_prompt(self, room_type: str, design_style: str, notes: str, parsed_info: Dict[str, Any], price: float = None) -> str:
         """Create hybrid design prompt with Function Calling instructions."""
         # Build additional context from parsed info
         additional_context = PromptUtils.build_additional_context(parsed_info)
+        
+        # Add price constraint to context if provided
+        if price and price > 0:
+            price_context = f"\n\n💰 ÖNEMLI: Kullanıcının bütçe limiti {price} TL'dir. Önerilen ürünlerin toplam maliyeti bu bütçeyi aşmamalıdır."
+            additional_context += price_context
         
         # Use hybrid prompt template
         return GeminiPrompts.get_hybrid_design_suggestion_prompt(
@@ -261,16 +267,16 @@ class GeminiService(BaseService):
         Delegates to hashtag service for database operations.
         """
         try:
-            english_hashtags = hashtags.get("en", [])
             turkish_hashtags = hashtags.get("tr", [])
             
-            if english_hashtags:
+            if turkish_hashtags:
+                # Artık sadece Türkçe hashtag'ları kaydediyoruz
                 await self.hashtag_service.save_hashtags_to_db(
-                    db, design_id, english_hashtags, turkish_hashtags
+                    db, design_id, [], turkish_hashtags  # English boş, Turkish dolu
                 )
-                logger.info(f"Hashtags saved for design {design_id}")
+                logger.info(f"Turkish hashtags saved for design {design_id}")
             else:
-                logger.warning(f"No hashtags to save for design {design_id}")
+                logger.warning(f"No Turkish hashtags to save for design {design_id}")
                 
         except Exception as e:
             logger.error(f"Error saving hashtags for design {design_id}: {str(e)}")

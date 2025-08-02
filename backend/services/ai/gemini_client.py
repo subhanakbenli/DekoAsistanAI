@@ -74,7 +74,7 @@ class GeminiClient(BaseService):
             logger.error(f"Gemini API error: {str(e)}")
             return None
     
-    async def generate_content_with_function_calling(self, prompt: str, db_session, product_service) -> Optional[str]:
+    async def generate_content_with_function_calling(self, prompt: str, db_session, product_service, price: float = None) -> Optional[str]:
         """
         Generate content using Gemini API with Function Calling support.
         Handles product search through find_product function calls.
@@ -83,6 +83,7 @@ class GeminiClient(BaseService):
             prompt: Input prompt for generation
             db_session: Database session for product search
             product_service: ProductService instance
+            price: Price limit for product filtering (optional)
             
         Returns:
             Generated content or None if failed
@@ -91,8 +92,8 @@ class GeminiClient(BaseService):
             logger.info("Starting Function Calling session with Gemini")
             logger.debug(f"Prompt length: {len(prompt)} characters")
             
-            # Initialize function call handler
-            function_handler = FunctionCallHandler(product_service)
+            # Initialize function call handler with price constraint
+            function_handler = FunctionCallHandler(product_service, price)
             
             # Start chat session with tools
             chat = self.model_with_tools.start_chat()

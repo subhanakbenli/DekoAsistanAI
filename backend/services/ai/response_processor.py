@@ -112,7 +112,7 @@ class ResponseProcessor:
         return processed_products
     
     def _process_hashtags(self, hashtags: List[str]) -> Dict[str, Any]:
-        """Process and validate hashtags."""
+        """Process and validate hashtags - artık direkt Türkçe geliyor."""
         if not hashtags or len(hashtags) != 10:
             logger.warning(f"Invalid hashtags received: {hashtags}. Expected 10 hashtags.")
             return {"en": [], "tr": [], "display": []}
@@ -126,8 +126,13 @@ class ResponseProcessor:
             tag = tag.lower().replace(' ', '_').replace('-', '_')
             validated_hashtags.append(tag)
         
-        # Translate hashtags
-        return self.hashtag_service.translate_hashtags(validated_hashtags)
+        # AI artık Türkçe üretiyor, çeviri gereksiz
+        return {
+            "en": [],  # İngilizce empty
+            "tr": validated_hashtags,  # Türkçe hashtag'lar
+            "display": validated_hashtags,  # Display için Türkçe
+            "unknown": []
+        }
     
     def _parse_text_response(self, response_text: str, room_type: str, design_style: str) -> Dict[str, Any]:
         """Fallback text parsing for non-JSON responses."""

@@ -48,9 +48,10 @@ class FunctionCallHandler:
     Handles Function Calls from Gemini for product search.
     """
     
-    def __init__(self, product_service):
+    def __init__(self, product_service, price_limit: float = None):
         self.product_service = product_service
-        logger.info("FunctionCallHandler initialized")
+        self.price_limit = price_limit
+        logger.info(f"FunctionCallHandler initialized with price limit: {price_limit}")
     
     async def handle_find_product(self, db_session, function_call) -> genai.protos.FunctionResponse:
         """
@@ -73,13 +74,14 @@ class FunctionCallHandler:
             
             logger.info(f"Function call: find_product(category={category}, style={style}, color={color}, limit={limit})")
             
-            # Search products in database
+            # Search products in database with price constraint
             products = await self.product_service.find_products_by_criteria(
                 db=db_session,
                 category=category,
                 style=style,
                 color=color,
-                limit=limit
+                limit=limit,
+                max_price=self.price_limit
             )
             
             # Format response

@@ -26,7 +26,8 @@ class ProductService(BaseService):
         category: str, 
         style: Optional[str] = None, 
         color: Optional[str] = None, 
-        limit: int = 3
+        limit: int = 3,
+        max_price: Optional[float] = None
     ) -> List[Dict[str, Any]]:
         """
         Find products in database matching given criteria.
@@ -37,6 +38,7 @@ class ProductService(BaseService):
             style: Design style (optional)
             color: Color preference (optional)
             limit: Maximum number of products to return
+            max_price: Maximum price limit in TL (optional)
             
         Returns:
             List of product dictionaries matching criteria
@@ -53,9 +55,24 @@ class ProductService(BaseService):
                 additional_filters.append(Product.style.ilike(f"%{style}%"))
             if color:
                 additional_filters.append(Product.color.ilike(f"%{color}%"))
+            if max_price:
+                # Convert TL to kuruş for database comparison
+                max_price_kurus = max_price * 100
+                additional_filters.append(Product.price <= max_price_kurus)
             
             # Apply additional filters with OR logic (more flexible)
-            if additional_filters:
+            # BUT price filter should be AND logic
+            if max_price and additional_filters:
+                # Separate price filter from other filters
+                other_filters = [f for f in additional_filters if f.compare != Product.price.compare]
+                if other_filters:
+                    query = query.where(and_(
+                        Product.price <= max_price_kurus,
+                        or_(*other_filters)
+                    ))
+                else:
+                    query = query.where(Product.price <= max_price_kurus)
+            elif additional_filters:
                 query = query.where(or_(*additional_filters))
             
             # Apply limit and execute
