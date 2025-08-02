@@ -1,7 +1,7 @@
 """
 Models for design system and favorites functionality.
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, JSON, Index
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, JSON, Index, Float
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from config.database import Base
@@ -26,6 +26,7 @@ class Design(Base):
     # User preferences - NEW FIELDS
     color_info = Column(Text, nullable=True)  # Renk paleti bilgisi
     product_categories = Column(JSON, nullable=True)  # Seçilen ürün kategorileri
+    price = Column(Float, nullable=True)  # Fiyat limiti (TL)
     
     # AI response data  
     title = Column(String(255), nullable=False)  # Back to original title
