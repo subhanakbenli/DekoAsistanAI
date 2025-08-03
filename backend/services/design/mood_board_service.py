@@ -197,9 +197,10 @@ class MoodBoardService:
             })
             
             # Create final room visualization data
+            current_time = datetime.now().isoformat()
             mood_board_data = {
                 "mood_board_id": mood_board_id,
-                "created_at": datetime.now().isoformat(),
+                "created_at": current_time,
                 "user_input": {
                     "room_type": room_type,
                     "design_style": design_style,
@@ -213,15 +214,23 @@ class MoodBoardService:
                     "base64": image_data["base64"] if image_data and image_data.get("base64") else None,
                     "format": "PNG",
                     "generated_with": "Imagen 4",
-                    "file_path": image_file_path
+                    "file_path": image_file_path,
+                    "created_at": current_time  # Add created_at to image_data as well
                 },
                 "prompt_used": enhanced_prompt,
                 "generation_metadata": {
                     "model": self.settings.IMAGEN_MODEL_NAME,
-                    "generated_at": datetime.now().isoformat(),
+                    "generated_at": current_time,
                     "success": True
                 }
             }
+            
+            # Debug log mood board data structure
+            logger.info(f"Mood board data structure for {mood_board_id}:")
+            logger.info(f"  - mood_board_id: {mood_board_data.get('mood_board_id')}")
+            logger.info(f"  - created_at: {mood_board_data.get('created_at')}")
+            logger.info(f"  - image_data.created_at: {mood_board_data.get('image_data', {}).get('created_at')}")
+            logger.info(f"  - generation_metadata.generated_at: {mood_board_data.get('generation_metadata', {}).get('generated_at')}")
             
             # Stage 6: Completed
             await websocket_manager.update_mood_board_progress(connection_id, {
@@ -958,9 +967,10 @@ class MoodBoardService:
             })
             
             # Create mood board data
+            current_time = datetime.now().isoformat()
             mood_board_data = {
                 "mood_board_id": mood_board_id,
-                "created_at": datetime.now().isoformat(),
+                "created_at": current_time,
                 "user_input": {
                     "room_type": room_type,
                     "design_style": design_style,
@@ -979,9 +989,22 @@ class MoodBoardService:
                 "image_data": {
                     "base64": image_data["base64"] if image_data else None,
                     "status": "success" if image_data else "failed",
-                    "file_path": image_file_path
+                    "file_path": image_file_path,
+                    "created_at": current_time  # Add created_at to image_data
+                },
+                "generation_metadata": {
+                    "model": "Hybrid (Real + AI)",
+                    "generated_at": current_time,
+                    "success": bool(image_data)
                 }
             }
+            
+            # Debug log mood board data structure for hybrid
+            logger.info(f"Hybrid mood board data structure for {mood_board_id}:")
+            logger.info(f"  - mood_board_id: {mood_board_data.get('mood_board_id')}")
+            logger.info(f"  - created_at: {mood_board_data.get('created_at')}")
+            logger.info(f"  - image_data.created_at: {mood_board_data.get('image_data', {}).get('created_at')}")
+            logger.info(f"  - generation_metadata.generated_at: {mood_board_data.get('generation_metadata', {}).get('generated_at')}")
             
             # Stage 5: Completed (100%)
             # Debug log for completed message

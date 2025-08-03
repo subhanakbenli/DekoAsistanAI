@@ -28,7 +28,20 @@ export const useDesignSubmission = () => {
       const response = await designService.submitDesignRequest(formData, connectionId);
       
       if (response.success) {
-        setResult(response.data);
+        // Merge backend response with original form data to preserve user inputs
+        const resultWithFormData = {
+          ...response.data,
+          // Add user form inputs to result for display in User Inputs tab
+          width: formData.width,
+          length: formData.length,
+          height: formData.height,
+          colorPalette: formData.colorPalette,
+          price: formData.price,
+          notes: formData.notes,
+          productCategories: formData.productCategories
+        };
+        
+        setResult(resultWithFormData);
         
         // Notify that mood board generation might start
         if (connectionId && response.data?.message?.includes('connection:') && onMoodBoardStart) {

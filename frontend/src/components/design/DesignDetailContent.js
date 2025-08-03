@@ -12,11 +12,14 @@ const DesignDetailContent = ({ design }) => {
     hashtags: design.hashtags,
     product_suggestion: design.product_suggestion,
     products: design.products,
-    // Studio'da olmayan ama detayda olan alanlar
+    // Studio'da olmayan ama detayda olan alanlar - Kullanıcı girdileri
     notes: design.notes,
     width: design.width,
     length: design.length,
     height: design.height,
+    colorPalette: design.color_info, // Backend'den gelen renk paleti bilgisi
+    price: design.price, // Backend'den gelen fiyat limiti
+    productCategories: design.product_categories // Backend'den gelen ürün kategorileri
   };
 
   // Mood board verisi, detay sayfasında olmadığı için mock veya null

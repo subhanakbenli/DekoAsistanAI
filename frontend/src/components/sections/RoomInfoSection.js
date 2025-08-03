@@ -16,9 +16,13 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
 
   // Color selection callback'ini optimize et
   const handleColorSelection = useCallback((colorData) => {
+    console.log('RoomInfoSection DEBUG - handleColorSelection called with:', colorData);
+    
     // Form state'e renk bilgisini ekle
     if (colorData.isValid) {
       const colorInfo = colorData.selection;
+      console.log('RoomInfoSection DEBUG - colorInfo to be set:', colorInfo);
+      
       // handleChange kullanarak form'a renk bilgisini ekle
       const event = {
         target: {
@@ -26,7 +30,11 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
           value: colorInfo
         }
       };
+      
+      console.log('RoomInfoSection DEBUG - Calling handleChange with event:', event);
       handleChange(event);
+    } else {
+      console.log('RoomInfoSection DEBUG - colorData is not valid:', colorData);
     }
   }, [handleChange]);
 

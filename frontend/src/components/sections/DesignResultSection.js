@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ProductSuggestionSection from './ProductSuggestionSection';
 import FavoriteButton from '../FavoriteButton';
 import HashtagDisplay from '../HashtagDisplay';
@@ -9,8 +9,8 @@ import ShareToBlog from '../common/ShareToBlog';
  * Features: Modern cards, gradients, animations, better typography
  */
 const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }) => {
-  const [showMoodBoard, setShowMoodBoard] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [showMoodBoard, setShowMoodBoard] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview'); // Genel Bakış varsayılan açık olsun
 
   // Progress mesajları için mapping
   const progressMessages = {
@@ -22,12 +22,6 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
     'completed': "Deko'nun hayali hazırlandı!"
   };
 
-  // Mood board tamamlandığında otomatik göster
-  useEffect(() => {
-    if (moodBoard?.image_data && !showMoodBoard) {
-      setShowMoodBoard(true);
-    }
-  }, [moodBoard?.mood_board_id, moodBoard?.id]);
 
   const tabs = [
     { id: 'overview', label: 'Genel Bakış', icon: '🎨' },
@@ -48,7 +42,7 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     activeTab === tab.id
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg scale-105'
                       : 'text-gray-400 hover:text-white hover:bg-white/5'
@@ -56,6 +50,10 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
                 >
                   <span>{tab.icon}</span>
                   <span>{tab.label}</span>
+                  {/* Moodboard hazır olduğunda yeşil nokta göster */}
+                  {tab.id === 'moodboard' && moodBoard?.image_data && (
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800 animate-pulse"></div>
+                  )}
                 </button>
               ))}
             </div>
@@ -147,7 +145,10 @@ const DesignResultSection = ({ result, moodBoard, progress, isMoodBoardLoading }
                             <div>
                               <p className="text-cyan-300 text-sm font-medium">Boyutlar</p>
                               <p className="text-white font-semibold">
-                                {[result.width, result.length, result.height].filter(Boolean).join(' × ')} m
+                                {result.width != null && result.width !== '' && result.length != null && result.length !== '' && result.height != null && result.height !== ''
+                                  ? `${result.width}×${result.length}×${result.height} cm`
+                                  : [result.width, result.length, result.height].filter(val => val != null && val !== '').map(val => `${val} cm`).join(' × ')
+                                }
                               </p>
                             </div>
                           </div>
@@ -408,7 +409,37 @@ const MoodBoardSection = ({
                     <span className="text-pink-300 text-sm font-medium">Oluşturulma</span>
                   </div>
                   <p className="text-white font-semibold">
-                    {new Date(moodBoard.created_at).toLocaleString('tr-TR')}
+                    {(() => {
+                      // Debug log moodBoard structure
+                      console.log('MoodBoard data structure:', moodBoard);
+                      console.log('moodBoard.created_at:', moodBoard.created_at);
+                      console.log('moodBoard.image_data:', moodBoard.image_data);
+                      console.log('moodBoard.generation_metadata:', moodBoard.generation_metadata);
+                      
+                      try {
+                        // Try multiple potential date sources
+                        let dateValue = moodBoard.created_at || 
+                                       moodBoard.image_data?.created_at || 
+                                       moodBoard.generation_metadata?.generated_at;
+                        
+                        console.log('Using date value:', dateValue);
+                        
+                        if (!dateValue) {
+                          return 'Tarih bilgisi mevcut değil';
+                        }
+                        
+                        const date = new Date(dateValue);
+                        // Geçerli bir tarih mi kontrol et
+                        if (isNaN(date.getTime())) {
+                          console.error('Invalid date:', dateValue);
+                          return 'Geçersiz tarih formatı';
+                        }
+                        return date.toLocaleString('tr-TR');
+                      } catch (error) {
+                        console.error('Date parsing error:', error);
+                        return 'Tarih işlenirken hata oluştu';
+                      }
+                    })()}
                   </p>
                 </div>
                 
@@ -467,7 +498,13 @@ const MoodBoardSection = ({
  * User Input Section - Kullanıcının girdiği bilgileri gösterir
  */
 const UserInputSection = ({ result }) => {
-  const hasUserInput = result.notes || result.width || result.length || result.height;
+  // Use proper null/undefined checks instead of falsy checks to handle 0 values correctly
+  const hasUserInput = result.notes || 
+                      (result.width != null && result.width !== '') || 
+                      (result.length != null && result.length !== '') || 
+                      (result.height != null && result.height !== '') || 
+                      result.colorPalette || 
+                      result.price;
 
   if (!hasUserInput) {
     return (
@@ -502,6 +539,102 @@ const UserInputSection = ({ result }) => {
           </div>
         </div>
 
+        {/* Renk Paleti */}
+        {result.colorPalette && (
+          <div className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 backdrop-blur-sm rounded-xl p-4 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300">
+            <div className="flex items-start space-x-3">
+              <div className="bg-purple-500/20 p-2 rounded-lg flex-shrink-0 mt-1">
+                <span className="text-lg">🎨</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-purple-300 font-semibold mb-3">Seçilen Renk Paleti</h4>
+                
+                {/* Check if colorPalette is an object with palette information */}
+                {(() => {
+                  // If result.colorPalette is an object (from form submission)
+                  if (typeof result.colorPalette === 'object' && result.colorPalette !== null) {
+                    
+                    // Handle palette type selection
+                    if (result.colorPalette.type === 'palette' && result.colorPalette.palette) {
+                      const palette = result.colorPalette.palette;
+                      return (
+                        <div className="space-y-3">
+                          {/* Palette Name and Description */}
+                          <div className="bg-purple-950/30 rounded-lg p-3 border border-purple-500/20">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <h5 className="text-white font-semibold">{palette.name}</h5>
+                              {palette.isPopular && (
+                                <span className="text-yellow-400 text-xs">⭐</span>
+                              )}
+                            </div>
+                            <p className="text-purple-200 text-sm">{palette.description}</p>
+                          </div>
+                          
+                          {/* Color Gradient Preview */}
+                          <div className={`rounded-lg shadow-inner h-12 ${palette.gradient || 'bg-gradient-to-r from-purple-500 to-pink-500'}`}></div>
+                          
+                          {/* Color Circles */}
+                          {palette.colors && palette.colors.length > 0 && (
+                            <div className="flex gap-2 justify-center">
+                              {palette.colors.map((color, index) => (
+                                <div
+                                  key={index}
+                                  className="w-8 h-8 rounded-full border-2 border-purple-400/50 shadow-lg"
+                                  style={{ backgroundColor: color }}
+                                  title={color}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                    
+                    // Handle custom description type
+                    if (result.colorPalette.type === 'custom') {
+                      return (
+                        <div className="bg-purple-950/30 rounded-lg p-4 border border-purple-500/20">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className="text-purple-300 text-sm font-medium">Özel Renk Açıklaması</span>
+                          </div>
+                          <p className="text-white leading-relaxed">
+                            {result.colorPalette.description || 'Özel renk tercihi belirtildi'}
+                          </p>
+                        </div>
+                      );
+                    }
+                  }
+                  
+                  // Fallback: If it's a string (legacy support)
+                  return (
+                    <div className="bg-purple-950/30 rounded-lg p-4 border border-purple-500/20">
+                      <p className="text-white leading-relaxed">{result.colorPalette}</p>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bütçe Bilgisi */}
+        {result.price && (
+          <div className="bg-gradient-to-br from-green-900/40 to-emerald-900/40 backdrop-blur-sm rounded-xl p-4 border border-green-500/20 hover:border-green-500/40 transition-all duration-300">
+            <div className="flex items-start space-x-3">
+              <div className="bg-green-500/20 p-2 rounded-lg flex-shrink-0 mt-1">
+                <span className="text-lg">💰</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-green-300 font-semibold mb-3">Bütçe Limiti</h4>
+                <div className="bg-green-950/30 rounded-lg p-4 border border-green-500/20">
+                  <div className="text-2xl font-bold text-white">{result.price} ₺</div>
+                  <div className="text-green-300 text-sm mt-1">Maksimum tasarım bütçesi</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Kullanıcı Notları */}
         {result.notes && (
           <div className="bg-gradient-to-br from-yellow-900/40 to-amber-900/40 backdrop-blur-sm rounded-xl p-4 border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-300">
@@ -520,7 +653,9 @@ const UserInputSection = ({ result }) => {
         )}
 
         {/* Oda Boyutları */}
-        {(result.width || result.length || result.height) && (
+        {((result.width != null && result.width !== '') || 
+          (result.length != null && result.length !== '') || 
+          (result.height != null && result.height !== '')) && (
           <div className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 backdrop-blur-sm rounded-xl p-4 border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300">
             <div className="flex items-center space-x-3 mb-4">
               <div className="bg-cyan-500/20 p-2 rounded-lg">
@@ -530,25 +665,25 @@ const UserInputSection = ({ result }) => {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {result.width && (
+              {(result.width != null && result.width !== '') && (
                 <div className="bg-cyan-950/30 rounded-lg p-4 text-center border border-cyan-500/20">
                   <div className="text-cyan-400 text-sm font-medium mb-1">Genişlik</div>
                   <div className="text-2xl font-bold text-white">{result.width}</div>
-                  <div className="text-cyan-300 text-sm">metre</div>
+                  <div className="text-cyan-300 text-sm">cm</div>
                 </div>
               )}
-              {result.length && (
+              {(result.length != null && result.length !== '') && (
                 <div className="bg-cyan-950/30 rounded-lg p-4 text-center border border-cyan-500/20">
                   <div className="text-cyan-400 text-sm font-medium mb-1">Uzunluk</div>
                   <div className="text-2xl font-bold text-white">{result.length}</div>
-                  <div className="text-cyan-300 text-sm">metre</div>
+                  <div className="text-cyan-300 text-sm">cm</div>
                 </div>
               )}
-              {result.height && (
+              {(result.height != null && result.height !== '') && (
                 <div className="bg-cyan-950/30 rounded-lg p-4 text-center border border-cyan-500/20">
                   <div className="text-cyan-400 text-sm font-medium mb-1">Yükseklik</div>
                   <div className="text-2xl font-bold text-white">{result.height}</div>
-                  <div className="text-cyan-300 text-sm">metre</div>
+                  <div className="text-cyan-300 text-sm">cm</div>
                 </div>
               )}
             </div>

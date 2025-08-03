@@ -23,8 +23,12 @@ const generateBlogTitle = (designData) => {
     klasik: 'Klasik'
   };
 
-  const roomName = roomTypeNames[designData.roomType] || 'Oda';
-  const styleName = styleNames[designData.designStyle] || designData.designStyle;
+  // Backend'den gelen veriler için de destek
+  const roomType = designData.roomType || designData.room_type;
+  const designStyle = designData.designStyle || designData.design_style;
+  
+  const roomName = roomTypeNames[roomType] || roomType || 'Oda';
+  const styleName = styleNames[designStyle] || designStyle || 'Tasarım';
   
   return `${styleName} ${roomName} Tasarımı`;
 };
@@ -37,14 +41,22 @@ const generateBlogContent = (designData) => {
   
   // Oda bilgileri
   content += `## Oda Bilgileri\n`;
-  content += `- **Oda Türü:** ${designData.roomType}\n`;
-  content += `- **Tasarım Tarzı:** ${designData.designStyle}\n`;
-  content += `- **Boyutlar:** ${designData.width}cm x ${designData.length}cm x ${designData.height}cm\n\n`;
+  content += `- **Oda Türü:** ${designData.roomType || designData.room_type}\n`;
+  content += `- **Tasarım Tarzı:** ${designData.designStyle || designData.design_style}\n`;
+  if (designData.width && designData.length && designData.height) {
+    content += `- **Boyutlar:** ${designData.width}cm x ${designData.length}cm x ${designData.height}cm\n`;
+  }
+  if (designData.price) {
+    content += `- **Bütçe:** ${designData.price} TL\n`;
+  }
+  content += `\n`;
 
   // Renk paleti
   if (designData.colorPalette) {
     content += `## Renk Paleti\n`;
-    if (designData.colorPalette.type === 'palette') {
+    if (typeof designData.colorPalette === 'string') {
+      content += `${designData.colorPalette}\n\n`;
+    } else if (designData.colorPalette.type === 'palette') {
       content += `Seçilen renk paleti: **${designData.colorPalette.palette?.name}**\n`;
       content += `${designData.colorPalette.palette?.description}\n\n`;
     } else {
@@ -86,8 +98,12 @@ const generateBlogContent = (designData) => {
 const generateBlogTags = (designData) => {
   const tags = [];
   
-  if (designData.roomType) tags.push(designData.roomType);
-  if (designData.designStyle) tags.push(designData.designStyle);
+  // Backend'den gelen veriler için de destek
+  const roomType = designData.roomType || designData.room_type;
+  const designStyle = designData.designStyle || designData.design_style;
+  
+  if (roomType) tags.push(roomType);
+  if (designStyle) tags.push(designStyle);
   
   tags.push('dekorasyon', 'iç mimari', 'tasarım', 'ai-tasarım');
   

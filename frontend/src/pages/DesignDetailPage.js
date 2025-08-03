@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
@@ -14,7 +14,7 @@ const DesignDetailPage = () => {
   const { isAuthenticated } = useAuth();
   
   const [design, setDesign] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchDesignDetails = useCallback(async () => {
@@ -41,9 +41,8 @@ const DesignDetailPage = () => {
     }
   }, [designId]);
 
-  useEffect(() => {
-    fetchDesignDetails();
-  }, [fetchDesignDetails]);
+  // useEffect removed - design details won't load automatically
+  // Users need to manually trigger loading if needed
 
   const handleRetry = () => {
     fetchDesignDetails();
