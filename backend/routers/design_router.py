@@ -772,16 +772,18 @@ async def get_design_details(
         design = design_with_mood_board.Design
         mood_board = design_with_mood_board.MoodBoard
         
-        # Get hashtags and translate them
+        # Get hashtags (already in Turkish)
         hashtags_data = {"en": [], "tr": [], "display": []}
         if design.hashtags:
             # Sort hashtags by order_index to maintain general-to-specific ordering
             sorted_hashtags = sorted(design.hashtags, key=lambda x: x.order_index)
-            english_hashtags = [dh.hashtag for dh in sorted_hashtags]
+            turkish_hashtags = [dh.hashtag for dh in sorted_hashtags]
             
-            # Use hashtag service to translate
-            hashtag_translations = services.gemini_service.hashtag_service.translate_hashtags(english_hashtags)
-            hashtags_data = hashtag_translations
+            hashtags_data = {
+                "en": [],  # Not needed anymore
+                "tr": turkish_hashtags,
+                "display": turkish_hashtags  # Display Turkish hashtags
+            }
         
         # Convert to response format
         design_data = {

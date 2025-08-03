@@ -41,7 +41,7 @@ Sen bir konut iç mimarı ve ev dekorasyon uzmanısın. Türkiye'de yaşayan bir
 {{
   "title": "Ev odası tasarım başlığı (maksimum 60 karakter)",
   "description": "Bu konut odası tasarımı hakkında detaylı açıklama. Ev yaşamına uygun renk paleti, aile atmosferi, konut stil özellikleri hakkında bilgi ver. Kullanıcının renk tercihlerini ve ev ürün kategorilerini de dikkate al.",
-  "hashtags": ["#home_interior", "#residential_design", "#oda_tipi", "#renk", "#atmosfer", "#malzeme", "#ozellik1", "#ozellik2", "#detay1", "#detay2"],
+  "hashtags": ["#ic_tasarim", "#ev_tasarimi", "#oturma_odasi", "#notr_renkler", "#aile_dostu", "#rahat", "#fonksiyonel", "#dogal_isik", "#konforlu", "#sicak_atmosfer"],
   "products": [
     {{
       "category": "Ev Mobilyaları",
@@ -59,10 +59,10 @@ Sen bir konut iç mimarı ve ev dekorasyon uzmanısın. Türkiye'de yaşayan bir
 **Format Kuralları:**
 - "title": Kısa ve çekici **EV ODASI** başlığı (maksimum 60 karakter)
 - "description": **KONUT ODASI** tasarım konsepti hakkında kapsamlı açıklama (2-4 cümle). Ev yaşamı, aile konforu vurgula. Kullanıcının seçtiği renk paletini ve ev ürün tercihlerini açıklamaya dahil et.
-- "hashtags": TAM 10 ADET TÜRKÇE hashtag listesi - GENELDEN ÖZELE SIRALI
+- "hashtags": TAM 10 ADET SADECE TÜRKÇE hashtag listesi - GENELDEN ÖZELE SIRALI
   - # ile başlamalı (örn: "#ic_tasarim", "#oturma_odasi", "#aile_evi")
   - snake_case kullan (örn: "#oturma_odasi", "#notr_renkler", "#aile_dostu")
-  - Sadece Türkçe kelimeler kullan, İngilizce kelime yasak
+  - SADECE Türkçe kelimeler kullan, İngilizce kelime kesinlikle yasak
   - İlk hashtag mutlaka #ic_tasarim veya #ev_tasarimi olsun
   - Sıralama: En genel kategoriden en spesifik detaya doğru
   - Renk tercihlerini hashtaslarda da yansıt (örn: "#sicak_renkler", "#notr_tonlar")
@@ -82,13 +82,13 @@ Sen bir konut iç mimarı ve ev dekorasyon uzmanısın. Türkiye'de yaşayan bir
 - Özellikler: #ferah_ev, #kompakt_yasam, #aydinlik_ev, #fonksiyonel_aile, #konforlu_ev
 
 **Önemli:**
-- TAM 10 adet TÜRKÇE hashtag oluştur, eksik veya fazla olmasın
+- TAM 10 adet SADECE TÜRKÇE hashtag oluştur, eksik veya fazla olmasın
 - İlk hashtag mutlaka #ic_tasarim veya #ev_tasarimi olsun
 - Hashtag sıralaması: en genel ev kategorisinden başla, en spesifik ev detaylarıyla bitir
 - Kullanıcının seçtiği renk paletini ve ev ürün kategorilerini öncelikle dikkate al
 - Renk tercihlerini hem description'da hem hashtag'lerde ev yaşamı bağlamında yansıt
 - Sadece kullanıcının seçtiği ev ürün kategorilerinden önerilerde bulun (seçim yapmışlarsa)
-- Hashtag'lar sadece Türkçe olmalı, İngilizce kelime kullanma
+- Hashtag'lar SADECE Türkçe olmalı, İngilizce kelime kesinlikle kullanma
 - Kaç ürün önereceğin sana kalmış (önerilen: 6-12 ev ürünü)
 - Sadece JSON formatında cevap ver, başka hiçbir metin ekleme
 - Kullanıcının özel isteklerini ev yaşamı bağlamında dikkate al
@@ -147,7 +147,7 @@ Mutlaka aşağıdaki JSON formatında cevap ver:
 {{
   "title": "Ev odası tasarım başlığı (maksimum 60 karakter)",
   "description": "Detaylı konut odası tasarım açıklaması (2-4 cümle). Ev yaşamı, aile konforu, renk paleti, atmosfer, stil özelliklerini açıkla.",
-  "hashtags": ["#ic_tasarim", "#ev_tasarimi", "#oda_tipi", "#renk", "#atmosfer", "#malzeme", "#ozellik1", "#ozellik2", "#detay1", "#detay2"],
+  "hashtags": ["#ic_tasarim", "#ev_tasarimi", "#oturma_odasi", "#notr_renkler", "#aile_dostu", "#rahat", "#fonksiyonel", "#dogal_isik", "#konforlu", "#sicak_atmosfer"],
   "products": [
     {{
       "category": "Ev Mobilyaları",
@@ -161,17 +161,19 @@ Mutlaka aşağıdaki JSON formatında cevap ver:
 }}
 
 **Hashtag Kuralları:**
-- TAM 10 ADET TÜRKÇE hashtag (genelden özele sıralı)
-- # ile başlayan Türkçe kelimeler, İngilizce yasak
+- TAM 10 ADET SADECE TÜRKÇE hashtag (genelden özele sıralı)
+- # ile başlayan SADECE Türkçe kelimeler, İngilizce kelime kesinlikle yasak
 - snake_case kullan (örn: #oturma_odasi, #notr_renkler, #aile_dostu)
 - İlk hashtag mutlaka #ic_tasarim veya #ev_tasarimi olsun
 - Sıralama: En genel ev kategorisinden en spesifik ev detayına
+- ÖRNEKLERDEKİ GİBİ TAMAMEN TÜRKÇE HASHTAG OLUŞTUR
 
 **Son EV TASARIM Hatırlatması:**
 - ÖNCE find_product fonksiyonunu kullanarak ev ürünü ara
 - Bulamazsan aile yaşamına uygun hayali ev ürün oluştur
 - Sadece JSON formatında cevap ver
 - Gerçek ve hayali ev ürünleri arasında tutarlılık sağla
+- HASHTAG'LAR SADECE TÜRKÇE OLACAK - İngilizce kelime yasak
 - SALON = OTURMA ODASI/LİVİNG ROOM (düğün salonu değil!)
 - Ev yaşamı ve aile konforu odaklı tasarım yap
 """
