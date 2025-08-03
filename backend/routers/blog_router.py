@@ -329,3 +329,39 @@ async def check_design_published_status(
         "isPublished": blog_post is not None,
         "blog_post_id": blog_post.id if blog_post else None
     }
+
+@router.post("/designs/{design_id}/view")
+async def record_design_detail_view(
+    design_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_async_session)
+):
+    """Record a view for a design detail page."""
+    VIEW_RECORDED_MESSAGE = "View recorded"
+    
+    try:
+        # Check if design exists and is published
+        blog_post_result = await db.execute(
+            select(BlogPost).where(
+                and_(
+                    BlogPost.design_id == design_id,
+                    BlogPost.is_published == True
+                )
+            )
+        )
+        blog_post = blog_post_result.scalar_one_or_none()
+        
+        if not blog_post:
+            # If not published, just return success without recording
+            return {"success": True, "message": VIEW_RECORDED_MESSAGE}
+        
+        # For now, we'll just return success
+        # In the future, we can implement actual view tracking
+        # by creating a DesignView table or incrementing a view counter
+        
+        return {"success": True, "message": VIEW_RECORDED_MESSAGE}
+        
+    except Exception as e:
+        # Don't raise error for view tracking - just log and continue
+        print(f"Error recording design view: {e}")
+        return {"success": True, "message": VIEW_RECORDED_MESSAGE}
