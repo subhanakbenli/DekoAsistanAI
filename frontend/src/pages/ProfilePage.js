@@ -7,7 +7,6 @@ import {
   Message,
   ProfileInfoCard,
   ProfileForm,
-  DangerZone,
   LoadingState
 } from '../components/profile';
 
@@ -30,7 +29,6 @@ const ProfilePage = () => {
     first_name: '',
     last_name: '',
     email: '',
-    phone: '',
     bio: ''
   });
 
@@ -41,7 +39,6 @@ const ProfilePage = () => {
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
-        phone: user.phone || '',
         bio: user.bio || ''
       });
     }
@@ -82,7 +79,6 @@ const ProfilePage = () => {
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
-        phone: user.phone || '',
         bio: user.bio || ''
       });
     }
@@ -128,9 +124,6 @@ const ProfilePage = () => {
             </div>
             
           </div>
-
-          {/* Danger Zone */}
-          <DangerZone />
           
         </div>
       </div>

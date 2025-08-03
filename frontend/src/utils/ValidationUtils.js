@@ -23,7 +23,6 @@ export class ValidationUtils {
   // Regex patterns
   static PATTERNS = {
     EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-    PHONE: /^(\+90|0)?[0-9]{10}$/,
     STRONG_PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/
   };
 
@@ -230,23 +229,6 @@ export class ValidationUtils {
   static sanitizeTextarea(input) {
     if (typeof input !== 'string') return '';
     return input.replace(/[<>]/g, '');
-  }
-
-  /**
-   * Validate Turkish phone number
-   * @param {string} phone - Phone number to validate
-   * @returns {Object} {isValid: boolean, error: string}
-   */
-  static validatePhone(phone) {
-    if (!phone?.trim()) {
-      return { isValid: false, error: 'Telefon numarası gerekli' };
-    }
-    
-    if (!this.PATTERNS.PHONE.test(phone)) {
-      return { isValid: false, error: 'Geçerli bir telefon numarası girin (örn: 05551234567)' };
-    }
-    
-    return { isValid: true };
   }
 
   /**

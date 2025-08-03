@@ -112,7 +112,7 @@ export const useFormState = () => {
    */
   const isDirty = useCallback(() => {
     return form.width || form.length || form.height || 
-           form.notes.trim();
+           form.notes?.trim();
   }, [form.width, form.length, form.height, form.notes]);
 
   return {

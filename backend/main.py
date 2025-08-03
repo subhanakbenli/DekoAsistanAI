@@ -40,20 +40,19 @@ app.add_middleware(
 setup_exception_handlers(app)
 
 # Mount static files for mood board images
-static_path = os.path.join(os.path.dirname(__file__), "data", "mood_boards")
-if os.path.exists(static_path):
-    app.mount("/static/mood_boards", StaticFiles(directory=static_path), name="mood_boards")
-    logger.debug(f"Static files mounted: /static/mood_boards -> {static_path}")
-else:
-    logger.warning(f"Static files directory not found: {static_path}")
+data_path = os.path.join(os.path.dirname(__file__), "data")
+static_path = os.path.join(data_path, "mood_boards")
+# Ensure the directories exist before mounting
+os.makedirs(static_path, exist_ok=True)
+app.mount("/static/mood_boards", StaticFiles(directory=static_path), name="mood_boards")
+logger.debug(f"Static files mounted: /static/mood_boards -> {static_path}")
 
 # Mount static files for product images
 products_static_path = os.path.join(os.path.dirname(__file__), "data", "products")
-if os.path.exists(products_static_path):
-    app.mount("/static/products", StaticFiles(directory=products_static_path), name="products")
-    logger.debug(f"Static files mounted: /static/products -> {products_static_path}")
-else:
-    logger.warning(f"Products static files directory not found: {products_static_path}")
+# Ensure the directory exists before mounting
+os.makedirs(products_static_path, exist_ok=True)
+app.mount("/static/products", StaticFiles(directory=products_static_path), name="products")
+logger.debug(f"Static files mounted: /static/products -> {products_static_path}")
 
 # Include routers
 app.include_router(health_router, tags=["Health"])

@@ -82,7 +82,6 @@ export class MessagesConstants {
     PASSWORD: 'Şifrenizi girin',
     FIRST_NAME: 'Adınızı girin',
     LAST_NAME: 'Soyadınızı girin',
-    PHONE: 'Telefon numaranızı girin',
     BIO: 'Kendinizden bahsedin...',
     SEARCH: 'Arama yapın...',
     NOTES: 'Notlarınızı yazın...',

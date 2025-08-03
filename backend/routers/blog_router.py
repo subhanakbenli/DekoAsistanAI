@@ -262,15 +262,6 @@ async def get_blog_stats(
     total_posts_result = await db.execute(total_posts_query)
     total_posts = total_posts_result.scalar()
     
-    # Total likes
-    total_likes_query = select(func.count(BlogPostLike.id)).select_from(
-        BlogPostLike
-    ).join(
-        BlogPost, BlogPostLike.blog_post_id == BlogPost.id
-    ).where(BlogPost.is_published == True)
-    total_likes_result = await db.execute(total_likes_query)
-    total_likes = total_likes_result.scalar()
-    
     # Popular room types
     popular_rooms_query = select(
         Design.room_type, 

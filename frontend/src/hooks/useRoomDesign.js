@@ -85,8 +85,7 @@ export const useRoomDesign = () => {
     return !designSubmission.isLoading && 
            formState.form.width && 
            formState.form.length && 
-           formState.form.height &&
-           formState.form.notes?.trim();
+           formState.form.height;
   };
 
   // Return composed interface

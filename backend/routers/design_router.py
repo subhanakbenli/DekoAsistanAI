@@ -113,7 +113,11 @@ async def design_request_endpoint(
             design_style=design_style,
             notes=notes,
             price=price,
-            db_session=db
+            db_session=db,
+            width=width,
+            length=length,
+            height=height,
+            color_info=color_info
         )
         
         logger.info(f"HYBRID design suggestion created successfully for {user_email}: {design_result['title']}")
@@ -196,13 +200,24 @@ async def design_request_endpoint(
             
             # Save hashtags if they exist
             hashtags = design_result.get("hashtags", {})
-            if hashtags and hashtags.get("en"):  # Check if English hashtags exist
+            logger.info(f"Hashtags from Gemini for design {design_id}: {hashtags}")
+            
+            # Check if any hashtags exist (en, tr, or display)
+            has_hashtags = (
+                (hashtags.get("en") and len(hashtags.get("en", [])) > 0) or
+                (hashtags.get("tr") and len(hashtags.get("tr", [])) > 0) or
+                (hashtags.get("display") and len(hashtags.get("display", [])) > 0)
+            )
+            
+            if hashtags and has_hashtags:
                 try:
                     await services.gemini_service.save_design_hashtags(db, design_id, hashtags)
-                    logger.info(f"Hashtags saved for design {design_id}: EN={hashtags.get('en', [])} TR={hashtags.get('tr', [])}")
+                    logger.info(f"Hashtags saved for design {design_id}: EN={hashtags.get('en', [])} TR={hashtags.get('tr', [])} DISPLAY={hashtags.get('display', [])}")
                 except Exception as hashtag_error:
                     logger.error(f"Error saving hashtags for design {design_id}: {str(hashtag_error)}")
                     # Continue even if hashtag saving fails
+            else:
+                logger.warning(f"No valid hashtags found for design {design_id}. Hashtags data: {hashtags}")
             
         except Exception as db_error:
             logger.error(f"Error saving design to database: {str(db_error)}")
@@ -403,9 +418,10 @@ async def get_my_designs(
         total_result = await db.execute(count_query)
         total = total_result.scalar()
         
-        # Get designs with pagination
+        # Get designs with pagination and hashtags
         query = (
             select(Design)
+            .options(selectinload(Design.hashtags))
             .where(Design.user_id == user.id)
             .order_by(Design.created_at.desc())
             .offset(offset)
@@ -416,8 +432,22 @@ async def get_my_designs(
         designs = result.scalars().all()
         
         # Convert to list of dictionaries
-        designs_data = [
-            {
+        designs_data = []
+        for design in designs:
+            # Get hashtags for this design
+            hashtags_data = {"en": [], "tr": [], "display": []}
+            if design.hashtags:
+                # Sort hashtags by order_index (general to specific)
+                sorted_hashtags = sorted(design.hashtags, key=lambda x: x.order_index)
+                turkish_hashtags = [dh.hashtag for dh in sorted_hashtags]
+                
+                hashtags_data = {
+                    "en": [],  # Not needed anymore
+                    "tr": turkish_hashtags,
+                    "display": turkish_hashtags  # Display Turkish hashtags
+                }
+            
+            designs_data.append({
                 "id": design.id,
                 "title": design.title,
                 "description": design.description,
@@ -431,12 +461,11 @@ async def get_my_designs(
                 "product_categories": design.product_categories,  # Seçilen ürün kategorileri
                 "product_suggestion": design.product_suggestion,
                 "products": design.products,
+                "hashtags": hashtags_data,  # Add hashtags to response
                 "is_favorite": design.is_favorite,
                 "created_at": design.created_at.isoformat(),
                 "updated_at": design.updated_at.isoformat()
-            }
-            for design in designs
-        ]
+            })
         
         return {
             "success": True,
@@ -499,7 +528,8 @@ async def get_my_design_by_id(
     try:
         from sqlalchemy import select
         
-        query = select(Design).where(
+        # Get design with hashtags - use eager loading
+        query = select(Design).options(selectinload(Design.hashtags)).where(
             Design.id == design_id,
             Design.user_id == user.id
         )
@@ -509,6 +539,19 @@ async def get_my_design_by_id(
         
         if not design:
             raise HTTPException(status_code=404, detail=DESIGN_NOT_FOUND)
+        
+        # Get hashtags for this design
+        hashtags_data = {"en": [], "tr": [], "display": []}
+        if design.hashtags:
+            # Sort hashtags by order_index (general to specific)
+            sorted_hashtags = sorted(design.hashtags, key=lambda x: x.order_index)
+            turkish_hashtags = [dh.hashtag for dh in sorted_hashtags]
+            
+            hashtags_data = {
+                "en": [],  # Not needed anymore
+                "tr": turkish_hashtags,
+                "display": turkish_hashtags  # Display Turkish hashtags
+            }
         
         design_data = {
             "id": design.id,
@@ -524,6 +567,7 @@ async def get_my_design_by_id(
             "product_categories": design.product_categories,  # Seçilen ürün kategorileri
             "product_suggestion": design.product_suggestion,
             "products": design.products,
+            "hashtags": hashtags_data,  # Add hashtags to response
             "is_favorite": design.is_favorite,
             "gemini_response": design.gemini_response,
             "created_at": design.created_at.isoformat(),

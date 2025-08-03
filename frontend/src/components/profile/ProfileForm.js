@@ -67,18 +67,6 @@ const ProfileForm = ({
           />
         </div>
         
-        <FormField
-          label="Telefon"
-          name="phone"
-          type="tel"
-          value={isEditing ? formData.phone : (user.phone || 'Belirtilmemiş')}
-          onChange={onInputChange}
-          placeholder="Telefon numaranızı girin"
-          readOnly={!isEditing}
-        />
-        
-        <div></div>
-        
         <div className="md:col-span-2">
           <FormField
             label="Hakkımda"

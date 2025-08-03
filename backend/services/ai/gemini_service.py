@@ -76,7 +76,7 @@ class GeminiService(BaseService):
             logger.error(f"Error generating design suggestion: {str(e)}")
             return self._create_fallback_response(room_type, design_style)
     
-    async def generate_hybrid_design_suggestion(self, room_type: str, design_style: str, notes: str, price: float, db_session) -> Dict[str, Any]:
+    async def generate_hybrid_design_suggestion(self, room_type: str, design_style: str, notes: str, price: float, db_session, width: int = None, length: int = None, height: int = None, color_info: str = "") -> Dict[str, Any]:
         """
         Generate hybrid design suggestion using Function Calling for real products.
         
@@ -97,7 +97,21 @@ class GeminiService(BaseService):
             parsed_info = self.notes_parser.parse_notes(notes) if notes.strip() else {}
             logger.debug(f"Parsed notes: {parsed_info}")
             
-            # Step 2: Create hybrid prompt with price constraint
+            # Step 1.5: Add room dimensions directly from parameters if provided
+            if width and length and height:
+                parsed_info['room_dimensions'] = {
+                    'width': width,
+                    'length': length, 
+                    'height': height
+                }
+                logger.info(f"Added room dimensions to context: {width}x{length}x{height} cm")
+            
+            # Step 1.6: Add color info if provided
+            if color_info:
+                parsed_info['color_info'] = color_info
+                logger.info(f"Added color info to context: {color_info}")
+            
+            # Step 2: Create hybrid prompt with price constraint and dimensions
             prompt = self._create_hybrid_design_prompt(room_type, design_style, notes, parsed_info, price)
             
             # Step 3: Get response from Gemini with Function Calling (pass price constraint)
@@ -267,16 +281,31 @@ class GeminiService(BaseService):
         Delegates to hashtag service for database operations.
         """
         try:
-            turkish_hashtags = hashtags.get("tr", [])
+            logger.info(f"Saving hashtags for design {design_id}: {hashtags}")
             
-            if turkish_hashtags:
-                # Artık sadece Türkçe hashtag'ları kaydediyoruz
+            # Extract hashtags from different possible formats
+            english_hashtags = hashtags.get("en", [])
+            turkish_hashtags = hashtags.get("tr", [])
+            display_hashtags = hashtags.get("display", [])
+            
+            # If no tr hashtags but display hashtags exist, use display as Turkish
+            if not turkish_hashtags and display_hashtags:
+                turkish_hashtags = display_hashtags
+                logger.info(f"Using display hashtags as Turkish hashtags: {display_hashtags}")
+            
+            # If still no hashtags but en hashtags exist, use them as fallback
+            if not turkish_hashtags and english_hashtags:
+                turkish_hashtags = english_hashtags
+                logger.info(f"Using English hashtags as fallback: {english_hashtags}")
+            
+            if turkish_hashtags or english_hashtags:
+                # Save hashtags to database
                 await self.hashtag_service.save_hashtags_to_db(
-                    db, design_id, [], turkish_hashtags  # English boş, Turkish dolu
+                    db, design_id, english_hashtags, turkish_hashtags
                 )
-                logger.info(f"Turkish hashtags saved for design {design_id}")
+                logger.info(f"Hashtags saved for design {design_id}: EN={english_hashtags}, TR={turkish_hashtags}")
             else:
-                logger.warning(f"No Turkish hashtags to save for design {design_id}")
+                logger.warning(f"No valid hashtags to save for design {design_id}")
                 
         except Exception as e:
             logger.error(f"Error saving hashtags for design {design_id}: {str(e)}")
