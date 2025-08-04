@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
@@ -40,8 +40,12 @@ const DesignDetailPage = () => {
     }
   }, [designId]);
 
-  // useEffect removed - design details won't load automatically
-  // Users need to manually trigger loading if needed
+  // Load design details when component mounts or designId changes
+  useEffect(() => {
+    if (designId) {
+      fetchDesignDetails();
+    }
+  }, [designId, fetchDesignDetails]);
 
   const handleRetry = () => {
     fetchDesignDetails();
