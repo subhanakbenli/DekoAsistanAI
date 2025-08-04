@@ -16,12 +16,12 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
 
   // Color selection callback'ini optimize et
   const handleColorSelection = useCallback((colorData) => {
-    console.log('RoomInfoSection DEBUG - handleColorSelection called with:', colorData);
+    console.log('🎨 [RoomInfoSection] handleColorSelection called with:', colorData);
     
     // Form state'e renk bilgisini ekle
     if (colorData.isValid) {
       const colorInfo = colorData.selection;
-      console.log('RoomInfoSection DEBUG - colorInfo to be set:', colorInfo);
+      console.log('🎨 [RoomInfoSection] colorInfo to be set:', colorInfo);
       
       // handleChange kullanarak form'a renk bilgisini ekle
       const event = {
@@ -31,18 +31,22 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
         }
       };
       
-      console.log('RoomInfoSection DEBUG - Calling handleChange with event:', event);
+      console.log('🎨 [RoomInfoSection] Calling handleChange with event:', event);
       handleChange(event);
     } else {
-      console.log('RoomInfoSection DEBUG - colorData is not valid:', colorData);
+      console.log('❌ [RoomInfoSection] colorData is not valid:', colorData);
     }
   }, [handleChange]);
 
   // Product selection callback'ini optimize et
   const handleProductSelection = useCallback((productData) => {
+    console.log('📦 [RoomInfoSection] handleProductSelection called with:', productData);
+    
     // Form state'e ürün bilgisini ekle
     if (productData.isValid) {
       const productInfo = productData.selection;
+      console.log('📦 [RoomInfoSection] productInfo to be set:', productInfo);
+      
       // handleChange kullanarak form'a ürün bilgisini ekle
       const event = {
         target: {
@@ -50,7 +54,11 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
           value: productInfo
         }
       };
+      
+      console.log('📦 [RoomInfoSection] Calling handleChange with event:', event);
       handleChange(event);
+    } else {
+      console.log('❌ [RoomInfoSection] productData is not valid:', productData);
     }
   }, [handleChange]);
   const MAX_WIDTH = 5000;  // 50m

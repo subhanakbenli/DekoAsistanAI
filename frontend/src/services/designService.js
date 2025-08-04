@@ -1,5 +1,6 @@
 import { BaseService } from './BaseService';
 import { DESIGN_ENDPOINTS, DESIGN_SCHEMAS } from '../config/api';
+import { PRODUCT_CATEGORIES } from '../data/roomCategories';
 
 /**
  * DesignService - Interior design and AI-powered room design service
@@ -20,6 +21,11 @@ class DesignService extends BaseService {
    */
   async submitDesignRequest(formData, connectionId = null) {
     try {
+      // Debug: Log form data to see what we're receiving
+      console.log('🔍 [DesignService] Form Data Received:', formData);
+      console.log('🎨 [DesignService] Color Palette:', formData.colorPalette);
+      console.log('📦 [DesignService] Product Categories:', formData.productCategories);
+      
       // Create JSON request body
       const requestBody = {
         room_type: formData.roomType,
@@ -34,21 +40,74 @@ class DesignService extends BaseService {
 
       // Add color info as structured object
       if (formData.colorPalette) {
-        requestBody.color_info = {
-          dominantColor: formData.colorPalette.dominantColor,
-          colorName: formData.colorPalette.colorName,
-          colorPalette: formData.colorPalette.colorPalette
-        };
+        console.log('✅ [DesignService] Adding color_info to request:', formData.colorPalette);
+        
+        if (formData.colorPalette.type === 'palette' && formData.colorPalette.palette) {
+          // Palette seçimi - palette objesi içinden bilgileri al
+          const palette = formData.colorPalette.palette;
+          requestBody.color_info = {
+            dominantColor: palette.dominantColor || palette.colors?.[0] || '#000000',
+            colorName: palette.name || 'Seçilen Renk Paleti',
+            colorPalette: palette.colors || [palette.dominantColor || '#000000']
+          };
+        } else if (formData.colorPalette.type === 'custom') {
+          // Özel renk açıklaması
+          requestBody.color_info = {
+            dominantColor: '#000000',
+            colorName: 'Özel Renk Seçimi',
+            colorPalette: ['#000000']
+          };
+        } else {
+          // Fallback
+          requestBody.color_info = {
+            dominantColor: formData.colorPalette.dominantColor || '#000000',
+            colorName: formData.colorPalette.colorName || 'Varsayılan Renk',
+            colorPalette: formData.colorPalette.colorPalette || ['#000000']
+          };
+        }
+      } else {
+        console.log('❌ [DesignService] No colorPalette found in formData');
       }
 
       // Add product categories as structured object
       if (formData.productCategories) {
-        requestBody.product_categories = {
-          type: formData.productCategories.type,
-          products: formData.productCategories.products,
-          description: formData.productCategories.description
-        };
+        console.log('✅ [DesignService] Adding product_categories to request:', formData.productCategories);
+        
+        if (formData.productCategories.type === 'categories' && formData.productCategories.productIds) {
+          // Kategoriler seçimi - productIds'lerden products array'i oluştur
+          const products = formData.productCategories.productIds.map(id => {
+            const productCategory = PRODUCT_CATEGORIES[id.toUpperCase()];
+            return {
+              name: productCategory ? productCategory.name : id,
+              icon: productCategory ? productCategory.icon : '📦'
+            };
+          });
+          
+          requestBody.product_categories = {
+            type: 'categories',
+            products: products,
+            description: null
+          };
+        } else if (formData.productCategories.type === 'custom') {
+          // Özel ürün açıklaması
+          requestBody.product_categories = {
+            type: 'custom',
+            products: null,
+            description: formData.productCategories.description || 'Özel ürün seçimi'
+          };
+        } else {
+          // Fallback - mevcut yapıyı koru
+          requestBody.product_categories = {
+            type: formData.productCategories.type || 'categories',
+            products: formData.productCategories.products || [],
+            description: formData.productCategories.description || null
+          };
+        }
+      } else {
+        console.log('❌ [DesignService] No productCategories found in formData');
       }
+
+      console.log('🚀 [DesignService] Final Request Body:', JSON.stringify(requestBody, null, 2));
 
       // Send JSON request
       const response = await fetch(`${this.baseURL}${this.endpoints.CREATE}`, {

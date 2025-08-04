@@ -18,6 +18,7 @@ import os
 import time
 from datetime import datetime
 import uuid
+import json
 
 router = APIRouter(prefix="/design")
 
@@ -44,6 +45,35 @@ def get_clean_image_filename(image_path):
         filename = filename.replace('data\\mood_boards\\', '')
     
     return filename
+
+def save_gemini_prompt_to_file(prompt_data):
+    """Gemini'ye gönderilen promptları bir dosyaya kaydet."""
+    try:
+        # logs klasörünün var olduğundan emin ol
+        logs_dir = os.path.join("logs")
+        if not os.path.exists(logs_dir):
+            os.makedirs(logs_dir)
+        
+        # Dosya adını tarih ile oluştur
+        today = datetime.now().strftime("%Y-%m-%d")
+        filename = f"gemini_prompts_{today}.json"
+        filepath = os.path.join(logs_dir, filename)
+        
+        # Kayıt edilecek veri
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "endpoint": "/design/test",
+            "prompt_data": prompt_data
+        }
+        
+        # Dosyaya ekle (append mode)
+        with open(filepath, "a", encoding="utf-8") as f:
+            f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
+            
+        logger.info(f"Gemini prompt kaydedildi: {filepath}")
+        
+    except Exception as e:
+        logger.error(f"Gemini prompt kaydedilemedi: {str(e)}")
 
 # Service Container Pattern
 class DesignServices:
@@ -114,6 +144,21 @@ async def design_request_endpoint(
         # Use structured product_categories data directly (no JSON parsing needed!)
         parsed_product_categories_for_ai = design_request.get_product_categories_as_dict()
 
+        # Gemini'ye gönderilecek prompt verilerini kaydet
+        prompt_data_for_logging = {
+            "room_type": room_type,
+            "design_style": design_style,
+            "notes": notes,
+            "price": price,
+            "width": width,
+            "length": length,
+            "height": height,
+            "color_info": color_info,
+            "product_categories": parsed_product_categories_for_ai,
+            "user_email": user_email
+        }
+        save_gemini_prompt_to_file(prompt_data_for_logging)
+
         # Generate HYBRID design suggestion using Function Calling
         design_result = await services.gemini_service.generate_hybrid_design_suggestion(
             room_type=room_type,
@@ -165,7 +210,8 @@ async def design_request_endpoint(
                 color_info=color_info,
                 width=width,
                 length=length,
-                height=height
+                height=height,
+                product_categories=parsed_product_categories_for_ai
             )
         
         # Save design to database for all users (guest and authenticated)

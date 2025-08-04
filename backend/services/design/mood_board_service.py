@@ -8,6 +8,7 @@ from models.design_models_db import MoodBoard, Design
 from services.communication.websocket_manager import websocket_manager
 from services.ai.notes_parser import NotesParser
 from services.design.mood_board_log_service import mood_board_log_service
+from services.design.imagen_prompt_log_service import ImagenPromptLogService
 from typing import Dict, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
@@ -17,6 +18,7 @@ import asyncio
 import uuid
 import os
 import re
+import time
 from datetime import datetime
 
 class MoodBoardService:
@@ -55,6 +57,9 @@ class MoodBoardService:
         # Initialize NotesParser for notes parsing
         self.notes_parser = NotesParser()
         
+        # Initialize Imagen Prompt Log Service
+        self.imagen_prompt_logger = ImagenPromptLogService()
+        
         # Ensure mood_boards directory exists
         self.mood_boards_dir = os.path.join("data", "mood_boards")
         os.makedirs(self.mood_boards_dir, exist_ok=True)
@@ -75,7 +80,8 @@ class MoodBoardService:
         color_info: str = "",  # Frontend'den gelen formatlanmış renk bilgisi
         width: int = None,  # Oda genişliği (cm)
         length: int = None,  # Oda uzunluğu (cm)
-        height: int = None   # Oda yüksekliği (cm)
+        height: int = None,   # Oda yüksekliği (cm)
+        parsed_info: Dict[str, Any] = None  # Parse edilmiş kullanıcı bilgileri
     ) -> Dict[str, Any]:
         """
         Generate realistic room visualization with enhanced progress tracking.
@@ -133,6 +139,22 @@ class MoodBoardService:
             # Parse notes only for info not provided by frontend (extra areas, door/windows, etc.)
             # Color and dimensions are now provided separately by frontend
             parsed_info = self.notes_parser.parse_notes(notes) if notes.strip() else {}
+            
+            # Add frontend parameters to parsed_info for utility functions
+            if parsed_info is None:
+                parsed_info = {}
+            
+            # Add width, length, height directly to parsed_info
+            if width:
+                parsed_info['width'] = width
+            if length:
+                parsed_info['length'] = length
+            if height:
+                parsed_info['height'] = height
+            
+            # Add color_info to parsed_info if available
+            if color_info:
+                parsed_info['color_info'] = color_info
             
             # Format dimensions info for prompt
             dimensions_info = ""
@@ -349,8 +371,8 @@ class MoodBoardService:
         # Format products using centralized utility
         products_text = PromptUtils.format_products_for_imagen(products)
         
-        # Renk bilgisi: Frontend'den geleni öncelik ver, yoksa parse edilmişten al
-        final_color_info = color_info if color_info.strip() else PromptUtils.extract_color_info_for_imagen(parsed_info)
+        # Renk bilgisi direkt kullan (frontend'den formatlanmış geliyor)
+        final_color_info = color_info
         
         # Boyut bilgisi: Frontend'den geleni öncelik ver, yoksa parse edilmişten al  
         final_dimensions_info = dimensions_info if dimensions_info.strip() else PromptUtils.extract_dimensions_info_for_imagen(parsed_info)
@@ -367,20 +389,99 @@ class MoodBoardService:
             color_info=final_color_info
         )
         
+        # Log Imagen enhancement request (Gemini'ye gönderilen prompt)
+        self.imagen_prompt_logger.log_imagen_enhancement_request(
+            room_type=room_type,
+            design_style=design_style,
+            notes=notes,
+            design_title=design_title,
+            design_description=design_description,
+            products_text=products_text,
+            dimensions_info=final_dimensions_info,
+            color_info=final_color_info,
+            additional_data=parsed_info
+        )
+        
         try:
             response = self.gemini_model.generate_content(prompt_enhancement_request)
             enhanced_prompt = response.text.strip()
             
             # Fallback if Gemini response is too long or empty
             if not enhanced_prompt or len(enhanced_prompt) > 500:
-                enhanced_prompt = GeminiPrompts.get_fallback_imagen_prompt(room_type, design_style)
+                # Use enhanced fallback with parameters
+                width = parsed_info.get('width') if parsed_info else None
+                length = parsed_info.get('length') if parsed_info else None
+                product_categories = products if products else None
+                enhanced_prompt = GeminiPrompts.get_fallback_imagen_prompt(
+                    room_type=room_type, 
+                    design_style=design_style,
+                    width=width,
+                    length=length,
+                    color_info=final_color_info,
+                    product_categories=product_categories
+                )
+                
+                # Log final Imagen prompt (fallback)
+                self.imagen_prompt_logger.log_final_imagen_prompt(
+                    enhanced_prompt=enhanced_prompt,
+                    original_request_data={
+                        "room_type": room_type,
+                        "design_style": design_style,
+                        "notes": notes,
+                        "design_title": design_title,
+                        "design_description": design_description
+                    },
+                    prompt_source="fallback_after_gemini",
+                    additional_data=parsed_info
+                )
+            else:
+                # Log final Imagen prompt (Gemini enhanced)
+                self.imagen_prompt_logger.log_final_imagen_prompt(
+                    enhanced_prompt=enhanced_prompt,
+                    original_request_data={
+                        "room_type": room_type,
+                        "design_style": design_style,
+                        "notes": notes,
+                        "design_title": design_title,
+                        "design_description": design_description
+                    },
+                    prompt_source="gemini_enhanced",
+                    additional_data=parsed_info
+                )
             
             logger.info(f"Enhanced Imagen prompt created for room visualization: {enhanced_prompt[:100]}...")
             return enhanced_prompt
             
         except Exception as e:
             logger.error(f"Error creating enhanced prompt: {str(e)}")
-            return GeminiPrompts.get_fallback_imagen_prompt(room_type, design_style)
+            # Use enhanced fallback with parameters
+            width = parsed_info.get('width') if parsed_info else None
+            length = parsed_info.get('length') if parsed_info else None 
+            product_categories = products if products else None
+            fallback_prompt = GeminiPrompts.get_fallback_imagen_prompt(
+                room_type=room_type,
+                design_style=design_style, 
+                width=width,
+                length=length,
+                color_info=final_color_info,
+                product_categories=product_categories
+            )
+            
+            # Log final Imagen prompt (error fallback)
+            self.imagen_prompt_logger.log_final_imagen_prompt(
+                enhanced_prompt=fallback_prompt,
+                original_request_data={
+                    "room_type": room_type,
+                    "design_style": design_style,
+                    "notes": notes,
+                    "design_title": design_title,
+                    "design_description": design_description
+                },
+                prompt_source="error_fallback",
+                additional_data={"error_message": str(e), "parsed_info": parsed_info}
+            )
+            
+            return fallback_prompt
     
     async def _simulate_image_generation_progress(self, connection_id: str, mood_board_id: str):
         """
@@ -480,6 +581,9 @@ class MoodBoardService:
         Returns:
             Dict with base64 image data and success status, or None if failed
         """
+        
+        # Start timer for generation time tracking
+        start_time = time.time()
         
         try:
             # Import Google Cloud libraries
@@ -603,20 +707,69 @@ class MoodBoardService:
                 # Convert to base64
                 base64_string = base64.b64encode(image_bytes.getvalue()).decode('utf-8')
                 
+                # Calculate generation time
+                generation_time_ms = int((time.time() - start_time) * 1000)
+                
+                # Log successful generation
+                self.imagen_prompt_logger.log_imagen_generation_result(
+                    enhanced_prompt=prompt,
+                    generation_success=True,
+                    image_data={
+                        "format": "PNG",
+                        "aspect_ratio": "1:1",
+                        "safety_filter_level": "block_some",
+                        "person_generation": "dont_allow"
+                    },
+                    generation_time_ms=generation_time_ms
+                )
+                
                 logger.info("✅ Vertex AI room visualization generated successfully")
                 return {
                     "base64": base64_string,
                     "success": True
                 }
             else:
+                # Calculate generation time for failed case
+                generation_time_ms = int((time.time() - start_time) * 1000)
+                
+                # Log failed generation
+                self.imagen_prompt_logger.log_imagen_generation_result(
+                    enhanced_prompt=prompt,
+                    generation_success=False,
+                    error_message="No images generated from Vertex AI",
+                    generation_time_ms=generation_time_ms
+                )
+                
                 logger.warning("⚠️ No images generated from Vertex AI")
                 return None
                 
         except ImportError as e:
+            # Calculate generation time for error case
+            generation_time_ms = int((time.time() - start_time) * 1000)
+            
+            # Log import error
+            self.imagen_prompt_logger.log_imagen_generation_result(
+                enhanced_prompt=prompt,
+                generation_success=False,
+                error_message=f"Google Cloud libraries not properly installed: {str(e)}",
+                generation_time_ms=generation_time_ms
+            )
+            
             logger.error(f"Google Cloud libraries not properly installed: {str(e)}")
             return await self._generate_fallback_image(prompt, connection_id, mood_board_id)
             
         except Exception as e:
+            # Calculate generation time for error case
+            generation_time_ms = int((time.time() - start_time) * 1000)
+            
+            # Log general error
+            self.imagen_prompt_logger.log_imagen_generation_result(
+                enhanced_prompt=prompt,
+                generation_success=False,
+                error_message=str(e),
+                generation_time_ms=generation_time_ms
+            )
+            
             logger.warning(f"⚠️ Vertex AI failed, using fallback: {str(e)}")
             # Fall back to placeholder if real API fails
             return await self._generate_fallback_image(prompt, connection_id, mood_board_id)
@@ -638,6 +791,9 @@ class MoodBoardService:
         This ensures the application remains functional even when cloud AI services
         experience issues, following the principle of graceful degradation.
         """
+        # Start timer for fallback generation time tracking
+        start_time = time.time()
+        
         try:
             # Progress update: Starting fallback generation (50%)
             if connection_id and mood_board_id:
@@ -697,10 +853,38 @@ class MoodBoardService:
                 "success": True
             }
             
+            # Calculate fallback generation time
+            generation_time_ms = int((time.time() - start_time) * 1000)
+            
+            # Log fallback generation (successful)
+            self.imagen_prompt_logger.log_imagen_generation_result(
+                enhanced_prompt=prompt,
+                generation_success=True,
+                image_data={
+                    "format": "Fallback PNG",
+                    "type": "placeholder",
+                    "method": "fallback_system"
+                },
+                generation_time_ms=generation_time_ms,
+                additional_data={"fallback": True}
+            )
+            
             logger.info("Fallback placeholder image generated")
             return placeholder_image_data
             
         except Exception as e:
+            # Calculate fallback generation time for error case
+            generation_time_ms = int((time.time() - start_time) * 1000)
+            
+            # Log fallback generation error
+            self.imagen_prompt_logger.log_imagen_generation_result(
+                enhanced_prompt=prompt,
+                generation_success=False,
+                error_message=f"Fallback generation error: {str(e)}",
+                generation_time_ms=generation_time_ms,
+                additional_data={"fallback": True, "error_in_fallback": True}
+            )
+            
             logger.error(f"Error generating fallback image: {str(e)}")
             return None
     
@@ -838,7 +1022,8 @@ class MoodBoardService:
         color_info: str = "",
         width: int = None,  # Oda genişliği (cm)
         length: int = None,  # Oda uzunluğu (cm)
-        height: int = None   # Oda yüksekliği (cm)
+        height: int = None,   # Oda yüksekliği (cm)
+        product_categories: list = None  # Kullanıcının seçtiği ürün kategorileri
     ) -> Dict[str, Any]:
         """
         Generate room visualization using HYBRID system with real product images + fake product descriptions.
@@ -859,7 +1044,10 @@ class MoodBoardService:
             design_id: Design ID to link visualization
             user_id: User ID for database record
             color_info: Color palette information
-            dimensions_info: Room dimensions
+            width: Room width in cm
+            length: Room length in cm
+            height: Room height in cm
+            product_categories: User selected product categories
         
         Returns:
             Dict with mood board data including generated image
@@ -918,7 +1106,7 @@ class MoodBoardService:
             # Create hybrid prompt combining real product references and AI descriptions
             enhanced_prompt = await self._create_hybrid_imagen_prompt(
                 room_type, design_style, notes, design_title, design_description,
-                real_product_images, fake_product_descriptions, color_info, dimensions_info
+                real_product_images, fake_product_descriptions, color_info, dimensions_info, product_categories
             )
             
             await websocket_manager.update_mood_board_progress(connection_id, {
@@ -1055,7 +1243,8 @@ class MoodBoardService:
         real_product_images: list,
         fake_product_descriptions: list,
         color_info: str = "",
-        dimensions_info: str = ""
+        dimensions_info: str = "",
+        product_categories: list = None
     ) -> str:
         """
         Create enhanced Imagen prompt for hybrid system.
@@ -1083,6 +1272,19 @@ Family/Homeowner Requirements: {notes}
             base_prompt += f"\nColor Palette: {color_info}"
         if dimensions_info:
             base_prompt += f"\nRoom Dimensions: {dimensions_info}"
+            
+        # Add user selected product categories emphasis
+        if product_categories and len(product_categories) > 0:
+            category_names = []
+            for cat in product_categories:
+                if isinstance(cat, dict) and cat.get('name'):
+                    category_names.append(cat['name'])
+                elif isinstance(cat, str):
+                    category_names.append(cat)
+            
+            if category_names:
+                base_prompt += f"\n\nUSER SELECTED FOCUS CATEGORIES (must be prominently featured): {', '.join(category_names)}"
+                base_prompt += f"\nEnsure these categories are clearly visible and well-represented in the room design."
         
         # Add real product references
         if real_product_images:

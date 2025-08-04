@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import React from 'react';
 import { ValidationUtils } from '../utils/ValidationUtils';
 import { ErrorHandler } from '../utils/ErrorHandler';
 
@@ -20,6 +21,16 @@ export const useFormState = () => {
     price: '' // Fiyat limiti (TL)
   });
 
+  // Debug: Form state değişikliklerini izle
+  React.useEffect(() => {
+    console.log('📊 [useFormState] Form state changed:', {
+      colorPalette: form.colorPalette,
+      productCategories: form.productCategories,
+      roomType: form.roomType,
+      designStyle: form.designStyle
+    });
+  }, [form.colorPalette, form.productCategories, form.roomType, form.designStyle]);
+
   const [newBlock, setNewBlock] = useState({
     width: '', 
     length: '', 
@@ -33,6 +44,16 @@ export const useFormState = () => {
    */
   const handleFormChange = useCallback((e) => {
     const { name, value, type } = e.target;
+    
+    // Special handling for complex fields that come as objects
+    if (name === 'colorPalette' || name === 'productCategories') {
+      console.log(`🔄 [useFormState] Setting ${name}:`, value);
+      setForm(prev => ({ 
+        ...prev, 
+        [name]: value // Direct assignment for object fields
+      }));
+      return;
+    }
     
     let processedValue = value;
     
@@ -97,13 +118,16 @@ export const useFormState = () => {
    * @returns {Object} Clean form data
    */
   const getFormData = useCallback(() => {
-    return {
+    const formData = {
       ...form,
       width: parseInt(form.width) || 0,
       length: parseInt(form.length) || 0,
       height: parseInt(form.height) || 0,
       price: parseFloat(form.price) || 0
     };
+    
+    console.log('📋 [useFormState] getFormData returning:', formData);
+    return formData;
   }, [form]);
 
   /**

@@ -11,6 +11,9 @@ from .notes_parser import NotesParser
 from .response_processor import ResponseProcessor
 from .gemini_client import GeminiClient
 from ..design.hashtag_service import HashtagService
+import os
+import json
+from datetime import datetime
 
 
 class GeminiService(BaseService):
@@ -33,6 +36,36 @@ class GeminiService(BaseService):
         self.product_service = ProductService()
         
         self.log_operation("GeminiService initialized with Function Calling support")
+    
+    def save_gemini_prompt_to_file(self, prompt_text, prompt_type="final_prompt", additional_data=None):
+        """Gemini'ye gönderilen son prompt'ları kaydet."""
+        try:
+            # logs klasörünün var olduğundan emin ol
+            logs_dir = os.path.join("logs")
+            if not os.path.exists(logs_dir):
+                os.makedirs(logs_dir)
+            
+            # Dosya adını tarih ile oluştur
+            today = datetime.now().strftime("%Y-%m-%d")
+            filename = f"gemini_final_prompts_{today}.json"
+            filepath = os.path.join(logs_dir, filename)
+            
+            # Kayıt edilecek veri
+            log_entry = {
+                "timestamp": datetime.now().isoformat(),
+                "prompt_type": prompt_type,
+                "prompt_text": prompt_text,
+                "additional_data": additional_data or {}
+            }
+            
+            # Dosyaya ekle (append mode)
+            with open(filepath, "a", encoding="utf-8") as f:
+                f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
+                
+            logger.info(f"Gemini final prompt kaydedildi: {filepath}")
+            
+        except Exception as e:
+            logger.error(f"Gemini final prompt kaydedilemedi: {str(e)}")
     
     def generate_design_suggestion(self, room_type: str, design_style: str, notes: str) -> Dict[str, Any]:
         """
@@ -167,12 +200,27 @@ class GeminiService(BaseService):
             additional_context += price_context
         
         # Use hybrid prompt template
-        return GeminiPrompts.get_hybrid_design_suggestion_prompt(
+        prompt = GeminiPrompts.get_hybrid_design_suggestion_prompt(
             room_type=room_type,
             design_style=design_style,
             notes=notes,
             additional_context=additional_context
         )
+        
+        # Gemini'ye gönderilecek final prompt'u kaydet
+        self.save_gemini_prompt_to_file(
+            prompt_text=prompt,
+            prompt_type="hybrid_design_prompt",
+            additional_data={
+                "room_type": room_type,
+                "design_style": design_style,
+                "notes": notes,
+                "price": price,
+                "parsed_info": parsed_info
+            }
+        )
+        
+        return prompt
     
     async def _enhance_with_real_product_info(self, design_result: Dict[str, Any], db_session) -> Dict[str, Any]:
         """
