@@ -5,8 +5,7 @@ import Navbar from '../components/Navbar';
 import DesignDetailHeader from '../components/design/DesignDetailHeader';
 import DesignDetailContent from '../components/design/DesignDetailContent';
 import PageFeedback from '../components/design/PageFeedback';
-import { designService } from '../services/designService';
-import blogService from '../services/blogService';
+import { designService, blogService } from '../services';
 
 const DesignDetailPage = () => {
   const { designId } = useParams();

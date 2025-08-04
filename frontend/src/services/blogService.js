@@ -1,10 +1,16 @@
 import { BaseService } from './BaseService';
+import { BLOG_ENDPOINTS, BLOG_SCHEMAS } from '../config/api';
 
 /**
  * Blog Service - Handles blog-related API operations
  * Manages design publishing to blog functionality
  */
 class BlogService extends BaseService {
+  constructor() {
+    super();
+    this.endpoints = BLOG_ENDPOINTS;
+    this.schemas = BLOG_SCHEMAS;
+  }
   /**
    * Get published blog posts with filtering and pagination
    * @param {Object} options - Query options
@@ -12,7 +18,7 @@ class BlogService extends BaseService {
    */
   getPublishedPosts = async (options = {}) => {
     try {
-      const response = await this.api.get('/blog/posts', { params: options });
+      const response = await this.api.get(this.endpoints.POSTS, { params: options });
       return response.data;
     } catch (error) {
       console.error('Error fetching published posts:', error);
@@ -26,7 +32,7 @@ class BlogService extends BaseService {
    */
   getBlogFilters = async () => {
     try {
-      const response = await this.api.get('/blog/filter-options');
+      const response = await this.api.get(this.endpoints.FILTER_OPTIONS);
       return response.data;
     } catch (error) {
       console.error('Error fetching blog filters:', error);
@@ -47,7 +53,7 @@ class BlogService extends BaseService {
    */
   getBlogStats = async () => {
     try {
-      const response = await this.api.get('/blog/stats');
+      const response = await this.api.get(this.endpoints.STATS);
       return response.data;
     } catch (error) {
       console.error('Error fetching blog stats:', error);
@@ -55,37 +61,7 @@ class BlogService extends BaseService {
     }
   }
 
-  /**
-   * Record view for design detail page
-   * @param {string} designId - Design ID to record view for
-   * @returns {Promise<Object>} View record result
-   */
-  recordDesignDetailView = async (designId) => {
-    try {
-      const response = await this.api.post(`/blog/designs/${designId}/view`);
-      return response.data;
-    } catch (error) {
-      console.error('Error recording design detail view:', error);
-      // Don't throw error for view recording - it's not critical
-      return null;
-    }
-  }
-
-  /**
-   * Record view for blog post
-   * @param {number} postId - Post ID to record view for
-   * @returns {Promise<Object>} View record result
-   */
-  recordView = async (postId) => {
-    try {
-      const response = await this.api.post(`/blog/posts/${postId}/view`);
-      return response.data;
-    } catch (error) {
-      console.error('Error recording post view:', error);
-      // Don't throw error for view recording - it's not critical
-      return null;
-    }
-  }
+  // Note: recordView method has been removed as view recording is no longer needed
 
   /**
    * Check if design is already published to blog
@@ -94,7 +70,7 @@ class BlogService extends BaseService {
    */
   isDesignPublished = async (designId) => {
     try {
-      const response = await this.api.get(`/blog/designs/${designId}/published-status`);
+      const response = await this.api.get(`${this.endpoints.PUBLISH_STATUS}/${designId}/published-status`);
       return response.data.is_published || false;
     } catch (error) {
       console.warn('Error checking design publish status:', error);
@@ -103,14 +79,30 @@ class BlogService extends BaseService {
   }
 
   /**
-   * Publish design to blog
+   * Check publish status with detailed information
+   * @param {string} designId - Design ID to check
+   * @returns {Promise<Object>} Publish status details
+   */
+  checkPublishStatus = async (designId) => {
+    try {
+      const response = await this.api.get(`${this.endpoints.CHECK_PUBLISH_STATUS}/${designId}`);
+      return response;
+    } catch (error) {
+      console.error('Error checking publish status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Publish design to blog - Optimized version
+   * Only sends design ID and publish options, backend fetches design data
    * @param {string} designId - Design ID to publish
-   * @param {Object} blogPostData - Blog post data
+   * @param {Object} publishOptions - Publish options (allowComments, isPublic, etc.)
    * @returns {Promise<Object>} Published blog post
    */
-  publishDesignToBlog = async (designId, blogPostData) => {
+  publishDesignToBlog = async (designId, publishOptions = {}) => {
     try {
-      const response = await this.api.post(`/blog/designs/${designId}/publish`, blogPostData);
+      const response = await this.api.post(`${this.endpoints.PUBLISH_DESIGN}/${designId}/publish`, publishOptions);
       return response.data;
     } catch (error) {
       console.error('Error publishing design to blog:', error);

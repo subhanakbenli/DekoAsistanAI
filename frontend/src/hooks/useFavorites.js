@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import favoriteService from '../services/favoriteService';
+import { favoriteService } from '../services';
 
 /**
  * Custom hook for managing favorites with optimized API calls

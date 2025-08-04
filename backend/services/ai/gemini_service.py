@@ -76,7 +76,7 @@ class GeminiService(BaseService):
             logger.error(f"Error generating design suggestion: {str(e)}")
             return self._create_fallback_response(room_type, design_style)
     
-    async def generate_hybrid_design_suggestion(self, room_type: str, design_style: str, notes: str, price: float, db_session, width: int = None, length: int = None, height: int = None, color_info: str = "") -> Dict[str, Any]:
+    async def generate_hybrid_design_suggestion(self, room_type: str, design_style: str, notes: str, price: float, db_session, width: int = None, length: int = None, height: int = None, color_info: str = "", product_categories = None) -> Dict[str, Any]:
         """
         Generate hybrid design suggestion using Function Calling for real products.
         
@@ -110,6 +110,11 @@ class GeminiService(BaseService):
             if color_info:
                 parsed_info['color_info'] = color_info
                 logger.info(f"Added color info to context: {color_info}")
+            
+            # Step 1.7: Add product categories if provided
+            if product_categories:
+                parsed_info['product_categories'] = product_categories
+                logger.info(f"Added product categories to context: {product_categories}")
             
             # Step 2: Create hybrid prompt with price constraint and dimensions
             prompt = self._create_hybrid_design_prompt(room_type, design_style, notes, parsed_info, price)

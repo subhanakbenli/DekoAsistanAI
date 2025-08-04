@@ -35,7 +35,7 @@ const ShareToBlog = memo(({
     if (designId) {
       setCheckingPublishStatus(true);
       checkPublishStatus(designId)
-        .then(setIsAlreadyPublished)
+        .then(result => setIsAlreadyPublished(result?.is_published || false))
         .finally(() => setCheckingPublishStatus(false));
     }
   }, [designId, checkPublishStatus]);
@@ -71,7 +71,7 @@ const ShareToBlog = memo(({
   const handleConfirmPublish = async () => {
     setShowConfirmDialog(false);
     
-    const success = await publishToBlog(designId, designData, {
+    const success = await publishToBlog(designId, {
       allowComments: true,
       isPublic: true
     });

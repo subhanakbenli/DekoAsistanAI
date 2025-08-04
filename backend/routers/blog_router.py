@@ -150,11 +150,16 @@ async def get_public_designs(
 @router.post("/designs/{design_id}/publish")
 async def publish_design_to_blog(
     design_id: str,
-    publish_data: dict,
+    publish_options: dict = {},  # Only publish options like allowComments, isPublic
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session)
 ):
-    """Publish a design to blog."""
+    """
+    Publish a design to blog - Optimized version.
+    
+    Fetches design data from database and generates blog content automatically.
+    Frontend only needs to send design_id and basic publish options.
+    """
     
     # Check if design exists and belongs to user
     design_result = await db.execute(
@@ -180,17 +185,50 @@ async def publish_design_to_blog(
             detail="Design is already published to blog"
         )
     
+    # Generate blog content from design data
+    room_type_names = {
+        "salon": "Salon", "yatak": "Yatak Odası", "çocuk": "Çocuk Odası",
+        "mutfak": "Mutfak", "banyo": "Banyo", "çalışma": "Çalışma Odası"
+    }
+    style_names = {
+        "modern": "Modern", "minimal": "Minimalist", "klasik": "Klasik",
+        "endüstriyel": "Endüstriyel", "iskandinav": "İskandinav"
+    }
+    
+    room_name = room_type_names.get(design.room_type, design.room_type)
+    style_name = style_names.get(design.design_style, design.design_style)
+    blog_title = f"{style_name} {room_name} Tasarımı"
+    
+    # Generate blog content
+    blog_content = f"# {blog_title}\n\n"
+    blog_content += "## Tasarım Detayları\n"
+    blog_content += f"- **Oda Türü:** {room_name}\n"
+    blog_content += f"- **Tasarım Tarzı:** {style_name}\n"
+    
+    if design.width and design.length and design.height:
+        blog_content += f"- **Boyutlar:** {design.width}cm x {design.length}cm x {design.height}cm\n"
+    
+    blog_content += f"\n## Tasarım Açıklaması\n{design.description}\n\n"
+    
+    if design.notes:
+        blog_content += f"## Özel Notlar\n{design.notes}\n\n"
+
     # Create blog post
     blog_post = BlogPost(
         design_id=design_id,
-        title=publish_data.get('title', design.title),
-        content=publish_data.get('content', design.description),
-        tags=publish_data.get('tags', []),
-        category=publish_data.get('category', design.room_type),
+        title=blog_title,
+        content=blog_content,
+        tags=[design.room_type, design.design_style, "tasarım"],
+        category=design.room_type,
         is_published=True,
-        allow_comments=publish_data.get('allowComments', True),
-        featured_image_url=publish_data.get('featuredImageUrl'),
-        blog_metadata=publish_data.get('metadata', {}),
+        allow_comments=publish_options.get('allowComments', True),
+        featured_image_url=None,  # Will be set from mood board if exists
+        blog_metadata={
+            'width': design.width,
+            'length': design.length,
+            'height': design.height,
+            'price': design.price
+        },
         created_at=datetime.now()
     )
     
@@ -202,6 +240,29 @@ async def publish_design_to_blog(
         "success": True,
         "blog_post_id": blog_post.id,
         "message": "Design published to blog successfully"
+    }
+
+@router.get("/check-publish-status/{design_id}")
+async def check_publish_status(
+    design_id: str,
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user)
+):
+    """Check if a design is already published to blog."""
+    
+    result = await db.execute(
+        select(BlogPost).where(
+            and_(
+                BlogPost.design_id == design_id,
+                BlogPost.user_id == current_user.id
+            )
+        )
+    )
+    blog_post = result.scalar_one_or_none()
+    
+    return {
+        "is_published": blog_post is not None,
+        "blog_post_id": blog_post.id if blog_post else None
     }
 
 @router.get("/filter-options")
@@ -320,39 +381,3 @@ async def check_design_published_status(
         "isPublished": blog_post is not None,
         "blog_post_id": blog_post.id if blog_post else None
     }
-
-@router.post("/designs/{design_id}/view")
-async def record_design_detail_view(
-    design_id: str,
-    request: Request,
-    db: AsyncSession = Depends(get_async_session)
-):
-    """Record a view for a design detail page."""
-    VIEW_RECORDED_MESSAGE = "View recorded"
-    
-    try:
-        # Check if design exists and is published
-        blog_post_result = await db.execute(
-            select(BlogPost).where(
-                and_(
-                    BlogPost.design_id == design_id,
-                    BlogPost.is_published == True
-                )
-            )
-        )
-        blog_post = blog_post_result.scalar_one_or_none()
-        
-        if not blog_post:
-            # If not published, just return success without recording
-            return {"success": True, "message": VIEW_RECORDED_MESSAGE}
-        
-        # For now, we'll just return success
-        # In the future, we can implement actual view tracking
-        # by creating a DesignView table or incrementing a view counter
-        
-        return {"success": True, "message": VIEW_RECORDED_MESSAGE}
-        
-    except Exception as e:
-        # Don't raise error for view tracking - just log and continue
-        print(f"Error recording design view: {e}")
-        return {"success": True, "message": VIEW_RECORDED_MESSAGE}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { designService } from '../services/designService';
+import { designService } from '../services';
 import { ErrorHandler } from '../utils/ErrorHandler';
 
 /**

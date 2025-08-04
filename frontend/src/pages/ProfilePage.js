@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { authService } from '../services/authService';
+import { authService } from '../services';
 import Navbar from '../components/Navbar';
 import {
   ProfileHeader,

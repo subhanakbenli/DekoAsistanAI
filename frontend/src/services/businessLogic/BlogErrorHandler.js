@@ -6,33 +6,7 @@ import { ErrorHandler } from '../../utils/ErrorHandler';
  */
 export class BlogErrorHandler extends ErrorHandler {
   
-  /**
-   * Handle like operation errors
-   * @param {Error} error - Error object
-   * @returns {string} User-friendly error message
-   */
-  static handleLikeError(error) {
-    if (error.response?.status === 401) {
-      return 'Beğeni için giriş yapmalısınız';
-    }
-    if (error.response?.status === 404) {
-      return 'Tasarım bulunamadı';
-    }
-    if (error.response?.status === 429) {
-      return 'Çok fazla istek gönderdiniz, lütfen bekleyin';
-    }
-    return 'Beğeni işlemi başarısız oldu';
-  }
-
-  /**
-   * Handle view recording errors
-   * @param {Error} error - Error object
-   * @returns {string} User-friendly error message
-   */
-  static handleViewError(error) {
-    // View errors are usually not critical, return generic message
-    return 'Görüntülenme kaydedilemedi';
-  }
+  // Note: Like and view error handlers have been removed as they are no longer needed
 
   /**
    * Handle blog post fetching errors

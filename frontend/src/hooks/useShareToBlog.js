@@ -1,137 +1,38 @@
 import { useState, useCallback, useMemo } from 'react';
-import blogService from '../services/blogService';
+import { blogService } from '../services';
 import { ErrorHandler } from '../utils/ErrorHandler';
 
 /**
- * Generate blog title from design data
- */
-const generateBlogTitle = (designData) => {
-  const roomTypeNames = {
-    salon: 'Salon',
-    yatak: 'Yatak Odası', 
-    çocuk: 'Çocuk Odası',
-    mutfak: 'Mutfak',
-    banyo: 'Banyo',
-    yemek: 'Yemek Odası',
-    çalışma: 'Çalışma Odası',
-    misafir: 'Misafir Odası'
-  };
-
-  const styleNames = {
-    modern: 'Modern',
-    minimal: 'Minimalist',
-    klasik: 'Klasik'
-  };
-
-  // Backend'den gelen veriler için de destek
-  const roomType = designData.roomType || designData.room_type;
-  const designStyle = designData.designStyle || designData.design_style;
-  
-  const roomName = roomTypeNames[roomType] || roomType || 'Oda';
-  const styleName = styleNames[designStyle] || designStyle || 'Tasarım';
-  
-  return `${styleName} ${roomName} Tasarımı`;
-};
-
-/**
- * Generate blog content from design data
- */
-const generateBlogContent = (designData) => {
-  let content = `# ${generateBlogTitle(designData)}\n\n`;
-  
-  // Oda bilgileri
-  content += `## Oda Bilgileri\n`;
-  content += `- **Oda Türü:** ${designData.roomType || designData.room_type}\n`;
-  content += `- **Tasarım Tarzı:** ${designData.designStyle || designData.design_style}\n`;
-  if (designData.width && designData.length && designData.height) {
-    content += `- **Boyutlar:** ${designData.width}cm x ${designData.length}cm x ${designData.height}cm\n`;
-  }
-  if (designData.price) {
-    content += `- **Bütçe:** ${designData.price} TL\n`;
-  }
-  content += `\n`;
-
-  // Renk paleti
-  if (designData.colorPalette) {
-    content += `## Renk Paleti\n`;
-    if (typeof designData.colorPalette === 'string') {
-      content += `${designData.colorPalette}\n\n`;
-    } else if (designData.colorPalette.type === 'palette') {
-      content += `Seçilen renk paleti: **${designData.colorPalette.palette?.name}**\n`;
-      content += `${designData.colorPalette.palette?.description}\n\n`;
-    } else {
-      content += `Özel renk tercihleri: ${designData.colorPalette.description}\n\n`;
-    }
-  }
-
-  // Ürün kategorileri
-  if (designData.productCategories) {
-    content += `## Ürün Kategorileri\n`;
-    if (designData.productCategories.type === 'categories') {
-      const productNames = designData.productCategories.products?.map(p => p.name).join(', ');
-      content += `Seçilen ürünler: ${productNames}\n\n`;
-    } else {
-      content += `Özel ürün tercihleri: ${designData.productCategories.description}\n\n`;
-    }
-  }
-
-  // Kapı/pencere bilgileri
-  if (designData.doorWindow) {
-    content += `## Mimari Özellikler\n`;
-    content += `${designData.doorWindow.description}\n\n`;
-  }
-
-  // Tasarım notları
-  if (designData.notes) {
-    content += `## Tasarım Notları\n`;
-    content += `${designData.notes}\n\n`;
-  }
-
-  content += `---\n*Bu tasarım Deko Asistan ile oluşturulmuştur.*`;
-
-  return content;
-};
-
-/**
- * Generate blog tags from design data
- */
-const generateBlogTags = (designData) => {
-  const tags = [];
-  
-  // Backend'den gelen veriler için de destek
-  const roomType = designData.roomType || designData.room_type;
-  const designStyle = designData.designStyle || designData.design_style;
-  
-  if (roomType) tags.push(roomType);
-  if (designStyle) tags.push(designStyle);
-  
-  tags.push('dekorasyon', 'iç mimari', 'tasarım', 'ai-tasarım');
-  
-  // Renk paleti etiketleri
-  if (designData.colorPalette?.palette?.category) {
-    tags.push(designData.colorPalette.palette.category);
-  }
-  
-  return [...new Set(tags)]; // Duplicate'ları kaldır
-};
-
-/**
- * Custom hook for sharing designs to blog
- * Handles publishing, loading states, and error management
+ * Custom hook for sharing designs to blog - Optimized version
+ * Now sends only design ID, backend generates content from database
  */
 export const useShareToBlog = () => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishError, setPublishError] = useState(null);
   const [publishSuccess, setPublishSuccess] = useState(false);
-  const [publishedPost, setPublishedPost] = useState(null);
+  const [publishedBlogId, setPublishedBlogId] = useState(null);
+  
+  /**
+   * Check if design is already published
+   * @param {string} designId - Design ID to check
+   */
+  const checkPublishStatus = useCallback(async (designId) => {
+    try {
+      const response = await blogService.checkPublishStatus(designId);
+      return response.data;
+    } catch (error) {
+      console.error('Error checking publish status:', error);
+      return { is_published: false, blog_post_id: null };
+    }
+  }, []);
 
   /**
-   * Publish a design to blog
+   * Publish design to blog - Optimized version
+   * Only sends design ID, backend fetches all data from database
    * @param {string} designId - Design ID to publish
-   * @param {Object} designData - Design data for blog post
-   * @param {Object} publishOptions - Additional publish options
+   * @param {Object} publishOptions - Additional publish options like allowComments, isPublic
    */
-  const publishToBlog = useCallback(async (designId, designData, publishOptions = {}) => {
+  const publishToBlog = useCallback(async (designId, publishOptions = {}) => {
     if (!designId) {
       setPublishError('Design ID is required for publishing');
       return false;
@@ -142,35 +43,23 @@ export const useShareToBlog = () => {
     setPublishSuccess(false);
 
     try {
-      // Prepare blog post data
-      const blogPostData = {
-        title: generateBlogTitle(designData),
-        content: generateBlogContent(designData),
-        designId,
-        tags: generateBlogTags(designData),
-        category: designData.roomType || 'general',
-        featuredImage: designData.imageUrl,
-        metadata: {
-          roomDimensions: {
-            width: designData.width,
-            length: designData.length,
-            height: designData.height
-          },
-          designStyle: designData.designStyle,
-          roomType: designData.roomType,
-          colorPalette: designData.colorPalette,
-          productCategories: designData.productCategories,
-          doorWindow: designData.doorWindow
-        },
-        ...publishOptions
-      };
+      // Send only design ID and publish options to backend
+      // Backend will fetch design data from database and generate content
+      const response = await blogService.publishDesignToBlog(designId, publishOptions);
 
-      const response = await blogService.publishDesignToBlog(designId, blogPostData);
-
-      setPublishedPost(response);
-      setPublishSuccess(true);
-      
-      return response;
+      if (response.success) {
+        setPublishedBlogId(response.blog_post_id);
+        setPublishSuccess(true);
+        
+        return {
+          success: true,
+          blogPostId: response.blog_post_id,
+          message: response.message
+        };
+      } else {
+        setPublishError(response.message || 'Publishing failed');
+        return false;
+      }
 
     } catch (error) {
       const errorMessage = ErrorHandler.extractErrorMessage(error);
@@ -188,28 +77,12 @@ export const useShareToBlog = () => {
   }, []);
 
   /**
-   * Check if a design is already published
-   * @param {string} designId - Design ID to check
-   */
-  const checkPublishStatus = useCallback(async (designId) => {
-    if (!designId) return false;
-
-    try {
-      const isPublished = await blogService.isDesignPublished(designId);
-      return isPublished;
-    } catch (error) {
-      console.warn('Error checking publish status:', error);
-      return false;
-    }
-  }, []);
-
-  /**
    * Clear publish state
    */
   const clearPublishState = useCallback(() => {
     setPublishError(null);
     setPublishSuccess(false);
-    setPublishedPost(null);
+    setPublishedBlogId(null);
   }, []);
 
   /**
@@ -233,7 +106,7 @@ export const useShareToBlog = () => {
     isPublishing,
     publishError,
     publishSuccess,
-    publishedPost,
+    publishedBlogId,
     
     // Actions
     publishToBlog,
@@ -245,3 +118,5 @@ export const useShareToBlog = () => {
     canPublish: !isPublishing
   };
 };
+
+export default useShareToBlog;

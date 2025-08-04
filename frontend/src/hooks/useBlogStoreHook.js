@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useBlogStore } from '../store/blogStore';
 import { 
-  LikeActionHandler,
-  ViewActionHandler,
   NavigationActionHandler
 } from '../services/businessLogic/ActionHandlers';
 
@@ -31,18 +29,7 @@ export const useBlogStoreHook = () => {
     actions
   } = useBlogStore();
 
-  // Initialize action handlers
-  const likeHandler = new LikeActionHandler(
-    isAuthenticated, 
-    navigate, 
-    actions.updatePostLike // Use store action instead of direct callback
-  );
-  
-  const viewHandler = new ViewActionHandler(
-    blogPosts, 
-    actions.setBlogPosts
-  );
-  
+  // Initialize action handlers (like and view handlers removed)
   const navigationHandler = new NavigationActionHandler(navigate);
 
   // Initialize data on mount - use a ref to avoid dependency issues
@@ -51,15 +38,7 @@ export const useBlogStoreHook = () => {
     useBlogStore.getState().actions.initializeBlogData();
   }, []); // Empty dependency array is safe here
 
-  // Enhanced action handlers with store integration
-  const handleLikeToggle = async (postId) => {
-    await likeHandler.handle(postId);
-  };
-
-  const handleViewRecord = async (postId) => {
-    await viewHandler.handle(postId);
-  };
-
+  // Enhanced action handlers with store integration (like and view handlers removed)
   const handleDesignView = (designId) => {
     navigationHandler.handleDesignView(designId);
   };
@@ -91,9 +70,7 @@ export const useBlogStoreHook = () => {
     handleClearFilters: actions.clearFiltersAndRefresh,
     toggleFiltersVisibility: actions.toggleFilters,
     
-    // Enhanced actions (with handlers)
-    handleLikeToggle,
-    handleViewRecord,
+    // Enhanced actions (with handlers) - like and view handlers removed
     handleDesignView,
     handleNavigateToStudio,
     retryFetchPosts

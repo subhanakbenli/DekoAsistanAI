@@ -1,4 +1,5 @@
 import { BaseService } from './BaseService';
+import { FAVORITE_ENDPOINTS, FAVORITE_SCHEMAS } from '../config/api';
 
 /**
  * FavoriteService - Manage user favorites for designs and products
@@ -7,13 +8,8 @@ import { BaseService } from './BaseService';
 class FavoriteService extends BaseService {
   constructor() {
     super();
-    this.endpoints = {
-      DESIGN_FAVORITE: '/favorites/design',
-      PRODUCT_FAVORITE: '/favorites/product', 
-      USER_FAVORITES: '/favorites/my-favorites',
-      FAVORITE_DESIGNS: '/favorites/designs',
-      FAVORITE_PRODUCTS: '/favorites/products'
-    };
+    this.endpoints = FAVORITE_ENDPOINTS;
+    this.schemas = FAVORITE_SCHEMAS;
   }
 
   /**

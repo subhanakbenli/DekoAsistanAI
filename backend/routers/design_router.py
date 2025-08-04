@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Form, HTTPException, BackgroundTasks, Depends, Query, status
+from fastapi import APIRouter, Form, HTTPException, BackgroundTasks, Depends, Query, status, Body
 from fastapi.responses import FileResponse
 from config import logger
 from config.database import get_db, get_async_session
@@ -8,10 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from models import DesignResponseModel
+from models.design_request_models import DesignRequest
 from models.user_models import User
 from models.design_models_db import Design, MoodBoard, DesignHashtag
 from services import GeminiService, DesignHistoryService, mood_board_service, mood_board_log_service
 from middleware.auth_middleware import OptionalAuth, optional_auth
+from typing import Optional, Dict, Any
 import os
 import time
 from datetime import datetime
@@ -60,40 +62,42 @@ services = DesignServices()
 
 @router.post("/test", response_model=DesignResponseModel)
 async def design_request_endpoint(
+    design_request: DesignRequest,
     background_tasks: BackgroundTasks,
-    room_type: str = Form(...),
-    design_style: str = Form(...),
-    notes: str = Form(...),
-    connection_id: str = Form(None),  # WebSocket connection ID for real-time room visualization
-    color_info: str = Form(""),  # Renk paleti bilgisi (frontend'den formatlanmış)
-    width: int = Form(None),  # Oda genişliği (cm)
-    length: int = Form(None),  # Oda uzunluğu (cm)  
-    height: int = Form(None),  # Oda yüksekliği (cm)
-    product_categories: str = Form(""),  # Seçilen ürün kategorileri (JSON string)
-    price: float = Form(None),  # Fiyat limiti (TL)
     db: AsyncSession = Depends(get_db),
     auth_data: dict = Depends(OptionalAuth())
 ):
     """
     Main design request endpoint - Enhanced room visualization generation.
     
-    Processes user preferences and generates comprehensive design suggestions with Gemini AI.
-    When connection_id is provided, automatically starts background room visualization generation
-    using Imagen 4 with 19+ step progress tracking via WebSocket.
+    Now accepts JSON request body with structured data types instead of form data.
+    This provides better type safety, validation, and API documentation.
     
     Features:
+    - JSON request body with proper data types
+    - Automatic validation via Pydantic models
     - AI-powered design suggestions with Turkish language support
     - Real-time room visualization with enhanced progress tracking  
     - Background task processing for non-blocking user experience
     - Guest and authenticated user support
     - Database persistence for design history
-    
-    According to PRD: Sends user-provided information to Gemini and returns detailed 
-    design suggestions with optional room visualization generation.
     """
     user = auth_data.get("user")
     user_id = user.id if user else None
     user_email = user.email if user else "guest"
+    
+    # Extract data from request model
+    room_type = design_request.room_type
+    design_style = design_request.design_style
+    notes = design_request.notes
+    connection_id = design_request.connection_id
+    width = design_request.width
+    length = design_request.length
+    height = design_request.height
+    price = design_request.price
+    
+    # Convert to string format for legacy compatibility where needed
+    color_info = design_request.get_color_info_as_string()
     
     # Debug log to check user_id type and validate
     logger.info(f"User ID: {user_id} (type: {type(user_id)})")
@@ -107,6 +111,9 @@ async def design_request_endpoint(
     logger.info(f"HYBRID design request from {user_email}: {room_type} - {design_style}")
     
     try:
+        # Use structured product_categories data directly (no JSON parsing needed!)
+        parsed_product_categories_for_ai = design_request.get_product_categories_as_dict()
+
         # Generate HYBRID design suggestion using Function Calling
         design_result = await services.gemini_service.generate_hybrid_design_suggestion(
             room_type=room_type,
@@ -117,7 +124,8 @@ async def design_request_endpoint(
             width=width,
             length=length,
             height=height,
-            color_info=color_info
+            color_info=color_info,
+            product_categories=parsed_product_categories_for_ai  # ✅ Gemini AI'ya gönderiliyor
         )
         
         logger.info(f"HYBRID design suggestion created successfully for {user_email}: {design_result['title']}")
@@ -160,17 +168,10 @@ async def design_request_endpoint(
                 height=height
             )
         
-        # If user is authenticated, save to database
         # Save design to database for all users (guest and authenticated)
         try:
-            # Parse product_categories JSON if provided
-            parsed_product_categories = None
-            if product_categories:
-                try:
-                    import json
-                    parsed_product_categories = json.loads(product_categories)
-                except json.JSONDecodeError:
-                    logger.warning(f"Invalid product_categories JSON: {product_categories}")
+            # Use structured product_categories data directly
+            parsed_product_categories = design_request.get_product_categories_as_dict()
             
             db_design = Design(
                 id=design_id,

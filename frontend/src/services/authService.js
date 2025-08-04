@@ -1,4 +1,5 @@
 import { BaseService } from './BaseService';
+import { AUTH_ENDPOINTS, AUTH_SCHEMAS } from '../config/api';
 
 /**
  * AuthService - Authentication and user management service
@@ -7,12 +8,8 @@ import { BaseService } from './BaseService';
 class AuthService extends BaseService {
   constructor() {
     super(); // Call BaseService constructor
-    this.endpoints = {
-      REGISTER: '/auth/register',
-      LOGIN: '/auth/login',
-      USER_INFO: '/auth/me',
-      PROFILE: '/auth/profile'
-    };
+    this.endpoints = AUTH_ENDPOINTS;
+    this.schemas = AUTH_SCHEMAS;
   }
 
   /**
@@ -76,7 +73,7 @@ class AuthService extends BaseService {
    */
   async getUserInfo() {
     try {
-      return await this.get(this.endpoints.USER_INFO);
+      return await this.get(this.endpoints.ME);
     } catch (error) {
       throw this.handleError(error);
     }

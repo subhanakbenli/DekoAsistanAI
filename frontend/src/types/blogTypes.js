@@ -15,10 +15,7 @@
  * @property {string} [featured_image]
  * @property {string[]} tags
  * @property {string} category
- * @property {number} like_count
- * @property {number} view_count
  * @property {number} comment_count
- * @property {boolean} is_liked
  * @property {boolean} is_featured
  * @property {boolean} allow_comments
  * @property {string} published_at
@@ -97,16 +94,7 @@
  * @property {number} pagination.items_per_page
  */
 
-/**
- * @typedef {Object} LikeToggleResult
- * @property {boolean} is_liked
- * @property {number} like_count
- */
-
-/**
- * @typedef {Object} ViewRecordResult
- * @property {number} view_count
- */
+// Note: LikeToggleResult and ViewRecordResult types have been removed as they are no longer needed
 
 /**
  * @typedef {Object} BlogError

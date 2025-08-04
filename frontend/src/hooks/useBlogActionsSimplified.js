@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { BlogBusinessLogic } from '../services/businessLogic/BlogBusinessLogic';
 import { 
-  LikeActionHandler,
-  ViewActionHandler,
   FilterActionHandler,
   NavigationActionHandler,
   PaginationActionHandler
@@ -13,6 +11,7 @@ import {
 /**
  * Simplified Blog Actions Hook
  * Uses action handlers to simplify complex operations
+ * Note: Like and view handlers have been removed as they are no longer needed
  */
 export const useBlogActionsSimplified = (state, actions) => {
   const navigate = useNavigate();
@@ -37,19 +36,7 @@ export const useBlogActionsSimplified = (state, actions) => {
     updateStats
   } = actions;
 
-  // Initialize action handlers
-  const likeHandler = new LikeActionHandler(
-    isAuthenticated, 
-    navigate, 
-    blogPosts, 
-    updateBlogPosts
-  );
-  
-  const viewHandler = new ViewActionHandler(
-    blogPosts, 
-    updateBlogPosts
-  );
-  
+  // Initialize action handlers (like and view handlers removed)
   const filterHandler = new FilterActionHandler(
     updateFilters, 
     resetPaginationToFirstPage
@@ -88,15 +75,7 @@ export const useBlogActionsSimplified = (state, actions) => {
     }
   }, [updateStats]);
 
-  // Simplified action handlers
-  const handleLikeToggle = useCallback(async (postId) => {
-    await likeHandler.handle(postId);
-  }, [likeHandler]);
-
-  const handleViewRecord = useCallback(async (postId) => {
-    await viewHandler.handle(postId);
-  }, [viewHandler]);
-
+  // Simplified action handlers (like and view handlers removed)
   const handleFilterChange = useCallback((newFilters) => {
     filterHandler.handle(newFilters);
   }, [filterHandler]);
@@ -132,9 +111,7 @@ export const useBlogActionsSimplified = (state, actions) => {
     fetchBlogStats,
     retryFetchPosts,
     
-    // User interactions
-    handleLikeToggle,
-    handleViewRecord,
+    // User interactions (like and view handlers removed)
     handleFilterChange,
     handleSearch,
     handleClearFilters,

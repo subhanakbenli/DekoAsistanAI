@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ErrorHandler } from '../utils/ErrorHandler';
-import { ApiConstants, EnvironmentConfig } from '../constants';
+import { apiConfig, DEFAULT_HEADERS, TIMEOUTS } from '../config/api';
 
 /**
  * BaseService - Abstract base class for all API services
@@ -10,7 +10,7 @@ import { ApiConstants, EnvironmentConfig } from '../constants';
  */
 export class BaseService {
   constructor(baseURL = null) {
-    this.baseURL = baseURL || ApiConstants.buildApiUrl('');
+    this.baseURL = baseURL || apiConfig.getApiBaseUrl();
     this.setupAxiosInstance();
     this.setupInterceptors();
   }
@@ -22,10 +22,8 @@ export class BaseService {
   setupAxiosInstance() {
     this.api = axios.create({
       baseURL: this.baseURL,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      timeout: EnvironmentConfig.getTimeout(),
+      headers: DEFAULT_HEADERS,
+      timeout: TIMEOUTS.DEFAULT,
     });
   }
 

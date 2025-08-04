@@ -3,7 +3,7 @@ import {
   DEFAULT_PAGINATION,
   BLOG_CONSTANTS 
 } from '../../types/blogTypes';
-import { blogApi } from '../api/blogApi';
+import { blogService } from '../index';
 
 /**
  * Blog Business Logic - Central business logic for blog operations
@@ -51,7 +51,8 @@ export class BlogBusinessLogic {
    */
   static async fetchBlogPosts(filters, pagination) {
     try {
-      const response = await blogApi.fetchBlogPosts(filters, pagination);
+      const queryParams = { ...filters, ...pagination };
+      const response = await blogService.getPublishedPosts(queryParams);
       return {
         success: true,
         data: response.posts || [],
@@ -73,7 +74,7 @@ export class BlogBusinessLogic {
    */
   static async fetchFilterOptions() {
     try {
-      const response = await blogApi.fetchFilterOptions();
+      const response = await blogService.getBlogFilters();
       return {
         success: true,
         data: response
@@ -98,7 +99,7 @@ export class BlogBusinessLogic {
    */
   static async fetchBlogStats() {
     try {
-      const response = await blogApi.fetchBlogStats();
+      const response = await blogService.getBlogStats();
       return {
         success: true,
         data: response
@@ -113,93 +114,5 @@ export class BlogBusinessLogic {
     }
   }
 
-  /**
-   * Handle like toggle for a blog post
-   * @param {number} postId
-   * @param {boolean} isAuthenticated
-   * @param {Function} navigate
-   * @returns {Promise<import('../../types/blogTypes').ApiResponse<import('../../types/blogTypes').LikeToggleResult>>}
-   */
-  static async handleLikeToggle(postId, isAuthenticated, navigate) {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return {
-        success: false,
-        data: null,
-        error: 'Beğenmek için giriş yapmalısınız'
-      };
-    }
-
-    try {
-      const response = await blogApi.toggleLike(postId);
-      return {
-        success: true,
-        data: response
-      };
-    } catch (error) {
-      console.error('BlogBusinessLogic: Error toggling like:', error);
-      return {
-        success: false,
-        data: null,
-        error: error.message || 'Beğenme işlemi sırasında bir hata oluştu'
-      };
-    }
-  }
-
-  /**
-   * Handle view record for a blog post
-   * @param {number} postId
-   * @returns {Promise<import('../../types/blogTypes').ApiResponse<import('../../types/blogTypes').ViewRecordResult>>}
-   */
-  static async handleViewRecord(postId) {
-    try {
-      const response = await blogApi.recordView(postId);
-      return {
-        success: true,
-        data: response
-      };
-    } catch (error) {
-      console.error('BlogBusinessLogic: Error recording view:', error);
-      return {
-        success: false,
-        data: null,
-        error: error.message || 'Görüntüleme kaydetme sırasında bir hata oluştu'
-      };
-    }
-  }
-
-  /**
-   * Update post like status in the posts array
-   * @param {import('../../types/blogTypes').BlogPost[]} posts
-   * @param {number} postId
-   * @param {import('../../types/blogTypes').LikeToggleResult} likeResult
-   * @returns {import('../../types/blogTypes').BlogPost[]}
-   */
-  static updatePostLikeStatus(posts, postId, likeResult) {
-    if (!likeResult) return posts;
-    
-    return posts.map(post => 
-      post.id === postId 
-        ? { 
-            ...post, 
-            is_liked: likeResult.is_liked,
-            like_count: likeResult.like_count
-          }
-        : post
-    );
-  }
-
-  /**
-   * Update post view count in the posts array
-   * @param {import('../../types/blogTypes').BlogPost[]} posts
-   * @param {number} postId
-   * @returns {import('../../types/blogTypes').BlogPost[]}
-   */
-  static updatePostViewCount(posts, postId) {
-    return posts.map(post => 
-      post.id === postId 
-        ? { ...post, view_count: post.view_count + 1 }
-        : post
-    );
-  }
+  // Note: Like and view related methods have been removed as they are no longer needed
 }

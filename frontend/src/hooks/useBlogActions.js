@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import blogService from '../services/blogService';
+import { blogService } from '../services';
 
 /**
  * Blog Actions Hook

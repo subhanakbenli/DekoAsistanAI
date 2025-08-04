@@ -64,21 +64,7 @@ export const useBlogStore = create((set, get) => ({
     
     toggleFilters: () => set((state) => ({ showFilters: !state.showFilters })),
 
-    // Complex actions with business logic
-    updatePostLike: (postId, likeResult) => set((state) => ({
-      blogPosts: BlogBusinessLogic.updatePostLikeStatus(
-        state.blogPosts, 
-        postId, 
-        likeResult
-      )
-    })),
-
-    updatePostViews: (postId) => set((state) => ({
-      blogPosts: BlogBusinessLogic.updatePostViewCount(
-        state.blogPosts, 
-        postId
-      )
-    })),
+    // Note: Like and view update methods have been removed as they are no longer needed
 
     // Async actions
     fetchBlogPosts: async () => {

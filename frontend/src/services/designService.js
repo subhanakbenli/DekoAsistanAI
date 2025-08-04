@@ -1,4 +1,5 @@
 import { BaseService } from './BaseService';
+import { DESIGN_ENDPOINTS, DESIGN_SCHEMAS } from '../config/api';
 
 /**
  * DesignService - Interior design and AI-powered room design service
@@ -7,63 +8,56 @@ import { BaseService } from './BaseService';
 class DesignService extends BaseService {
   constructor() {
     super();
-    this.endpoints = {
-      DESIGN_TEST: '/design/test',
-      DESIGN_HISTORY: '/design/history',
-      DESIGN_DETAIL: '/design'
-    };
+    this.endpoints = DESIGN_ENDPOINTS;
+    this.schemas = DESIGN_SCHEMAS;
   }
 
   /**
-   * Submit design request to backend with WebSocket support
+   * Submit design request to backend with JSON body
    * @param {Object} formData - Design form data
    * @param {string|null} connectionId - WebSocket connection ID
    * @returns {Promise<Object>} Design response with success/error status
    */
   async submitDesignRequest(formData, connectionId = null) {
     try {
-      const formDataObj = new FormData();
-      
-      // Add form fields
-      formDataObj.append('room_type', formData.roomType);
-      formDataObj.append('design_style', formData.designStyle);
-      
-      // Create comprehensive notes (excluding color and dimensions - they're separate now)
-      const fullNotes = this.createFullNotes(formData);
-      formDataObj.append('notes', fullNotes);
+      // Create JSON request body
+      const requestBody = {
+        room_type: formData.roomType,
+        design_style: formData.designStyle,
+        notes: this.createFullNotes(formData),
+        connection_id: connectionId,
+        width: formData.width ? parseInt(formData.width) : null,
+        length: formData.length ? parseInt(formData.length) : null,
+        height: formData.height ? parseInt(formData.height) : null,
+        price: formData.price ? parseFloat(formData.price) : null
+      };
 
-      // Add color info as separate parameter (professional approach)
-      const colorInfo = this.formatColorInfo(formData.colorPalette);
-      if (colorInfo) {
-        formDataObj.append('color_info', colorInfo);
-      }
-
-      // Add dimensions as separate parameters (professional approach)  
-      if (formData.width) {
-        formDataObj.append('width', formData.width);
-      }
-      if (formData.length) {
-        formDataObj.append('length', formData.length);
-      }
-      if (formData.height) {
-        formDataObj.append('height', formData.height);
+      // Add color info as structured object
+      if (formData.colorPalette) {
+        requestBody.color_info = {
+          dominantColor: formData.colorPalette.dominantColor,
+          colorName: formData.colorPalette.colorName,
+          colorPalette: formData.colorPalette.colorPalette
+        };
       }
 
-      // Add product categories as separate parameter (professional approach)
+      // Add product categories as structured object
       if (formData.productCategories) {
-        formDataObj.append('product_categories', JSON.stringify(formData.productCategories));
+        requestBody.product_categories = {
+          type: formData.productCategories.type,
+          products: formData.productCategories.products,
+          description: formData.productCategories.description
+        };
       }
 
-      // Add WebSocket connection ID if available
-      if (connectionId) {
-        formDataObj.append('connection_id', connectionId);
-      }
-
-      // Use fetch for FormData (better compatibility)
-      const response = await fetch(`${this.baseURL}${this.endpoints.DESIGN_TEST}`, {
+      // Send JSON request
+      const response = await fetch(`${this.baseURL}${this.endpoints.CREATE}`, {
         method: 'POST',
-        headers: this.getAuthHeaders(),
-        body: formDataObj,
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeaders()
+        },
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -140,7 +134,7 @@ class DesignService extends BaseService {
    */
   async getDesignHistory() {
     try {
-      return await this.get(this.endpoints.DESIGN_HISTORY);
+      return await this.get(this.endpoints.HISTORY);
     } catch (error) {
       throw this.handleError(error);
     }
@@ -153,33 +147,10 @@ class DesignService extends BaseService {
    */
   async getDesignDetails(designId) {
     try {
-      return await this.get(`${this.endpoints.DESIGN_DETAIL}/${designId}`);
+      return await this.get(`${this.endpoints.DETAIL}/${designId}`);
     } catch (error) {
       throw this.handleError(error);
     }
-  }
-
-  /**
-   * Format color palette information for backend
-   * @private
-   * @param {Object} colorPalette - Color palette data
-   * @returns {string} Formatted color information
-   */
-  formatColorInfo(colorPalette) {
-    if (!colorPalette) return '';
-
-    if (colorPalette.type === 'palette' && colorPalette.palette) {
-      const palette = colorPalette.palette;
-      let colorInfo = `Renk Paleti: ${palette.name} - ${palette.description}\n`;
-      if (palette.colors && palette.colors.length > 0) {
-        colorInfo += `Renk Kodları: ${palette.colors.join(', ')}`;
-      }
-      return colorInfo;
-    } else if (colorPalette.type === 'custom' && colorPalette.description) {
-      return `Özel Renk Tercihi: ${colorPalette.description}`;
-    }
-
-    return '';
   }
 
   /**
