@@ -233,15 +233,18 @@ Bu bilgileri kullanarak Imagen 4 için **EV İÇİ KONUT ODASI** görseli prompt
 3. **Konut Atmosferi**: Family-friendly home environment, not commercial space
 4. **Renkler**: Seçilen renk paletini ev odasında doğal şekilde kullan
 5. **Ev Mobilyaları**: Include home furniture and residential products naturally
-6. **Detaylar**: Home-specific colors, materials, residential furniture, cozy lighting
-7. **Kalite**: High-quality residential interior photography, warm home lighting
-8. **Kompozisyon**: Well-furnished family home room with lived-in comfort
+6. **SEÇİLEN KATEGORİ VURGUSU**: Eğer kullanıcı belirli ürün kategorileri seçmişse, bu kategorilerdeki ürünlerin odada GÖRÜNÜR ve BELİRGİN şekilde yerleştirildiğinden emin ol. Seçilen kategoriler odanın ana fokus noktalarında yer almalı.
+7. **Detaylar**: Home-specific colors, materials, residential furniture, cozy lighting
+8. **Kalite**: High-quality residential interior photography, warm home lighting
+9. **Kompozisyon**: Well-furnished family home room with lived-in comfort
 
-**Kritik Konut Vurguları**: 
+**Kritik Konut ve Kategori Vurguları**: 
 - "residential home interior" kelimelerini kullan
 - "family home", "house interior", "domestic space" terimleri ekle  
 - Commercial, hotel, restaurant, office, venue terimlerinden kaçın
 - Ev yaşamına uygun, aile dostu atmosfer oluştur
+- **ÖNEMLİ**: Kullanıcının seçtiği ürün kategorileri varsa, bunları prompt'ta "prominently featuring [kategori_adları]" şeklinde özellikle belirt
+- Seçilen kategorilerdeki ürünler odanın merkezinde, görünür konumlarda olmalı
 - Prompt'u İngilizce olarak yaz ve konut odası vurgusunu unutma
 - Maksimum 500 karakter olsun
 
@@ -336,7 +339,27 @@ class PromptUtils:
             additional_context += f"- Oda Boyutları: {dims['width']}cm x {dims['length']}cm x {dims['height']}cm\n"
         
         # Renk paleti bağlamı
-        if parsed_info.get('color_palette'):
+        if parsed_info.get('color_info'):
+            color_info_str = parsed_info['color_info']
+            # Color info JSON string'i parse et
+            try:
+                import json
+                color_info = json.loads(color_info_str) if isinstance(color_info_str, str) else color_info_str
+                
+                if isinstance(color_info, dict):
+                    # Frontend'den gelen yeni format
+                    if color_info.get('colorName'):
+                        additional_context += f"- Seçilen Ana Renk: {color_info['colorName']}\n"
+                    if color_info.get('dominantColor'):
+                        additional_context += f"- Dominant Renk Kodu: {color_info['dominantColor']}\n"
+                    if color_info.get('colorPalette') and isinstance(color_info['colorPalette'], list):
+                        additional_context += f"- Renk Paleti: {', '.join(color_info['colorPalette'])}\n"
+            except (json.JSONDecodeError, TypeError):
+                # Fallback: eğer parse edilemezse string olarak kullan
+                additional_context += f"- Renk Bilgisi: {color_info_str}\n"
+        
+        # Eski renk paleti formatı için geriye uyumluluk
+        elif parsed_info.get('color_palette'):
             color_info = parsed_info['color_palette']
             if color_info['type'] == 'palette':
                 additional_context += f"- Seçilen Renk Paleti: {color_info.get('description', 'Özel palet')}\n"
@@ -345,16 +368,32 @@ class PromptUtils:
             elif color_info['type'] == 'custom':
                 additional_context += f"- Özel Renk Tercihi: {color_info['description']}\n"
         
-        # Ürün kategori tercihleri
-        if parsed_info.get('product_categories') and len(parsed_info['product_categories']) > 0:
-            if isinstance(parsed_info['product_categories'][0], dict) and 'type' in parsed_info['product_categories'][0]:
-                # Özel ürün açıklaması
-                additional_context += f"- Özel Ürün Tercihleri: {parsed_info['product_categories'][0]['description']}\n"
-            else:
-                # Seçilen kategoriler
-                categories = [cat['name'] for cat in parsed_info['product_categories'] if 'name' in cat]
-                if categories:
-                    additional_context += f"- Seçilen Ürün Kategorileri: {', '.join(categories)}\n"
+        # Ürün kategori tercihleri - VURGULU FORMATLAMA
+        if parsed_info.get('product_categories'):
+            product_categories = parsed_info['product_categories']
+            
+            # Frontend'den gelen format kontrolü
+            if isinstance(product_categories, dict):
+                if product_categories.get('type') == 'categories' and product_categories.get('products'):
+                    # Seçilen kategoriler - Vurgulu format
+                    categories = [cat.get('name') for cat in product_categories['products'] if cat.get('name')]
+                    if categories:
+                        additional_context += f"- **ÖZEL ODAK KATEGORİLERİ** (görsel odada BELİRGİN olarak vurgulanmalı): {', '.join(categories)}\n"
+                        additional_context += "- Bu kategorilerden ürünler odanın ana odak noktalarında yerleştirilmeli ve görsel olarak öne çıkarılmalı\n"
+                elif product_categories.get('type') == 'custom' and product_categories.get('description'):
+                    # Özel ürün açıklaması
+                    additional_context += f"- Özel Ürün Tercihleri: {product_categories['description']}\n"
+            # Eski format desteği (list formatı)
+            elif isinstance(product_categories, list) and len(product_categories) > 0:
+                if isinstance(product_categories[0], dict) and 'type' in product_categories[0]:
+                    # Özel ürün açıklaması
+                    additional_context += f"- Özel Ürün Tercihleri: {product_categories[0]['description']}\n"
+                else:
+                    # Seçilen kategoriler - Vurgulu format
+                    categories = [cat['name'] for cat in product_categories if 'name' in cat]
+                    if categories:
+                        additional_context += f"- **ÖZEL ODAK KATEGORİLERİ** (görsel odada BELİRGİN olarak vurgulanmalı): {', '.join(categories)}\n"
+                        additional_context += "- Bu kategorilerden ürünler odanın ana odak noktalarında yerleştirilmeli ve görsel olarak öne çıkarılmalı\n"
         
         # Ekstra alanlar bilgisi
         if parsed_info.get('extra_areas'):
@@ -365,7 +404,7 @@ class PromptUtils:
     @staticmethod
     def format_products_for_imagen(products: list) -> str:
         """
-        Ürün listesini Imagen prompt'u için formatlar
+        Ürün listesini Imagen prompt'u için formatlar - Seçilen kategorileri vurgular
         
         Args:
             products: Ürün listesi
@@ -383,9 +422,15 @@ class PromptUtils:
                 products_by_category[category] = []
             products_by_category[category].append(product['name'])
         
-        products_text = "Kullanılacak Ürünler:\n"
+        # Kategorileri vurgulu şekilde formatla
+        products_text = "ÖZEL ODAK KATEGORİLERİ (bu kategorilerden ürünler odada BELİRGİN şekilde görünür olmalı):\n"
+        category_names = list(products_by_category.keys())
+        
         for category, product_names in products_by_category.items():
-            products_text += f"- {category}: {', '.join(product_names)}\n"
+            products_text += f"- **{category}** (odada görünür yerleşim): {', '.join(product_names)}\n"
+        
+        # Kategorilerin İngilizce çevirisini de ekle
+        products_text += f"\nGörsel için kategori vurgusu: Prominently feature {', '.join(category_names)} in the room layout\n"
         
         return products_text
     
