@@ -246,9 +246,17 @@ async def publish_design_to_blog(
 async def check_publish_status(
     design_id: str,
     db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     """Check if a design is already published to blog."""
+    
+    # If user is not authenticated, return not published
+    if not current_user:
+        return {
+            "is_published": False,
+            "blog_post_id": None,
+            "message": "User not authenticated"
+        }
     
     result = await db.execute(
         select(BlogPost).where(
@@ -264,6 +272,35 @@ async def check_publish_status(
         "is_published": blog_post is not None,
         "blog_post_id": blog_post.id if blog_post else None
     }
+
+@router.get("/public/check-publish-status/{design_id}")
+async def check_publish_status_public(
+    design_id: str,
+    db: AsyncSession = Depends(get_async_session)
+):
+    """Check if a design is published to blog (public endpoint - no auth required)."""
+    
+    try:
+        result = await db.execute(
+            select(BlogPost).where(
+                and_(
+                    BlogPost.design_id == design_id,
+                    BlogPost.is_published == True
+                )
+            )
+        )
+        blog_post = result.scalar_one_or_none()
+        
+        return {
+            "is_published": blog_post is not None,
+            "blog_post_id": blog_post.id if blog_post else None
+        }
+    except Exception:
+        # Return safe default values if anything goes wrong
+        return {
+            "is_published": False,
+            "blog_post_id": None
+        }
 
 @router.get("/filter-options")
 async def get_blog_filters(

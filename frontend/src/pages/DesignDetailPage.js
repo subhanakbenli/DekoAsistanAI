@@ -23,14 +23,8 @@ const DesignDetailPage = () => {
       const data = await designService.getDesignDetails(designId);
       setDesign(data);
       
-      // Record view if design is published to blog
-      // Don't let this fail the main operation
-      try {
-        await blogService.recordDesignDetailView(designId);
-      } catch (viewError) {
-        // Silently log view recording errors without affecting the main flow
-        console.warn('Could not record design view:', viewError.message);
-      }
+      // Note: View recording functionality has been removed from blogService
+      // This feature is no longer needed for the current implementation
       
     } catch (error) {
       console.error('Error fetching design details:', error);

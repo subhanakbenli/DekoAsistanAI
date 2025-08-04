@@ -49,7 +49,8 @@ export const BLOG_ENDPOINTS = {
   VIEW: '/blog/posts', // POST /blog/posts/{id}/view
   PUBLISH_DESIGN: '/blog/designs', // POST /blog/designs/{designId}/publish
   PUBLISH_STATUS: '/blog/designs', // GET /blog/designs/{designId}/published-status
-  CHECK_PUBLISH_STATUS: '/blog/check-publish-status' // GET /blog/check-publish-status/{designId}
+  CHECK_PUBLISH_STATUS: '/blog/check-publish-status', // GET /blog/check-publish-status/{designId}
+  CHECK_PUBLISH_STATUS_PUBLIC: '/blog/public/check-publish-status' // GET /blog/public/check-publish-status/{designId} - No auth required
 };
 
 /**

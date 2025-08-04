@@ -18,10 +18,18 @@ export const useShareToBlog = () => {
    */
   const checkPublishStatus = useCallback(async (designId) => {
     try {
-      const response = await blogService.checkPublishStatus(designId);
+      // Use public endpoint first (no auth required)
+      const response = await blogService.checkPublishStatusPublic(designId);
       return response.data;
     } catch (error) {
+      // Handle authentication and network errors gracefully
       console.error('Error checking publish status:', error);
+      
+      // If it's an auth error or network error, just return false without throwing
+      if (error.type === 'auth' || error.type === 'network') {
+        return { is_published: false, blog_post_id: null };
+      }
+      
       return { is_published: false, blog_post_id: null };
     }
   }, []);

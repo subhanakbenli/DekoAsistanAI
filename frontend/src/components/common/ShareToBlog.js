@@ -36,6 +36,11 @@ const ShareToBlog = memo(({
       setCheckingPublishStatus(true);
       checkPublishStatus(designId)
         .then(result => setIsAlreadyPublished(result?.is_published || false))
+        .catch(error => {
+          // Silently handle errors during publish status check
+          console.warn('Could not check publish status:', error);
+          setIsAlreadyPublished(false);
+        })
         .finally(() => setCheckingPublishStatus(false));
     }
   }, [designId, checkPublishStatus]);

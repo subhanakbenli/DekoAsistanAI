@@ -64,6 +64,18 @@ class BlogService extends BaseService {
   // Note: recordView method has been removed as view recording is no longer needed
 
   /**
+   * Record design detail view - Placeholder method
+   * @param {string} designId - Design ID
+   * @returns {Promise<void>} 
+   * @deprecated This method is deprecated and returns immediately
+   */
+  recordDesignDetailView = async (designId) => {
+    // This method is deprecated - view recording is no longer needed
+    // Return immediately without making any API calls
+    return Promise.resolve();
+  }
+
+  /**
    * Check if design is already published to blog
    * @param {string} designId - Design ID to check
    * @returns {Promise<boolean>} True if design is published
@@ -90,6 +102,27 @@ class BlogService extends BaseService {
     } catch (error) {
       console.error('Error checking publish status:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Check publish status (public endpoint - no auth required)
+   * @param {string} designId - Design ID to check
+   * @returns {Promise<Object>} Publish status details
+   */
+  checkPublishStatusPublic = async (designId) => {
+    try {
+      const response = await this.api.get(`${this.endpoints.CHECK_PUBLISH_STATUS_PUBLIC}/${designId}`);
+      return response;
+    } catch (error) {
+      console.warn('Error checking publish status (public):', error);
+      // Return safe default for public endpoint
+      return {
+        data: {
+          is_published: false,
+          blog_post_id: null
+        }
+      };
     }
   }
 
