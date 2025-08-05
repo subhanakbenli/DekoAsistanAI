@@ -54,11 +54,15 @@ class LocalImageService:
             # Map some category names to directory names
             category_mapping = {
                 'koltuk-takimi': 'koltuk',
+                'koltuk takımı': 'koltuk',
                 'kanepe': 'koltuk',
                 'armchair': 'koltuk',
                 'sofa': 'koltuk',
                 'masa': 'yemek-masasi',
+                'mutfak masası': 'yemek-masasi',  # Add kitchen table mapping
+                'yemek masası': 'yemek-masasi',
                 'table': 'yemek-masasi',
+                'sehpa': 'tv-unitesi',  # Sehpa usually stored in tv-unitesi
                 'chair': 'sandalye',
                 'bed': 'yatak',
                 'wardrobe': 'dolap',
@@ -76,7 +80,19 @@ class LocalImageService:
                 'aksesuar': 'aksesuar',
                 'duvar-dekorasyonu': 'duvar-dekorasyonu',
                 'çalışma-masası': 'calisma-masasi',
-                'calisma-masasi': 'calisma-masasi'
+                'calisma-masasi': 'calisma-masasi',
+                'dekoratif objeler': 'aksesuar',  # Map to aksesuar
+                'dekoratif obje': 'aksesuar',
+                'berjer': 'berjer',
+                'bar sandalyesi': 'bar-sandalyesi',
+                'bar-sandalyesi': 'bar-sandalyesi',
+                'büfe': 'bufe',
+                'komodin': 'komodin',
+                'lavabo': 'lavabo',
+                'oyuncak dolabı': 'oyuncak-dolabi',
+                'ranza': 'ranza',  
+                'tek kişilik baza': 'tek-kisilik-baza',
+                'tezgah': 'tezgah'
             }
             
             # Use mapped category or original

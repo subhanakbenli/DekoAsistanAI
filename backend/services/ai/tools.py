@@ -10,25 +10,55 @@ from config import logger
 find_product_declaration = genai.protos.FunctionDeclaration(
     name="find_product",
     description="""
-    Veritabanından tasarıma uygun ürün ara. Bu fonksiyonu kullanarak gerçek ürünleri bulabilirsin.
-    Eğer ürün bulamazsan, tasarıma uygun hayali ürün oluşturabilirsin.
+    Veritabanından tasarıma uygun ürün ara. SADECE belirtilen kategorilerden birini kullan.
+    Eğer istediğin ürün mevcut kategorilerde yoksa, en yakın kategoriyi seç.
+    
+    ÖNEMLİ KURALLAR:
+    - Mutfak ürünleri için: "Tezgah", "Lavabo" veya "Yemek Masası" 
+    - Oturma için: "Koltuk", "Sandalye", "Berjer", "Bar Sandalyesi"
+    - Depolama için: "Dolap", "Kitaplık", "Komodin", "Oyuncak Dolabı"
+    - Dekorasyon için: "Aksesuar", "Duvar Dekorasyonu", "Halı", "Ayna"
+    
+    Kendi kategori isimleri uydurmA!
     """,
     parameters=genai.protos.Schema(
         type=genai.protos.Type.OBJECT,
         properties={
             "category": genai.protos.Schema(
                 type=genai.protos.Type.STRING,
-                description="""Ürün kategorisi (zorunlu). Kullanılabilir kategoriler:
-                - Oturma: Koltuk, Koltuk Takımı, Berjer, Sandalye, Bar Sandalyesi
-                - Yatak: Yatak, Ranza, Tek Kişilik Baza
-                - Depolama: Dolap, Kitaplık, Komodin, Oyuncak Dolabı
-                - Masa: Yemek Masası, Çalışma Masası, TV Ünitesi, Büfe
-                - Mutfak/Banyo: Tezgah, Lavabo
-                - Dekorasyon: Dekoratif Objeler, Duvar Dekorasyonu, Aksesuar, Halı, Ayna
-                - Aydınlatma: Aydınlatma
-                
-                Önemli: "Dekoratif Objeler" hem duvar dekorasyonu hem aksesuar kategorilerinde arama yapar.
-                Doğal dilde kategori adı kullanabilirsin (örn: "Koltuk Takımı", "Dekoratif Objeler")""",
+                description="""Ürün kategorisi (zorunlu). SADECE aşağıdaki kategorilerden birini seç:
+
+MEVCUT KATEGORİLER:
+• Sandalye
+• Büfe  
+• Lavabo
+• Koltuk
+• Komodin
+• Aksesuar
+• Dolap
+• TV Ünitesi
+• Ranza
+• Bar Sandalyesi
+• Halı
+• Yatak
+• Berjer
+• Yemek Masası
+• Aydınlatma
+• Oyuncak Dolabı
+• Tezgah
+• Kitaplık
+• Duvar Dekorasyonu
+• Çalışma Masası
+• Ayna
+• Tek Kişilik Baza
+
+ÖNEMLI: Bu kategorilerin dışında kategori kullanma. Eğer aradığın ürün bu kategorilerde yoksa en yakın kategoriyi seç.
+Örnek:
+- Mutfak masası için → "Yemek Masası"
+- Oturma grubu için → "Koltuk" 
+- Depolama için → "Dolap" veya "Kitaplık"
+- Dekoratif objeler için → "Aksesuar" veya "Duvar Dekorasyonu"
+""",
             ),
             "style": genai.protos.Schema(
                 type=genai.protos.Type.STRING,
