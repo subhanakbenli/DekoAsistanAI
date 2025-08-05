@@ -16,9 +16,106 @@ class ProductService(BaseService):
     Searches PostgreSQL products table with flexible criteria.
     """
     
+    # Kategori eşleme - Gemini'nin kullandığı kategori adlarını PostgreSQL kategori adlarına çevirir
+    # PostgreSQL'deki gerçek kategoriler: Sandalye, Büfe, Lavabo, Koltuk, Komodin, Aksesuar, 
+    # Dolap, TV Ünitesi, Ranza, Bar Sandalyesi, Halı, Yatak, Berjer, Yemek Masası, 
+    # Aydınlatma, Oyuncak Dolabı, Tezgah, Kitaplık, Duvar Dekorasyonu, Çalışma Masası, Ayna, Tek Kişilik Baza
+    CATEGORY_MAPPING = {
+        # Koltuk ve Oturma Grubu
+        "Koltuk Takımı": ["Koltuk"],
+        "Koltuk": ["Koltuk"],
+        "Kanepe": ["Koltuk"],
+        "Berjer": ["Berjer"],
+        
+        # Sandalye kategorileri
+        "Sandalye": ["Sandalye"],
+        "Bar Taburesi": ["Bar Sandalyesi"],
+        "Bar Sandalyesi": ["Bar Sandalyesi"],
+        "Ofis Koltuğu": ["Sandalye"],
+        
+        # Yatak kategorileri
+        "Yatak": ["Yatak"],
+        "Çocuk Yatağı": ["Yatak"],  # Çocuk yatağı da Yatak kategorisinde
+        "Ranza": ["Ranza"],
+        "Tek Kişilik Baza": ["Tek Kişilik Baza"],
+        
+        # Depolama kategorileri
+        "Gardırop": ["Dolap"],
+        "Gardirop": ["Dolap"],
+        "Dolap": ["Dolap"],
+        "Kitaplık": ["Kitaplık"],
+        "Kitaplıklar": ["Kitaplık"],
+        "Komodin": ["Komodin"],
+        "Oyuncak Dolabı": ["Oyuncak Dolabı"],
+        
+        # Masa ve Sehpa kategorileri
+        "Sehpa": ["Yemek Masası"],  # Sehpa kategorisi yok, en yakını Yemek Masası
+        "Orta Sehpa": ["Yemek Masası"],
+        "Yan Sehpa": ["Yemek Masası"],
+        "Konsol": ["Yemek Masası"],
+        "TV Ünitesi": ["TV Ünitesi"],
+        "Yemek Masası": ["Yemek Masası"],
+        "Çalışma Masası": ["Çalışma Masası"],
+        "Büfe": ["Büfe"],
+        "Bufe": ["Büfe"],
+        
+        # Mutfak & Banyo kategorileri
+        "Mutfak Dolabı": ["Dolap"],  # Mutfak dolabı kategorisi yok, Dolap kullan
+        "Tezgah": ["Tezgah"],
+        "Lavabo": ["Lavabo"],
+        "Duş": ["Lavabo"],  # Duş kategorisi yok, Lavabo kullan
+        "Duş Kabini": ["Lavabo"],
+        "Banyo Depolama": ["Dolap"],
+        
+        # Aydınlatma kategorileri
+        "Aydınlatma": ["Aydınlatma"],
+        "Sarkıt Lamba": ["Aydınlatma"],
+        "Lambader": ["Aydınlatma"],
+        "Aplik": ["Aydınlatma"],
+        "Avize": ["Aydınlatma"],
+        
+        # Dekorasyon kategorileri
+        "Halı": ["Halı"],
+        "Perde": ["Aksesuar"],  # Perde kategorisi yok, Aksesuar kullan
+        "Ayna": ["Ayna"],
+        "Tablo": ["Duvar Dekorasyonu"],
+        "Duvar Dekorasyonu": ["Duvar Dekorasyonu"],
+        "Aksesuar": ["Aksesuar"],
+        "Tekstil": ["Aksesuar"],
+        
+        # Dekoratif objeler - birden fazla kategoride arama (ÖNEMLİ!)
+        "Dekoratif Objeler": ["Duvar Dekorasyonu", "Aksesuar"],
+        
+        # Mobilyalar (genel kategori)
+        "Mobilyalar": ["Koltuk"]
+    }
+    
     def __init__(self):
         super().__init__()
         self.log_operation("ProductService initialized for Function Calling")
+    
+    def _map_category_to_db_categories(self, category: str) -> List[str]:
+        """
+        Gemini'den gelen kategori adını PostgreSQL'deki kategori adlarına çevirir.
+        
+        Args:
+            category: Gemini'den gelen kategori adı
+            
+        Returns:
+            PostgreSQL'de aranacak kategori adları listesi
+        """
+        # Önce tam eşleşme ara
+        if category in self.CATEGORY_MAPPING:
+            return self.CATEGORY_MAPPING[category]
+        
+        # Case-insensitive arama
+        for key, value in self.CATEGORY_MAPPING.items():
+            if key.lower() == category.lower():
+                return value
+        
+        # Eğer eşleşme bulunamazsa, orijinal kategoriyi döndür
+        logger.warning(f"Category mapping not found for: {category}, using original")
+        return [category.lower()]
     
     async def find_products_by_criteria(
         self, 
@@ -46,8 +143,18 @@ class ProductService(BaseService):
         try:
             logger.info(f"Searching products: category={category}, style={style}, color={color}")
             
-            # Build query with flexible matching
-            query = select(Product).where(Product.category == category)
+            # Kategori eşlemesi yap
+            db_categories = self._map_category_to_db_categories(category)
+            logger.info(f"Mapped category '{category}' to DB categories: {db_categories}")
+            
+            # Build query with category mapping
+            if len(db_categories) == 1:
+                # Tek kategori araması
+                query = select(Product).where(Product.category == db_categories[0])
+            else:
+                # Birden fazla kategori araması (OR logic)
+                category_filters = [Product.category == cat for cat in db_categories]
+                query = select(Product).where(or_(*category_filters))
             
             # Add optional filters if provided
             additional_filters = []
@@ -112,7 +219,7 @@ class ProductService(BaseService):
                 }
                 product_list.append(product_dict)
             
-            logger.info(f"Found {len(product_list)} products for category={category}")
+            logger.info(f"Found {len(product_list)} products for category={category} (DB categories: {db_categories})")
             return product_list
             
         except Exception as e:

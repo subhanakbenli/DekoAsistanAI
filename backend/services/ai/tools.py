@@ -18,7 +18,17 @@ find_product_declaration = genai.protos.FunctionDeclaration(
         properties={
             "category": genai.protos.Schema(
                 type=genai.protos.Type.STRING,
-                description="Ürün kategorisi (zorunlu). Örnek: koltuk, yatak, kitaplik, sehpa, aydinlatma",
+                description="""Ürün kategorisi (zorunlu). Kullanılabilir kategoriler:
+                - Oturma: Koltuk, Koltuk Takımı, Berjer, Sandalye, Bar Sandalyesi
+                - Yatak: Yatak, Ranza, Tek Kişilik Baza
+                - Depolama: Dolap, Kitaplık, Komodin, Oyuncak Dolabı
+                - Masa: Yemek Masası, Çalışma Masası, TV Ünitesi, Büfe
+                - Mutfak/Banyo: Tezgah, Lavabo
+                - Dekorasyon: Dekoratif Objeler, Duvar Dekorasyonu, Aksesuar, Halı, Ayna
+                - Aydınlatma: Aydınlatma
+                
+                Önemli: "Dekoratif Objeler" hem duvar dekorasyonu hem aksesuar kategorilerinde arama yapar.
+                Doğal dilde kategori adı kullanabilirsin (örn: "Koltuk Takımı", "Dekoratif Objeler")""",
             ),
             "style": genai.protos.Schema(
                 type=genai.protos.Type.STRING,
