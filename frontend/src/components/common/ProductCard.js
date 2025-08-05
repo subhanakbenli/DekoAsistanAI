@@ -33,31 +33,29 @@ const ProductCard = ({ product, index, categoryIcons }) => {
   const cardColor = categoryColors[product.category] || 'border-gray-500 bg-gray-900/20';
   const textColor = categoryTextColors[product.category] || 'text-gray-300';
 
-  // Render product name with link if available
+  // Handle card click for product link
+  const handleCardClick = () => {
+    if (product.is_real && product.product_link) {
+      window.open(product.product_link, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  // Render product name (no longer individually clickable)
   const renderProductName = () => {
-    const productName = (
-      <h5 className="text-sm font-semibold text-white leading-tight hover:text-purple-300 transition-colors cursor-pointer">
+    return (
+      <h5 className="text-sm font-semibold text-white leading-tight">
         {product.name}
       </h5>
     );
-
-    // If real product with link, make it clickable
-    if (product.is_real && product.product_link) {
-      return (
-        <div 
-          onClick={() => window.open(product.product_link, '_blank', 'noopener,noreferrer')}
-          className="block cursor-pointer"
-        >
-          {productName}
-        </div>
-      );
-    }
-
-    return productName;
   };
 
   return (
-    <div className={`bg-gray-800 p-4 rounded-lg border-l-4 ${cardColor} hover:bg-gray-750 transition-colors duration-200`}>
+    <div 
+      className={`bg-gray-800 p-4 rounded-lg border-l-4 ${cardColor} hover:bg-gray-750 transition-colors duration-200 ${
+        product.is_real && product.product_link ? 'cursor-pointer hover:scale-105 transform' : ''
+      }`}
+      onClick={handleCardClick}
+    >
       {/* Category Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
@@ -74,26 +72,29 @@ const ProductCard = ({ product, index, categoryIcons }) => {
         </div>
       </div>
 
-      {/* Product Image */}
-      {product.is_real && product.image_path && (
+      {/* Product Image or Description */}
+      {product.is_real && product.image_path ? (
         <div className="mb-3">
           <img 
             src={product.image_path} 
             alt={product.name}
-            className="w-full h-32 object-cover rounded-lg border border-gray-600"
+            className="w-full h-48 object-cover rounded-lg border border-gray-600"
             onError={(e) => {
               e.target.style.display = 'none';
             }}
           />
+        </div>
+      ) : (
+        <div className="mb-3 h-48 flex items-center justify-center bg-gray-700/50 rounded-lg border border-gray-600">
+          <p className="text-xs text-gray-300 leading-relaxed p-4 text-center">
+            {product.description}
+          </p>
         </div>
       )}
 
       {/* Product Info */}
       <div className="space-y-2">
         {renderProductName()}
-        <p className="text-xs text-gray-300 leading-relaxed">
-          {product.description}
-        </p>
       </div>
 
       {/* Product Card Bottom */}
