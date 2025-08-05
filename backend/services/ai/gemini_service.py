@@ -248,6 +248,7 @@ class GeminiService(BaseService):
                     enhanced_product.update({
                         "is_real": True,
                         "name": real_product.get("product_name"),  # Use real product name
+                        "category": real_product.get("category"),  # Use real product category
                         "original_description": real_product.get("description"),  # IKEA orijinal açıklaması
                         "image_available": bool(real_product.get("image_path")),
                         "image_path": real_product.get("image_path"),
@@ -259,7 +260,7 @@ class GeminiService(BaseService):
                             "height_cm": real_product.get("height_cm")
                         }
                     })
-                    logger.info(f"Enhanced product with real data: {real_product.get('product_name')}")
+                    logger.info(f"Enhanced product with real data: {real_product.get('product_name')} (category: {real_product.get('category')})")
                 else:
                     # Product not found - mark as fake
                     enhanced_product.update({

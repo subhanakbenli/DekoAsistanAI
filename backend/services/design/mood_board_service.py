@@ -157,6 +157,7 @@ class MoodBoardService:
             # Add color_info to parsed_info if available
             if color_info:
                 parsed_info['color_info'] = color_info
+                logger.info(f"🎨 [MoodBoardService] Color info received: {color_info[:200]}...")  # İlk 200 karakter
             
             # Format dimensions info for prompt
             dimensions_info = ""
@@ -1396,8 +1397,12 @@ Focus on accurate representation of the products' colors, shapes, and styling.
             real_product_images = []
             fake_product_descriptions = []
             
+            logger.info(f"🔍 DEBUG: Processing {len(products) if products else 0} products for mood board")
+            
             if products:
-                for product in products:
+                for i, product in enumerate(products):
+                    logger.info(f"🔍 DEBUG: Product {i}: name='{product.get('name')}', category='{product.get('category')}', is_real={product.get('is_real')}")
+                    
                     if product.get('is_real') and product.get('image_path'):
                         # Real product - extract image for Imagen reference
                         # Combine Gemini description + original IKEA description
@@ -1426,6 +1431,10 @@ Focus on accurate representation of the products' colors, shapes, and styling.
                             'category': product.get('category'),
                             'description': product.get('description')
                         })
+            
+            logger.info(f"🔍 DEBUG: Created real_product_images list with {len(real_product_images)} items:")
+            for i, img in enumerate(real_product_images):
+                logger.info(f"🔍 DEBUG: real_product_images[{i}]: name='{img.get('name')}', category='{img.get('category')}'")
             
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "preparing_prompt",
@@ -1667,9 +1676,28 @@ Home Design Concept: {design_title}
 Family/Homeowner Requirements: {notes}
 """
         
-        # Add color and dimension info if available
+        # Add color and dimension info if available - GELİŞTİRİLMİŞ RENK PALETİ İŞLEME
         if color_info:
-            base_prompt += f"\nColor Palette: {color_info}"
+            # Color_info string'ini parse et ve detaylı renk bilgisi ekle
+            try:
+                import json
+                if isinstance(color_info, str) and color_info.startswith('{'):
+                    color_data = json.loads(color_info)
+                    if color_data.get('colorName') and color_data.get('colorPalette'):
+                        color_name = color_data['colorName']
+                        colors = color_data['colorPalette']
+                        formatted_colors = json.dumps(colors)
+                        base_prompt += f"\nColor Palette: {{\"dominantColor\":\"{colors[0]}\",\"colorName\":\"{color_name}\",\"colorPalette\":{formatted_colors}}}"
+                        # Ek renk vurgusu ekle
+                        base_prompt += f"\nCOLOR DOMINANCE REQUIREMENT: The {color_name} color palette MUST be the dominant visual theme throughout the room!"
+                    else:
+                        base_prompt += f"\nColor Palette: {color_info}"
+                else:
+                    base_prompt += f"\nColor Palette: {color_info}"
+            except Exception as e:
+                logger.warning(f"Color info parsing failed: {e}")
+                base_prompt += f"\nColor Palette: {color_info}"
+                
         if dimensions_info:
             base_prompt += f"\nRoom Dimensions: {dimensions_info}"
             
@@ -1686,19 +1714,50 @@ Family/Homeowner Requirements: {notes}
                 base_prompt += f"\n\nUSER SELECTED FOCUS CATEGORIES (must be prominently featured): {', '.join(category_names)}"
                 base_prompt += f"\nEnsure these categories are clearly visible and well-represented in the room design."
         
-        # Add real product references with enhanced details
+        # Add real product references with enhanced details - RENK PALETİNE UYARLANMIŞ
         if real_product_images:
             base_prompt += "\n\nReal Product References (incorporate these exact products visually):"
+            
+            # Renk paletini parse et
+            dominant_colors = []
+            color_name = ""
+            try:
+                import json
+                if isinstance(color_info, str) and color_info.startswith('{'):
+                    color_data = json.loads(color_info)
+                    if color_data.get('colorPalette'):
+                        dominant_colors = color_data['colorPalette']
+                        color_name = color_data.get('colorName', 'Selected Palette')
+                        logger.info(f"🎨 [HybridPrompt] Color palette parsed: {color_name} - {dominant_colors}")
+            except Exception as e:
+                logger.warning(f"Color palette parsing failed: {e}")
+                
             for product in real_product_images:
                 product_line = f"\n- {product['category'].upper()}: {product['name']}"
                 
-                # Add primary description
+                # Add primary description but ADAPT COLOR to palette
                 if product.get('description'):
-                    product_line += f"\n  Description: {product['description']}"
+                    original_desc = product['description']
+                    # Renk bilgilerini palette'e uyarla
+                    adapted_desc = original_desc
+                    
+                    # Orijinal renk referanslarını kaldır ve palette renklerini ekle
+                    if dominant_colors:
+                        # Specific color references (hex codes, color names) temizle
+                        import re
+                        adapted_desc = re.sub(r'#[A-Fa-f0-9]{6}', '', adapted_desc)
+                        adapted_desc = re.sub(r'açık bej|beyaz|siyah|gri|kahverengi', '', adapted_desc, flags=re.IGNORECASE)
+                        adapted_desc = re.sub(r'tonlarında özel kumaş kaplama', '', adapted_desc)
+                        
+                        # Palette rengini ekle
+                        palette_instruction = f"adapted to selected color palette ({dominant_colors[0]} dominant)"
+                        adapted_desc = f"{adapted_desc.strip()}, {palette_instruction}"
+                    
+                    product_line += f"\n  Design Style: {adapted_desc}"
                 
-                # Add original IKEA description if available
+                # Add original IKEA description if available (tasarım bilgisi için)
                 if product.get('original_description'):
-                    product_line += f"\n  Details: {product['original_description']}"
+                    product_line += f"\n  Technical Details: {product['original_description']}"
                 
                 # Add image information for visual context
                 if product.get('image_info'):
@@ -1710,7 +1769,12 @@ Family/Homeowner Requirements: {notes}
                     if img_info.get('optimized'):
                         product_line += f", AI-optimized for accurate representation"
                 
-                product_line += f"\n  → MUST BE VISIBLE: This exact {product['category']} should be prominently featured in the room"
+                # Renk adaptasyonu vurgusu
+                if dominant_colors:
+                    product_line += f"\n  → IMPORTANT: Keep {product['category']} DESIGN STYLE but adapt colors to match the selected palette"
+                else:
+                    product_line += f"\n  → MUST BE VISIBLE: This exact {product['category']} should be prominently featured in the room"
+                    
                 base_prompt += product_line
         
         # Add fake product descriptions for creativity
@@ -1725,6 +1789,11 @@ Home Interior Image Requirements:
 - Photorealistic residential home interior photography style
 - Professional home lighting and family-friendly composition
 - {design_style} aesthetic suitable for family living
+- PRIORITY: Selected color palette MUST dominate the room's visual theme
+- Product design shapes and styles should be maintained, but colors adapted to palette
+- Include both referenced real products and creatively interpreted elements
+- Natural home lighting, realistic textures and family-safe materials
+- Wide-angle view showing the complete home room layout
 - Include both referenced real products and creatively interpreted elements
 - Natural home lighting, realistic textures and family-safe materials
 - Wide-angle view showing the complete home room layout

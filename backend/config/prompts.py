@@ -4,6 +4,7 @@ Merkezi prompt yönetimi için oluşturulmuştur
 """
 
 import json
+from config import logger
 
 class GeminiPrompts:
     """
@@ -238,9 +239,11 @@ Sen bir AI görsel üretim uzmanısın. Aşağıdaki **KONUT İÇ MEKAN** tasar�
 **HİBRİT PARAMETRELERİ YANSITAN PROMPT OLUŞTURMA KURALLARI:**
 
 1. **ODA BOYUTLARI VURGUSU**: Eğer boyut bilgisi varsa, odanın büyüklük hissini prompt'a ekle (spacious/compact/medium-sized)
-2. **RENK PALETİ DOMİNANSI**: Verilen renkleri "dominated by [renk], featuring [diğer renkler]" formatında vurgula
-3. **HİBRİT ÜRÜN ENTEGRASYONu**: 
-   - Gerçek ürün referanslarını "inspired by [ürün açıklaması]" formatında dahil et
+2. **RENK PALETİ DOMİNANSI - ÇOK ÖNEMLİ**: Verilen renk paletini mutlaka "dominated by [ana renk], featuring [diğer renkler]" formatında vurgula. Renk paleti odanın EN BASKUN özelliği olmalı!
+3. **HİBRİT ÜRÜN ENTEGRASYONu - RENK ADAPTASYONU**: 
+   - Gerçek ürün referanslarını "inspired by [ürün tasarım şekli]" formatında dahil et
+   - ÖNEMLI: Ürün şekillerini/tasarımlarını koru ama renklerini seçilen palette'e uyarla
+   - "Product design maintained but recolored to match palette" ifadesi kullan
    - Yaratıcı öğeleri "featuring [yaratıcı açıklama]" şeklinde entegre et
    - Her iki tip ürünü de görsel odak noktası olarak belirt
 4. **STIL KARAKTERİZASYONU**: Tasarım stilini odanın temel özelliği olarak vurgula
@@ -248,13 +251,14 @@ Sen bir AI görsel üretim uzmanısın. Aşağıdaki **KONUT İÇ MEKAN** tasar�
 
 **Hibrit Görsel Teknik Gereksinimler:**
 - Photo-realistic home interior photography
-- Professional interior design visualization
+- Professional interior design visualization  
 - Sharp focus on both real product references and creative elements
-- Natural home lighting that enhances color palette
+- Natural home lighting that enhances color palette DOMINANCE
 - Wide-angle view showing room proportions accurately
 - Seamless integration of referenced and creative design elements
 
 **ÖNEMLİ HATIRLATMALAR:**
+- RENK PALETİ MUTLAKA UYGULANMALI - görselin ana karakteristiği olmalı!
 - Parametrelere uygun olmayan genel/belirsiz ifadeler kullanma
 - Her parametre (boyut, renk, kategori, stil) prompt'ta net şekilde yer almalı
 - Hibrit ürün sistemi (gerçek referans + yaratıcı) prompt'ta açıkça belirtilmeli
@@ -305,7 +309,7 @@ Sadece hibrit parametrelere uyumlu İngilizce prompt'u döndür, açıklama yapm
             else:
                 size_descriptor = "medium-sized "
         
-        # Renk bilgisi analizi
+        # Renk bilgisi analizi - GELİŞTİRİLMİŞ RENK PALETİ İŞLEME
         color_descriptor = ""
         if color_info:
             try:
@@ -316,18 +320,45 @@ Sadece hibrit parametrelere uyumlu İngilizce prompt'u döndür, açıklama yapm
                     color_data = color_info
                 
                 if isinstance(color_data, dict):
+                    # Yeni frontend yapısını destekle
                     if color_data.get('colorName'):
-                        color_descriptor = f" dominated by {color_data['colorName'].lower()}"
+                        color_name = color_data['colorName'].lower()
+                        color_descriptor = f" dominated by {color_name} tones"
+                        
+                        # Renk paletini de ekle
+                        if color_data.get('colorPalette') and len(color_data['colorPalette']) > 0:
+                            primary_color = color_data['colorPalette'][0]  # İlk renk dominant renk
+                            # Hex kodu varsa renk tanımlama yap
+                            if primary_color.startswith('#'):
+                                color_descriptor = f" dominated by {color_name} palette ({primary_color})"
+                    
                     elif color_data.get('dominantColor'):
-                        color_descriptor = f" with {color_data['dominantColor'].lower()} color scheme"
-            except:
-                # Fallback: string olarak kullan
-                if 'beyaz' in color_info.lower() or 'white' in color_info.lower():
+                        dominant_color = color_data['dominantColor']
+                        # Hex kodundan renk ismi çıkar
+                        if dominant_color.startswith('#'):
+                            color_descriptor = f" with {dominant_color} color scheme"
+                        else:
+                            color_descriptor = f" dominated by {dominant_color.lower()}"
+                            
+                # Özel renk paletleri için özel tanımlamalar
+                logger.info(f"🎨 Color processing: {color_info}")
+                
+            except Exception as e:
+                logger.warning(f"Color info parsing failed: {e}, using fallback")
+                # Geliştirilmiş fallback: Renk isimlerini ara
+                color_lower = color_info.lower()
+                if 'okyanus' in color_lower or 'ocean' in color_lower:
+                    color_descriptor = " dominated by deep ocean blue tones with teal accents"
+                elif 'beyaz' in color_lower or 'white' in color_lower:
                     color_descriptor = " dominated by white"
-                elif 'siyah' in color_info.lower() or 'black' in color_info.lower():
+                elif 'siyah' in color_lower or 'black' in color_lower:
                     color_descriptor = " dominated by black"
-                elif 'gri' in color_info.lower() or 'gray' in color_info.lower():
+                elif 'gri' in color_lower or 'gray' in color_lower:
                     color_descriptor = " dominated by gray"
+                elif 'mavi' in color_lower or 'blue' in color_lower:
+                    color_descriptor = " dominated by blue tones"
+                elif 'yeşil' in color_lower or 'green' in color_lower:
+                    color_descriptor = " dominated by green tones"
         
         # Ürün kategorisi vurgusu
         category_descriptor = ""
