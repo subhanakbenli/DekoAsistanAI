@@ -9,7 +9,9 @@ from services.communication.websocket_manager import websocket_manager
 from services.ai.notes_parser import NotesParser
 from services.design.mood_board_log_service import mood_board_log_service
 from services.design.imagen_prompt_log_service import ImagenPromptLogService
-from typing import Dict, Any, Optional
+from services.design.local_image_service import local_image_service
+from utils.image_utils import ImageUtils
+from typing import Dict, Any, Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 import json
@@ -778,6 +780,325 @@ class MoodBoardService:
             # Fall back to placeholder if real API fails
             return await self._generate_fallback_image(prompt, connection_id, mood_board_id)
     
+    async def _generate_image_with_imagen_multimodal(
+        self, 
+        prompt: str, 
+        reference_images: List[str], 
+        product_data: List[Dict[str, Any]] = None,
+        connection_id: str = None, 
+        mood_board_id: str = None
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Generate high-quality room visualization using Vertex AI Imagen 4 with multimodal input.
+        
+        This method combines text prompts with reference product images for more accurate results.
+        
+        Args:
+            prompt: Text description for the room design
+            reference_images: List of base64 encoded reference product images
+            connection_id: WebSocket connection ID for progress updates
+            mood_board_id: Mood board ID for tracking
+            
+        Returns:
+            Dict with base64 image data and success status, or None if failed
+        """
+        
+        # Start timer for generation time tracking
+        start_time = time.time()
+        
+        # If no reference images, fall back to text-only generation
+        if not reference_images:
+            logger.info("No reference images provided, falling back to text-only generation")
+            return await self._generate_image_with_imagen(prompt, connection_id, mood_board_id)
+        
+        try:
+            # Import Google Cloud libraries
+            from google.cloud import aiplatform
+            from vertexai.preview.vision_models import ImageGenerationModel
+            
+            logger.info(f"🎨 Generating multimodal room visualization with {len(reference_images)} reference images...")
+            
+            # Progress update: Initializing multimodal AI model (35%)
+            if connection_id and mood_board_id:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": 35,
+                    "message": "Multimodal AI modeli başlatılıyor...",
+                    "mood_board_id": mood_board_id
+                })
+            
+            # Set authentication explicitly
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = self.settings.GOOGLE_APPLICATION_CREDENTIALS
+            
+            # Initialize Vertex AI
+            aiplatform.init(
+                project=self.settings.GOOGLE_CLOUD_PROJECT_ID,
+                location="us-central1"
+            )
+            
+            # Progress update: Loading multimodal model (45%)
+            if connection_id and mood_board_id:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": 45,
+                    "message": "Multimodal görsel model yükleniyor...",
+                    "mood_board_id": mood_board_id
+                })
+            
+            # Load the Imagen model
+            generation_model = ImageGenerationModel.from_pretrained("imagegeneration@006")
+            
+            # Progress update: Preparing reference images (50%)
+            if connection_id and mood_board_id:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": 50,
+                    "message": f"Referans fotoğrafları hazırlanıyor ({len(reference_images)} adet)...",
+                    "mood_board_id": mood_board_id
+                })
+            
+            # Convert base64 images to PIL Image objects (required by Vertex AI)
+            from PIL import Image as PILImage
+            import io
+            
+            reference_pil_images = []
+            for i, base64_img in enumerate(reference_images):
+                try:
+                    image_bytes = base64.b64decode(base64_img)
+                    pil_image = PILImage.open(io.BytesIO(image_bytes))
+                    reference_pil_images.append(pil_image)
+                    logger.debug(f"Prepared reference image {i+1}: {pil_image.size}")
+                except Exception as e:
+                    logger.warning(f"Failed to prepare reference image {i+1}: {str(e)}")
+                    continue
+            
+            if not reference_pil_images:
+                logger.warning("No valid reference images, falling back to text-only")
+                return await self._generate_image_with_imagen(prompt, connection_id, mood_board_id)
+            
+            # Progress update: Starting multimodal generation (55%)
+            if connection_id and mood_board_id:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": 55,
+                    "message": f"Multimodal AI görsel oluşturuyor ({len(reference_pil_images)} referans ile)...",
+                    "mood_board_id": mood_board_id
+                })
+            
+            # Generate image with enhanced text-based multimodal approach
+            def generate_multimodal_sync():
+                try:
+                    # Create enhanced prompt with reference image analysis
+                    enhanced_multimodal_prompt = prompt
+                    
+                    if reference_pil_images and product_data and len(product_data) > 0:
+                        enhanced_multimodal_prompt += "\n\n=== VISUAL REFERENCE ANALYSIS ==="
+                        
+                        for i, (pil_image, product_info) in enumerate(zip(reference_pil_images, product_data)):
+                            # Analyze image properties for better generation
+                            width, height = pil_image.size
+                            mode = pil_image.mode
+                            
+                            # Get dominant colors (simplified analysis)
+                            try:
+                                # Simple color analysis
+                                colors = pil_image.getcolors(maxcolors=256*256*256)
+                                if colors:
+                                    # Get most frequent color
+                                    dominant_color = max(colors, key=lambda item: item[0])
+                                    rgb = dominant_color[1] if len(dominant_color[1]) >= 3 else (128, 128, 128)
+                                    color_desc = f"RGB({rgb[0]}, {rgb[1]}, {rgb[2]})"
+                                else:
+                                    color_desc = "Mixed colors"
+                            except:
+                                color_desc = "Natural tones"
+                            
+                            enhanced_multimodal_prompt += f"""
+Reference Product {i+1}: {product_info['name']}
+- Category: {product_info['category']}
+- Image Properties: {width}x{height} pixels, {mode} format
+- Dominant Color: {color_desc}
+- Visual Style: {product_info.get('description', 'Classic design')}
+- Required Placement: Must be prominently featured in the {product_info['category']} area
+"""
+                        
+                        enhanced_multimodal_prompt += f"""
+=== GENERATION INSTRUCTIONS ===
+Create a photorealistic interior scene that includes ALL {len(product_data)} referenced products.
+Each product should be clearly visible and match its described visual characteristics.
+The scene should feel natural and cohesive while showcasing these specific items.
+Focus on accurate representation of the products' colors, shapes, and styling.
+"""
+                    
+                    # Generate with enhanced text prompt
+                    images = generation_model.generate_images(
+                        prompt=enhanced_multimodal_prompt,
+                        number_of_images=1,
+                        aspect_ratio="1:1",
+                        safety_filter_level="block_some",
+                        person_generation="dont_allow",
+                        guidance_scale=18,  # Higher guidance for better prompt adherence with detailed descriptions
+                    )
+                    
+                    logger.info(f"Enhanced multimodal generation completed with {len(reference_pil_images)} product references")
+                    return images
+                    
+                except Exception as multimodal_error:
+                    logger.warning(f"Enhanced multimodal generation failed: {str(multimodal_error)}")
+                    # Fallback to basic text-only if enhanced multimodal fails
+                    logger.info("Falling back to basic text-only generation")
+                    images = generation_model.generate_images(
+                        prompt=prompt,
+                        number_of_images=1,
+                        aspect_ratio="1:1",
+                        safety_filter_level="block_some",
+                        person_generation="dont_allow"
+                    )
+                    return images
+            
+            # Create a background task for progress simulation during generation
+            progress_task = None
+            if connection_id and mood_board_id:
+                progress_task = asyncio.create_task(
+                    self._simulate_multimodal_generation_progress(connection_id, mood_board_id)
+                )
+            
+            # Run in thread pool to avoid blocking
+            loop = asyncio.get_event_loop()
+            images = await loop.run_in_executor(None, generate_multimodal_sync)
+            
+            # Cancel progress simulation if it's still running
+            if progress_task and not progress_task.done():
+                progress_task.cancel()
+                try:
+                    await progress_task
+                except asyncio.CancelledError:
+                    logger.debug("Multimodal progress simulation cancelled as expected")
+            
+            # Progress update: Processing multimodal result (70%)
+            if connection_id and mood_board_id:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": 70,
+                    "message": "Multimodal görsel sonucu işleniyor...",
+                    "mood_board_id": mood_board_id
+                })
+            
+            if images and hasattr(images, 'images') and len(images.images) > 0:
+                # Convert image to base64
+                image = images.images[0]  # Get first image from images list
+                
+                # Save image to bytes
+                image_bytes = io.BytesIO()
+                image._pil_image.save(image_bytes, format='PNG')
+                image_bytes.seek(0)
+                
+                # Convert to base64
+                base64_string = base64.b64encode(image_bytes.getvalue()).decode('utf-8')
+                
+                # Calculate generation time
+                generation_time_ms = int((time.time() - start_time) * 1000)
+                
+                # Log successful multimodal generation
+                self.imagen_prompt_logger.log_imagen_generation_result(
+                    enhanced_prompt=prompt,
+                    generation_success=True,
+                    image_data={
+                        "format": "PNG",
+                        "aspect_ratio": "1:1",
+                        "safety_filter_level": "block_some",
+                        "person_generation": "dont_allow",
+                        "multimodal": True,
+                        "reference_images_count": len(reference_pil_images)
+                    },
+                    generation_time_ms=generation_time_ms
+                )
+                
+                logger.info(f"✅ Vertex AI multimodal room visualization generated successfully with {len(reference_pil_images)} reference images")
+                return {
+                    "base64": base64_string,
+                    "success": True,
+                    "multimodal": True,
+                    "reference_images_used": len(reference_pil_images)
+                }
+            else:
+                # Calculate generation time for failed case
+                generation_time_ms = int((time.time() - start_time) * 1000)
+                
+                # Log failed multimodal generation
+                self.imagen_prompt_logger.log_imagen_generation_result(
+                    enhanced_prompt=prompt,
+                    generation_success=False,
+                    error_message="No images generated from multimodal Vertex AI",
+                    generation_time_ms=generation_time_ms,
+                    additional_data={"multimodal": True, "reference_images_count": len(reference_images)}
+                )
+                
+                logger.warning("⚠️ No images generated from multimodal Vertex AI, trying text-only fallback")
+                return await self._generate_image_with_imagen(prompt, connection_id, mood_board_id)
+                
+        except ImportError as e:
+            # Calculate generation time for error case
+            generation_time_ms = int((time.time() - start_time) * 1000)
+            
+            # Log import error
+            self.imagen_prompt_logger.log_imagen_generation_result(
+                enhanced_prompt=prompt,
+                generation_success=False,
+                error_message=f"Google Cloud libraries not properly installed: {str(e)}",
+                generation_time_ms=generation_time_ms,
+                additional_data={"multimodal": True, "error_type": "import_error"}
+            )
+            
+            logger.error(f"Google Cloud libraries not properly installed: {str(e)}")
+            return await self._generate_fallback_image(prompt, connection_id, mood_board_id)
+            
+        except Exception as e:
+            # Calculate generation time for error case
+            generation_time_ms = int((time.time() - start_time) * 1000)
+            
+            # Log general error
+            self.imagen_prompt_logger.log_imagen_generation_result(
+                enhanced_prompt=prompt,
+                generation_success=False,
+                error_message=str(e),
+                generation_time_ms=generation_time_ms,
+                additional_data={"multimodal": True, "error_type": "general_error"}
+            )
+            
+            logger.warning(f"⚠️ Multimodal Vertex AI failed, using text-only fallback: {str(e)}")
+            # Fall back to text-only generation if multimodal fails
+            return await self._generate_image_with_imagen(prompt, connection_id, mood_board_id)
+    
+    async def _simulate_multimodal_generation_progress(self, connection_id: str, mood_board_id: str):
+        """
+        Enhanced progress simulation for multimodal image generation.
+        """
+        try:
+            progress_steps = [
+                (58, "Referans fotoğrafları analiz ediliyor..."),
+                (61, "Ürün özelliklerini öğreniyor..."),
+                (64, "Mekan kompozisyonunu hesaplıyor..."),
+                (67, "Gerçek ürünleri tasarıma entegre ediyor..."),
+                (68, "Hibrit görsel sentezi yapılıyor..."),
+                (69, "Multimodal görsel optimize ediliyor...")
+            ]
+            
+            for progress, message in progress_steps:
+                await asyncio.sleep(1.8)  # Slightly longer for multimodal
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "generating_image",
+                    "progress_percentage": progress,
+                    "message": message,
+                    "mood_board_id": mood_board_id
+                })
+                
+        except asyncio.CancelledError:
+            logger.debug("Multimodal generation progress simulation cancelled")
+            raise
+        except Exception as e:
+            logger.error(f"Error in multimodal progress simulation: {str(e)}")
+    
     async def _generate_fallback_image(self, prompt: str, connection_id: str = None, mood_board_id: str = None) -> Optional[Dict[str, Any]]:
         """
         Reliable fallback system for room visualization generation.
@@ -1113,6 +1434,64 @@ class MoodBoardService:
                 "mood_board_id": mood_board_id
             })
             
+            # Load real product images from local filesystem for multimodal generation
+            loaded_real_products = []
+            if real_product_images:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "loading_images",
+                    "progress_percentage": 15,
+                    "message": f"Gerçek ürün fotoğrafları yükleniyor... ({len(real_product_images)} adet)",
+                    "mood_board_id": mood_board_id
+                })
+                
+                # Load product images from local filesystem
+                loaded_images = await local_image_service.load_product_images_batch(real_product_images)
+                
+                # Prepare loaded images for multimodal API
+                for image_data in loaded_images:
+                    if image_data.get('base64_image'):
+                        # Find corresponding product data
+                        corresponding_product = None
+                        for product in real_product_images:
+                            if (product.get('name') == image_data.get('product_name') or 
+                                product.get('id') == image_data.get('product_id')):
+                                corresponding_product = product
+                                break
+                        
+                        if corresponding_product:
+                            loaded_real_products.append({
+                                'name': corresponding_product['name'],
+                                'category': corresponding_product['category'],
+                                'description': corresponding_product['description'],
+                                'original_description': corresponding_product.get('original_description', ''),
+                                'base64_image': image_data['base64_image'],
+                                'image_info': {
+                                    'format': image_data['image_format'],
+                                    'file_size_bytes': image_data['file_size_bytes'],
+                                    'file_path': image_data['file_path'],
+                                    'optimized': image_data['optimized']
+                                }
+                            })
+                
+                success_count = len(loaded_real_products)
+                total_count = len(real_product_images)
+                
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "downloading_images",
+                    "progress_percentage": 20,
+                    "message": f"Ürün fotoğrafları hazır: {success_count}/{total_count} başarılı",
+                    "mood_board_id": mood_board_id
+                })
+                
+                logger.info(f"Downloaded {success_count}/{total_count} product images for multimodal generation")
+            else:
+                await websocket_manager.update_mood_board_progress(connection_id, {
+                    "stage": "preparing_prompt",
+                    "progress_percentage": 20,
+                    "message": "Gerçek ürün fotoğrafı yok, text-only mod",
+                    "mood_board_id": mood_board_id
+                })
+            
             # Format dimensions info for prompt
             dimensions_info = ""
             if width and length:
@@ -1121,29 +1500,32 @@ class MoodBoardService:
                 else:
                     dimensions_info = f"Oda Boyutları: {width}cm x {length}cm"
             
-            # Create hybrid prompt combining real product references and AI descriptions
+            # Create hybrid prompt combining real product references and AI descriptions  
             enhanced_prompt = await self._create_hybrid_imagen_prompt(
                 room_type, design_style, notes, design_title, design_description,
-                real_product_images, fake_product_descriptions, color_info, dimensions_info, product_categories
+                loaded_real_products, fake_product_descriptions, color_info, dimensions_info, product_categories
             )
             
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "optimizing_prompt", 
-                "progress_percentage": 15,
-                "message": "Hibrit tasarım promtu optimize ediliyor...",
+                "progress_percentage": 25,
+                "message": "Hibrit multimodal prompt optimize ediliyor...",
                 "mood_board_id": mood_board_id
             })
             
-            # Stage 2: Generate image with Imagen 4 (20-70%)
+            # Stage 2: Generate image with Imagen 4 Multimodal (25-70%)
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "generating_image",
-                "progress_percentage": 20,
-                "message": "AI hibrit görsel oluşturuyor (gerçek ürünler + yaratıcı tasarım)...",
+                "progress_percentage": 30,
+                "message": f"AI multimodal görsel oluşturuyor ({len(loaded_real_products)} fotoğraf + yaratıcı tasarım)...",
                 "mood_board_id": mood_board_id
             })
             
-            # Generate image using Imagen 4 with hybrid prompt
-            image_data = await self._generate_image_with_imagen(enhanced_prompt, connection_id, mood_board_id)
+            # Generate image using multimodal Imagen 4 with reference images
+            reference_images = [product['base64_image'] for product in loaded_real_products]
+            image_data = await self._generate_image_with_imagen_multimodal(
+                enhanced_prompt, reference_images, loaded_real_products, connection_id, mood_board_id
+            )
             
             # Stage 3: Processing hybrid image (70-85%)
             await websocket_manager.update_mood_board_progress(connection_id, {
@@ -1304,14 +1686,31 @@ Family/Homeowner Requirements: {notes}
                 base_prompt += f"\n\nUSER SELECTED FOCUS CATEGORIES (must be prominently featured): {', '.join(category_names)}"
                 base_prompt += f"\nEnsure these categories are clearly visible and well-represented in the room design."
         
-        # Add real product references
+        # Add real product references with enhanced details
         if real_product_images:
-            base_prompt += "\n\nReal Product References (use these as visual inspiration):"
+            base_prompt += "\n\nReal Product References (incorporate these exact products visually):"
             for product in real_product_images:
-                product_line = f"\n- {product['category']}: {product['name']}"
+                product_line = f"\n- {product['category'].upper()}: {product['name']}"
+                
+                # Add primary description
                 if product.get('description'):
-                    product_line += f", {product['description']}"
-                product_line += f" (reference: {product['image_url']})"
+                    product_line += f"\n  Description: {product['description']}"
+                
+                # Add original IKEA description if available
+                if product.get('original_description'):
+                    product_line += f"\n  Details: {product['original_description']}"
+                
+                # Add image information for visual context
+                if product.get('image_info'):
+                    img_info = product['image_info']
+                    product_line += f"\n  Visual: {img_info.get('format', 'Unknown')} format"
+                    if img_info.get('file_path'):
+                        filename = img_info['file_path'].split('\\')[-1] if '\\' in img_info['file_path'] else img_info['file_path'].split('/')[-1]
+                        product_line += f", filename: {filename}"
+                    if img_info.get('optimized'):
+                        product_line += f", AI-optimized for accurate representation"
+                
+                product_line += f"\n  → MUST BE VISIBLE: This exact {product['category']} should be prominently featured in the room"
                 base_prompt += product_line
         
         # Add fake product descriptions for creativity
