@@ -369,7 +369,9 @@ class MoodBoardService:
         """
         
         # Format products using centralized utility
+        logger.debug(f"Products input to format_products_for_imagen: {products}")
         products_text = PromptUtils.format_products_for_imagen(products)
+        logger.debug(f"Formatted products_text: {products_text[:500]}...")
         
         # Renk bilgisi direkt kullan (frontend'den formatlanmış geliyor)
         final_color_info = color_info
@@ -418,7 +420,8 @@ class MoodBoardService:
                     width=width,
                     length=length,
                     color_info=final_color_info,
-                    product_categories=product_categories
+                    product_categories=product_categories,
+                    hybrid_mode=True  # Hibrit mod aktif
                 )
                 
                 # Log final Imagen prompt (fallback)
@@ -464,7 +467,8 @@ class MoodBoardService:
                 width=width,
                 length=length,
                 color_info=final_color_info,
-                product_categories=product_categories
+                product_categories=product_categories,
+                hybrid_mode=True  # Hibrit mod aktif
             )
             
             # Log final Imagen prompt (error fallback)
@@ -1075,9 +1079,23 @@ class MoodBoardService:
                 for product in products:
                     if product.get('is_real') and product.get('image_path'):
                         # Real product - extract image for Imagen reference
+                        # Combine Gemini description + original IKEA description
+                        gemini_desc = product.get('description', '')
+                        original_desc = product.get('original_description', '')
+                        
+                        # Combine both descriptions for richer context
+                        combined_description = ""
+                        if gemini_desc and original_desc:
+                            combined_description = f"{gemini_desc} (Original: {original_desc})"
+                        elif gemini_desc:
+                            combined_description = gemini_desc
+                        elif original_desc:
+                            combined_description = original_desc
+                        
                         real_product_images.append({
                             'name': product.get('name'),
                             'category': product.get('category'),
+                            'description': combined_description,
                             'image_url': product.get('image_path')
                         })
                     else:
@@ -1290,7 +1308,11 @@ Family/Homeowner Requirements: {notes}
         if real_product_images:
             base_prompt += "\n\nReal Product References (use these as visual inspiration):"
             for product in real_product_images:
-                base_prompt += f"\n- {product['category']}: {product['name']} (reference: {product['image_url']})"
+                product_line = f"\n- {product['category']}: {product['name']}"
+                if product.get('description'):
+                    product_line += f", {product['description']}"
+                product_line += f" (reference: {product['image_url']})"
+                base_prompt += product_line
         
         # Add fake product descriptions for creativity
         if fake_product_descriptions:

@@ -248,6 +248,7 @@ class GeminiService(BaseService):
                     enhanced_product.update({
                         "is_real": True,
                         "name": real_product.get("product_name"),  # Use real product name
+                        "original_description": real_product.get("description"),  # IKEA orijinal açıklaması
                         "image_available": bool(real_product.get("image_path")),
                         "image_path": real_product.get("image_path"),
                         "product_link": real_product.get("product_link"),
