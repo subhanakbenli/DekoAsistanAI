@@ -605,7 +605,55 @@ const UserInputSection = ({ result }) => {
                     }
                   }
                   
-                  // Fallback: If it's a string (legacy support)
+                  // Parse JSON string if it's from backend (design detail page)
+                  if (typeof result.colorPalette === 'string') {
+                    try {
+                      const colorData = JSON.parse(result.colorPalette);
+                      
+                      if (colorData.colorName && colorData.colorPalette) {
+                        return (
+                          <div className="space-y-3">
+                            {/* Palette Name and Description */}
+                            <div className="bg-purple-950/30 rounded-lg p-3 border border-purple-500/20">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <h5 className="text-white font-semibold">{colorData.colorName}</h5>
+                              </div>
+                              <p className="text-purple-200 text-sm">Seçilen renk paleti</p>
+                            </div>
+                            
+                            {/* Color Gradient Preview - Create gradient from colors */}
+                            {colorData.colorPalette && colorData.colorPalette.length > 0 && (
+                              <div 
+                                className="rounded-lg shadow-inner h-12 bg-gradient-to-r"
+                                style={{
+                                  background: `linear-gradient(to right, ${colorData.colorPalette.join(', ')})`
+                                }}
+                              ></div>
+                            )}
+                            
+                            {/* Color Circles */}
+                            {colorData.colorPalette && colorData.colorPalette.length > 0 && (
+                              <div className="flex gap-2 justify-center">
+                                {colorData.colorPalette.map((color, index) => (
+                                  <div
+                                    key={index}
+                                    className="w-8 h-8 rounded-full border-2 border-purple-400/50 shadow-lg"
+                                    style={{ backgroundColor: color }}
+                                    title={color}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+                    } catch (e) {
+                      // If JSON parsing fails, show as text
+                      console.log('Failed to parse color palette JSON:', e);
+                    }
+                  }
+                  
+                  // Fallback: If it's a string that couldn't be parsed
                   return (
                     <div className="bg-purple-950/30 rounded-lg p-4 border border-purple-500/20">
                       <p className="text-white leading-relaxed">{result.colorPalette}</p>
