@@ -24,22 +24,7 @@ import time
 from datetime import datetime
 
 class MoodBoardService:
-    """
-    Room Visualization Service using Imagen 4 model.
-    
-    This service generates realistic room visualizations (not mood boards) 
-    based on user design preferences. It provides real-time progress tracking 
-    via WebSocket and creates photo-realistic interior design images.
-    
-    Key Features:
-    - Real-time progress tracking with 19+ steps
-    - Vertex AI Imagen 4 integration for high-quality images
-    - Fallback system for reliable operation
-    - Background progress simulation during AI processing
-    
-    Note: Despite the class name "MoodBoardService", this service actually 
-    generates room visualizations. The name is kept for backward compatibility.
-    """
+    """Room visualization service using Imagen 4 with real-time progress tracking."""
     
     def __init__(self):
         self.settings = Settings()
@@ -85,38 +70,7 @@ class MoodBoardService:
         height: int = None,   # Oda yüksekliği (cm)
         parsed_info: Dict[str, Any] = None  # Parse edilmiş kullanıcı bilgileri
     ) -> Dict[str, Any]:
-        """
-        Generate realistic room visualization with enhanced progress tracking.
-        
-        This is the main method for creating room visualizations. Despite the method name 
-        'generate_mood_board', it actually generates realistic room images using AI.
-        The name is kept for backward compatibility with existing API endpoints.
-        
-        Features:
-        - 19+ step progress tracking (5% → 100%)
-        - Background progress simulation during AI processing
-        - Real-time WebSocket updates
-        - Fallback system for reliability
-        - Turkish language progress messages
-        
-        Args:
-            connection_id: WebSocket connection ID for real-time progress updates
-            room_type: Type of room (living_room, bedroom, kitchen, etc.)
-            design_style: Interior design style (modern, minimalist, scandinavian, etc.)
-            notes: User preferences including dimensions, colors, and product categories
-            design_title: AI-generated design title from Gemini
-            design_description: AI-generated design description from Gemini
-            products: List of suggested products to include in visualization
-            design_id: Optional design ID to link visualization with design record
-            user_id: Optional user ID for database tracking
-            
-        Returns:
-            Dict containing complete room visualization data:
-            - mood_board_id: Unique identifier for the visualization
-            - image_data: Base64 encoded PNG image
-            - generation_metadata: AI model and processing information
-            - created_at: Timestamp of generation
-        """
+        """Generate room visualization with real-time progress tracking and WebSocket updates."""
         
         mood_board_id = str(uuid.uuid4())
         
@@ -138,15 +92,15 @@ class MoodBoardService:
                 "mood_board_id": mood_board_id
             })
             
-            # Parse notes only for info not provided by frontend (extra areas, door/windows, etc.)
-            # Color and dimensions are now provided separately by frontend
+            # Parse notes for ONLY special keywords and preferences (simple free-form text analysis)
+            # Colors, dimensions, product categories, room type, and style are provided directly by frontend
             parsed_info = self.notes_parser.parse_notes(notes) if notes.strip() else {}
             
-            # Add frontend parameters to parsed_info for utility functions
+            # Add frontend parameters to parsed_info for utility functions and prompt building
             if parsed_info is None:
                 parsed_info = {}
             
-            # Add width, length, height directly to parsed_info
+            # Add frontend dimensions directly to parsed_info
             if width:
                 parsed_info['width'] = width
             if length:
@@ -154,10 +108,18 @@ class MoodBoardService:
             if height:
                 parsed_info['height'] = height
             
-            # Add color_info to parsed_info if available
+            # Add frontend color info to parsed_info if available
             if color_info:
                 parsed_info['color_info'] = color_info
-                logger.info(f"🎨 [MoodBoardService] Color info received: {color_info[:200]}...")  # İlk 200 karakter
+                logger.info(f"🎨 [MoodBoardService] Color info received from frontend: {color_info[:200]}...")
+            
+            # Log what NotesParser found (should be only special keywords now)
+            if parsed_info.get('keywords'):
+                logger.info(f"🏷️ Special keywords found: {', '.join(parsed_info['keywords'])}")
+            if parsed_info.get('raw_notes'):
+                logger.info(f"� Raw notes processed: {len(parsed_info['raw_notes'])} characters")
+            else:
+                logger.info("📝 No user notes provided")
             
             # Format dimensions info for prompt
             dimensions_info = ""
@@ -366,10 +328,7 @@ class MoodBoardService:
         color_info: str = "",  # Frontend'den gelen formatlanmış renk bilgisi
         dimensions_info: str = ""  # Frontend'den gelen formatlanmış boyut bilgisi
     ) -> str:
-        """
-        Create optimized prompt for Imagen 4 using Gemini for room visualization.
-        Now uses centralized prompt management with frontend parameters.
-        """
+        """Create optimized Imagen 4 prompt using Gemini with frontend parameters."""
         
         # Format products using centralized utility
         logger.debug(f"Products input to format_products_for_imagen: {products}")
@@ -393,7 +352,7 @@ class MoodBoardService:
             dimensions_info=final_dimensions_info,
             color_info=final_color_info
         )
-        
+        print(f"Generated prompt for Imagen: {str(prompt_enhancement_request)}...")  # Debug log
         # Log Imagen enhancement request (Gemini'ye gönderilen prompt)
         self.imagen_prompt_logger.log_imagen_enhancement_request(
             room_type=room_type,
@@ -411,72 +370,12 @@ class MoodBoardService:
             response = self.gemini_model.generate_content(prompt_enhancement_request)
             enhanced_prompt = response.text.strip()
             
-            # Fallback if Gemini response is too long or empty
-            if not enhanced_prompt or len(enhanced_prompt) > 500:
-                # Use enhanced fallback with parameters
-                width = parsed_info.get('width') if parsed_info else None
-                length = parsed_info.get('length') if parsed_info else None
-                product_categories = products if products else None
-                enhanced_prompt = GeminiPrompts.get_fallback_imagen_prompt(
-                    room_type=room_type, 
-                    design_style=design_style,
-                    width=width,
-                    length=length,
-                    color_info=final_color_info,
-                    product_categories=product_categories,
-                    hybrid_mode=True  # Hibrit mod aktif
-                )
-                
-                # Log final Imagen prompt (fallback)
-                self.imagen_prompt_logger.log_final_imagen_prompt(
-                    enhanced_prompt=enhanced_prompt,
-                    original_request_data={
-                        "room_type": room_type,
-                        "design_style": design_style,
-                        "notes": notes,
-                        "design_title": design_title,
-                        "design_description": design_description
-                    },
-                    prompt_source="fallback_after_gemini",
-                    additional_data=parsed_info
-                )
-            else:
-                # Log final Imagen prompt (Gemini enhanced)
-                self.imagen_prompt_logger.log_final_imagen_prompt(
-                    enhanced_prompt=enhanced_prompt,
-                    original_request_data={
-                        "room_type": room_type,
-                        "design_style": design_style,
-                        "notes": notes,
-                        "design_title": design_title,
-                        "design_description": design_description
-                    },
-                    prompt_source="gemini_enhanced",
-                    additional_data=parsed_info
-                )
+            # Gemini'den ne gelirse onu kullan - hiç kontrol etme!
+            logger.info(f"Gemini response alındı, olduğu gibi kullanılıyor: {enhanced_prompt[:100]}...")
             
-            logger.info(f"Enhanced Imagen prompt created for room visualization: {enhanced_prompt[:100]}...")
-            return enhanced_prompt
-            
-        except Exception as e:
-            logger.error(f"Error creating enhanced prompt: {str(e)}")
-            # Use enhanced fallback with parameters
-            width = parsed_info.get('width') if parsed_info else None
-            length = parsed_info.get('length') if parsed_info else None 
-            product_categories = products if products else None
-            fallback_prompt = GeminiPrompts.get_fallback_imagen_prompt(
-                room_type=room_type,
-                design_style=design_style, 
-                width=width,
-                length=length,
-                color_info=final_color_info,
-                product_categories=product_categories,
-                hybrid_mode=True  # Hibrit mod aktif
-            )
-            
-            # Log final Imagen prompt (error fallback)
+            # Log final Imagen prompt (Gemini'den geldiği gibi)
             self.imagen_prompt_logger.log_final_imagen_prompt(
-                enhanced_prompt=fallback_prompt,
+                enhanced_prompt=enhanced_prompt,
                 original_request_data={
                     "room_type": room_type,
                     "design_style": design_style,
@@ -484,31 +383,19 @@ class MoodBoardService:
                     "design_title": design_title,
                     "design_description": design_description
                 },
-                prompt_source="error_fallback",
-                additional_data={"error_message": str(e), "parsed_info": parsed_info}
+                prompt_source="gemini_raw_response",
+                additional_data=parsed_info
             )
             
-            return fallback_prompt
+            return enhanced_prompt
+            
+        except Exception as e:
+            logger.error(f"Gemini API hatası: {str(e)}")
+            # FALLBACK KALDIRILDI - Hatayı görmek için exception'ı raise et
+            raise Exception(f"Gemini prompt generation failed: {str(e)}")
     
     async def _simulate_image_generation_progress(self, connection_id: str, mood_board_id: str):
-        """
-        Enhanced progress simulation for smooth user experience.
-        
-        This method runs as a background task during actual AI image generation,
-        providing users with detailed progress updates every 1.5 seconds.
-        This creates a much smoother experience than the original 5-step system.
-        
-        Progress Steps:
-        - 58%: Visual composition preparation
-        - 61%: Color palette application  
-        - 64%: Room detail creation
-        - 67%: Decorative element addition
-        - 68%: Light and shadow calculation
-        - 69%: Visual quality optimization
-        
-        The simulation automatically cancels when real image generation completes,
-        ensuring seamless transition to actual progress updates.
-        """
+        """Background progress simulation for smooth user experience during AI image generation."""
         try:
             progress_steps = [
                 (58, "Görsel kompozisyonu hazırlanıyor..."),
@@ -537,16 +424,7 @@ class MoodBoardService:
             logger.error(f"Error in progress simulation: {str(e)}")
 
     def _save_mood_board_image(self, mood_board_id: str, base64_image: str) -> Optional[str]:
-        """
-        Save room visualization image to data/mood_boards directory.
-        
-        Args:
-            mood_board_id: Unique mood board identifier
-            base64_image: Base64 encoded image data
-            
-        Returns:
-            str: File path if saved successfully, None otherwise
-        """
+        """Save room visualization image to data/mood_boards directory."""
         try:
             # Create filename with timestamp and mood board ID
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -566,28 +444,7 @@ class MoodBoardService:
             return None
     
     async def _generate_image_with_imagen(self, prompt: str, connection_id: str = None, mood_board_id: str = None) -> Optional[Dict[str, Any]]:
-        """
-        Generate high-quality room visualization using Vertex AI Imagen 4.
-        
-        This method handles the core AI image generation with sophisticated progress tracking.
-        It includes background progress simulation, proper error handling, and fallback mechanisms.
-        
-        Process:
-        1. Initialize Vertex AI with proper authentication
-        2. Load Imagen 4 model (imagegeneration@006)  
-        3. Start background progress simulation task
-        4. Generate image with optimized parameters
-        5. Convert result to base64 for frontend display
-        6. Clean up simulation task and return result
-        
-        Parameters optimized for speed and quality:
-        - aspect_ratio: "1:1" for consistent room displays
-        - safety_filter_level: "block_some" for balanced filtering
-        - person_generation: "dont_allow" for faster processing
-        
-        Returns:
-            Dict with base64 image data and success status, or None if failed
-        """
+        """Generate high-quality room visualization using Vertex AI Imagen 4 with progress tracking."""
         
         # Start timer for generation time tracking
         start_time = time.time()
@@ -789,20 +646,7 @@ class MoodBoardService:
         connection_id: str = None, 
         mood_board_id: str = None
     ) -> Optional[Dict[str, Any]]:
-        """
-        Generate high-quality room visualization using Vertex AI Imagen 4 with multimodal input.
-        
-        This method combines text prompts with reference product images for more accurate results.
-        
-        Args:
-            prompt: Text description for the room design
-            reference_images: List of base64 encoded reference product images
-            connection_id: WebSocket connection ID for progress updates
-            mood_board_id: Mood board ID for tracking
-            
-        Returns:
-            Dict with base64 image data and success status, or None if failed
-        """
+        """Generate room visualization using Imagen 4 with multimodal input (text + reference images)."""
         
         # Start timer for generation time tracking
         start_time = time.time()
@@ -889,73 +733,26 @@ class MoodBoardService:
             # Generate image with enhanced text-based multimodal approach
             def generate_multimodal_sync():
                 try:
-                    # Create enhanced prompt with reference image analysis
-                    enhanced_multimodal_prompt = prompt
+                    # KULLANICI TALEBİ: "gemini ne dönerse onu kullanalım bok da yolalsa okeyiz"
+                    # Gemini'den gelen prompt'u hiç değiştirmeden kullan!
                     
-                    if reference_pil_images and product_data and len(product_data) > 0:
-                        enhanced_multimodal_prompt += "\n\n=== VISUAL REFERENCE ANALYSIS ==="
-                        
-                        for i, (pil_image, product_info) in enumerate(zip(reference_pil_images, product_data)):
-                            # Analyze image properties for better generation
-                            width, height = pil_image.size
-                            mode = pil_image.mode
-                            
-                            # Get dominant colors (simplified analysis)
-                            try:
-                                # Simple color analysis
-                                colors = pil_image.getcolors(maxcolors=256*256*256)
-                                if colors:
-                                    # Get most frequent color
-                                    dominant_color = max(colors, key=lambda item: item[0])
-                                    rgb = dominant_color[1] if len(dominant_color[1]) >= 3 else (128, 128, 128)
-                                    color_desc = f"RGB({rgb[0]}, {rgb[1]}, {rgb[2]})"
-                                else:
-                                    color_desc = "Mixed colors"
-                            except:
-                                color_desc = "Natural tones"
-                            
-                            enhanced_multimodal_prompt += f"""
-Reference Product {i+1}: {product_info['name']}
-- Category: {product_info['category']}
-- Image Properties: {width}x{height} pixels, {mode} format
-- Dominant Color: {color_desc}
-- Visual Style: {product_info.get('description', 'Classic design')}
-- Required Placement: Must be prominently featured in the {product_info['category']} area
-"""
-                        
-                        enhanced_multimodal_prompt += f"""
-=== GENERATION INSTRUCTIONS ===
-Create a photorealistic interior scene that includes ALL {len(product_data)} referenced products.
-Each product should be clearly visible and match its described visual characteristics.
-The scene should feel natural and cohesive while showcasing these specific items.
-Focus on accurate representation of the products' colors, shapes, and styling.
-"""
-                    
-                    # Generate with enhanced text prompt
+                    # Generate with PURE Gemini prompt - NO MODIFICATIONS
                     images = generation_model.generate_images(
-                        prompt=enhanced_multimodal_prompt,
+                        prompt=prompt,  # Gemini'den gelen prompt'u direkt kullan
                         number_of_images=1,
                         aspect_ratio="1:1",
                         safety_filter_level="block_some",
                         person_generation="dont_allow",
-                        guidance_scale=18,  # Higher guidance for better prompt adherence with detailed descriptions
+                        guidance_scale=18
                     )
                     
-                    logger.info(f"Enhanced multimodal generation completed with {len(reference_pil_images)} product references")
+                    logger.info(f"Pure Gemini multimodal generation completed (no modifications)")
                     return images
                     
                 except Exception as multimodal_error:
-                    logger.warning(f"Enhanced multimodal generation failed: {str(multimodal_error)}")
-                    # Fallback to basic text-only if enhanced multimodal fails
-                    logger.info("Falling back to basic text-only generation")
-                    images = generation_model.generate_images(
-                        prompt=prompt,
-                        number_of_images=1,
-                        aspect_ratio="1:1",
-                        safety_filter_level="block_some",
-                        person_generation="dont_allow"
-                    )
-                    return images
+                    logger.error(f"Pure Gemini multimodal generation failed: {str(multimodal_error)}")
+                    # FALLBACK KALDIRILDI - Gerçek hatayı görmek için exception raise et
+                    raise multimodal_error
             
             # Create a background task for progress simulation during generation
             progress_task = None
@@ -1072,9 +869,7 @@ Focus on accurate representation of the products' colors, shapes, and styling.
             return await self._generate_image_with_imagen(prompt, connection_id, mood_board_id)
     
     async def _simulate_multimodal_generation_progress(self, connection_id: str, mood_board_id: str):
-        """
-        Enhanced progress simulation for multimodal image generation.
-        """
+        """Progress simulation for multimodal image generation with enhanced timing."""
         try:
             progress_steps = [
                 (58, "Referans fotoğrafları analiz ediliyor..."),
@@ -1101,22 +896,7 @@ Focus on accurate representation of the products' colors, shapes, and styling.
             logger.error(f"Error in multimodal progress simulation: {str(e)}")
     
     async def _generate_fallback_image(self, prompt: str, connection_id: str = None, mood_board_id: str = None) -> Optional[Dict[str, Any]]:
-        """
-        Reliable fallback system for room visualization generation.
-        
-        When Vertex AI Imagen is unavailable or fails, this method provides
-        a graceful fallback that maintains user experience continuity.
-        
-        Features:
-        - Maintains progress tracking consistency
-        - Creates realistic placeholder with proper dimensions
-        - Uses shorter delay intervals (0.8s vs 1.5s) for faster completion
-        - Provides informative user messages in Turkish
-        - Returns properly formatted base64 image data
-        
-        This ensures the application remains functional even when cloud AI services
-        experience issues, following the principle of graceful degradation.
-        """
+        """Reliable fallback system for room visualization when Vertex AI fails."""
         # Start timer for fallback generation time tracking
         start_time = time.time()
         
@@ -1221,15 +1001,7 @@ Focus on accurate representation of the products' colors, shapes, and styling.
         design_style: str, 
         error_message: str
     ) -> Dict[str, Any]:
-        """
-        Create comprehensive error response for failed room visualization generation.
-        
-        This method ensures that even when all generation methods fail,
-        the API returns a properly structured response with useful error information.
-        
-        Returns a complete error object that maintains API consistency
-        and provides debugging information for development and monitoring.
-        """
+        """Create structured error response for failed room visualization generation."""
         
         return {
             "mood_board_id": mood_board_id,
@@ -1256,16 +1028,7 @@ Focus on accurate representation of the products' colors, shapes, and styling.
         image_file_path: str = None,
         prompt_used: str = None
     ):
-        """
-        Save mood board to database and update design record.
-        
-        Args:
-            mood_board_id: Unique mood board identifier
-            user_id: User ID (optional, for guest users)
-            design_id: Design ID to link with mood board
-            image_file_path: Path to saved image file
-            prompt_used: AI prompt used for generation
-        """
+        """Save mood board to database and update design record."""
         # Debug log to check parameters before database operation
         logger.info(f"Saving mood board to database - user_id: {user_id} (type: {type(user_id)}), design_id: {design_id} (type: {type(design_id)})")
         
@@ -1351,33 +1114,7 @@ Focus on accurate representation of the products' colors, shapes, and styling.
         height: int = None,   # Oda yüksekliği (cm)
         product_categories: list = None  # Kullanıcının seçtiği ürün kategorileri
     ) -> Dict[str, Any]:
-        """
-        Generate room visualization using HYBRID system with real product images + fake product descriptions.
-        
-        This method combines:
-        - Real product images from database for visual reference
-        - AI-generated fake product descriptions for creative freedom
-        - Enhanced prompt with both real visual elements and AI creativity
-        
-        Args:
-            connection_id: WebSocket connection ID for real-time progress
-            room_type: Type of room
-            design_style: Interior design style  
-            notes: User preferences
-            design_title: AI-generated design title
-            design_description: AI-generated design description
-            products: List of hybrid products (mix of real and fake)
-            design_id: Design ID to link visualization
-            user_id: User ID for database record
-            color_info: Color palette information
-            width: Room width in cm
-            length: Room length in cm
-            height: Room height in cm
-            product_categories: User selected product categories
-        
-        Returns:
-            Dict with mood board data including generated image
-        """
+        """Generate room visualization using hybrid system with real product images + AI descriptions."""
         mood_board_id = str(uuid.uuid4())
         
         # Debug log to check user_id type
@@ -1655,155 +1392,63 @@ Focus on accurate representation of the products' colors, shapes, and styling.
         dimensions_info: str = "",
         product_categories: list = None
     ) -> str:
-        """
-        Create enhanced Imagen prompt for hybrid system.
-        Combines real product visual references with AI-generated descriptions.
-        """
+        """Create enhanced Imagen prompt for hybrid system using Gemini."""
         
-        # Base home room prompt with residential emphasis
-        # Map room type to clear home terminology
-        from config.prompts import PromptUtils
-        home_room_type = PromptUtils.map_room_type_to_home_english(room_type)
-        
-        base_prompt = f"""
-Create a photorealistic residential home interior design image of a {home_room_type} in {design_style} style.
-
-IMPORTANT: This is a HOME/RESIDENTIAL interior - family living space, NOT commercial, hotel, or venue.
-
-Home Design Concept: {design_title}
-{design_description}
-
-Family/Homeowner Requirements: {notes}
-"""
-        
-        # Add color and dimension info if available - GELİŞTİRİLMİŞ RENK PALETİ İŞLEME
-        if color_info:
-            # Color_info string'ini parse et ve detaylı renk bilgisi ekle
-            try:
-                import json
-                if isinstance(color_info, str) and color_info.startswith('{'):
-                    color_data = json.loads(color_info)
-                    if color_data.get('colorName') and color_data.get('colorPalette'):
-                        color_name = color_data['colorName']
-                        colors = color_data['colorPalette']
-                        formatted_colors = json.dumps(colors)
-                        base_prompt += f"\nColor Palette: {{\"dominantColor\":\"{colors[0]}\",\"colorName\":\"{color_name}\",\"colorPalette\":{formatted_colors}}}"
-                        # Ek renk vurgusu ekle
-                        base_prompt += f"\nCOLOR DOMINANCE REQUIREMENT: The {color_name} color palette MUST be the dominant visual theme throughout the room!"
-                    else:
-                        base_prompt += f"\nColor Palette: {color_info}"
-                else:
-                    base_prompt += f"\nColor Palette: {color_info}"
-            except Exception as e:
-                logger.warning(f"Color info parsing failed: {e}")
-                base_prompt += f"\nColor Palette: {color_info}"
-                
-        if dimensions_info:
-            base_prompt += f"\nRoom Dimensions: {dimensions_info}"
-            
-        # Add user selected product categories emphasis
-        if product_categories and len(product_categories) > 0:
-            category_names = []
-            for cat in product_categories:
-                if isinstance(cat, dict) and cat.get('name'):
-                    category_names.append(cat['name'])
-                elif isinstance(cat, str):
-                    category_names.append(cat)
-            
-            if category_names:
-                base_prompt += f"\n\nUSER SELECTED FOCUS CATEGORIES (must be prominently featured): {', '.join(category_names)}"
-                base_prompt += f"\nEnsure these categories are clearly visible and well-represented in the room design."
-        
-        # Add real product references with enhanced details - RENK PALETİNE UYARLANMIŞ
+        # Ürünleri format et
+        products_text = ""
         if real_product_images:
-            base_prompt += "\n\nReal Product References (incorporate these exact products visually):"
-            
-            # Renk paletini parse et
-            dominant_colors = []
-            color_name = ""
-            try:
-                import json
-                if isinstance(color_info, str) and color_info.startswith('{'):
-                    color_data = json.loads(color_info)
-                    if color_data.get('colorPalette'):
-                        dominant_colors = color_data['colorPalette']
-                        color_name = color_data.get('colorName', 'Selected Palette')
-                        logger.info(f"🎨 [HybridPrompt] Color palette parsed: {color_name} - {dominant_colors}")
-            except Exception as e:
-                logger.warning(f"Color palette parsing failed: {e}")
-                
+            products_text += "GERÇEK ÜRÜNLER:\n"
             for product in real_product_images:
-                product_line = f"\n- {product['category'].upper()}: {product['name']}"
-                
-                # Add primary description but ADAPT COLOR to palette
-                if product.get('description'):
-                    original_desc = product['description']
-                    # Renk bilgilerini palette'e uyarla
-                    adapted_desc = original_desc
-                    
-                    # Orijinal renk referanslarını kaldır ve palette renklerini ekle
-                    if dominant_colors:
-                        # Specific color references (hex codes, color names) temizle
-                        import re
-                        adapted_desc = re.sub(r'#[A-Fa-f0-9]{6}', '', adapted_desc)
-                        adapted_desc = re.sub(r'açık bej|beyaz|siyah|gri|kahverengi', '', adapted_desc, flags=re.IGNORECASE)
-                        adapted_desc = re.sub(r'tonlarında özel kumaş kaplama', '', adapted_desc)
-                        
-                        # Palette rengini ekle
-                        palette_instruction = f"adapted to selected color palette ({dominant_colors[0]} dominant)"
-                        adapted_desc = f"{adapted_desc.strip()}, {palette_instruction}"
-                    
-                    product_line += f"\n  Design Style: {adapted_desc}"
-                
-                # Add original IKEA description if available (tasarım bilgisi için)
-                if product.get('original_description'):
-                    product_line += f"\n  Technical Details: {product['original_description']}"
-                
-                # Add image information for visual context
-                if product.get('image_info'):
-                    img_info = product['image_info']
-                    product_line += f"\n  Visual: {img_info.get('format', 'Unknown')} format"
-                    if img_info.get('file_path'):
-                        filename = img_info['file_path'].split('\\')[-1] if '\\' in img_info['file_path'] else img_info['file_path'].split('/')[-1]
-                        product_line += f", filename: {filename}"
-                    if img_info.get('optimized'):
-                        product_line += f", AI-optimized for accurate representation"
-                
-                # Renk adaptasyonu vurgusu
-                if dominant_colors:
-                    product_line += f"\n  → IMPORTANT: Keep {product['category']} DESIGN STYLE but adapt colors to match the selected palette"
-                else:
-                    product_line += f"\n  → MUST BE VISIBLE: This exact {product['category']} should be prominently featured in the room"
-                    
-                base_prompt += product_line
+                products_text += f"- {product['category']}: {product['name']} - {product.get('description', '')}\n"
         
-        # Add fake product descriptions for creativity
         if fake_product_descriptions:
-            base_prompt += "\n\nAdditional Design Elements (creative interpretation):"
+            products_text += "AI ÜRÜNLER:\n"
             for product in fake_product_descriptions:
-                base_prompt += f"\n- {product['category']}: {product['name']} - {product['description']}"
+                products_text += f"- {product['category']}: {product['name']} - {product['description']}\n"
         
-        base_prompt += f"""
-
-Home Interior Image Requirements:
-- Photorealistic residential home interior photography style
-- Professional home lighting and family-friendly composition
-- {design_style} aesthetic suitable for family living
-- PRIORITY: Selected color palette MUST dominate the room's visual theme
-- Product design shapes and styles should be maintained, but colors adapted to palette
-- Include both referenced real products and creatively interpreted elements
-- Natural home lighting, realistic textures and family-safe materials
-- Wide-angle view showing the complete home room layout
-- Include both referenced real products and creatively interpreted elements
-- Natural home lighting, realistic textures and family-safe materials
-- Wide-angle view showing the complete home room layout
-- Warm, lived-in comfort suitable for daily family use
-- 4K quality with sharp details and welcoming home atmosphere
-
-Style: Professional residential interior photography, family home visualization, comfortable living space
-"""
+        # Gemini'ye gönderilecek prompt template'ini kullan
+        prompt_enhancement_request = GeminiPrompts.get_imagen_prompt_enhancement_request(
+            room_type=room_type,
+            design_style=design_style,
+            notes=notes,
+            design_title=design_title,
+            design_description=design_description,
+            products_text=products_text,
+            dimensions_info=dimensions_info,
+            color_info=color_info
+        )
         
-        return base_prompt
+        logger.info(f"🤖 Hybrid prompt Gemini'ye gönderiliyor: {prompt_enhancement_request[:200]}...")
+        
+        try:
+            # Gemini'den prompt al
+            response = self.gemini_model.generate_content(prompt_enhancement_request)
+            enhanced_prompt = response.text.strip()
+            
+            logger.info(f"✅ Gemini'den hybrid prompt alındı: {enhanced_prompt[:100]}...")
+            
+            # Log hybrid Imagen prompt
+            self.imagen_prompt_logger.log_final_imagen_prompt(
+                enhanced_prompt=enhanced_prompt,
+                original_request_data={
+                    "room_type": room_type,
+                    "design_style": design_style,
+                    "notes": notes,
+                    "design_title": design_title,
+                    "design_description": design_description,
+                    "real_products": len(real_product_images),
+                    "fake_products": len(fake_product_descriptions)
+                },
+                prompt_source="hybrid_gemini_enhanced",
+                additional_data={"hybrid": True}
+            )
+            
+            return enhanced_prompt
+            
+        except Exception as e:
+            logger.error(f"❌ Hybrid Gemini API hatası: {str(e)}")
+            # FALLBACK KALDIRILDI - Hatayı görmek için exception'ı raise et
+            raise Exception(f"Hybrid Gemini prompt generation failed: {str(e)}")
 
 
 # Global room visualization service instance

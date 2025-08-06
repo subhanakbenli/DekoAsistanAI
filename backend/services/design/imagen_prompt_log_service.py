@@ -138,7 +138,7 @@ class ImagenPromptLogService:
             log_entry = {
                 "timestamp": datetime.now().isoformat(),
                 "prompt_type": "imagen_generation_result",
-                "enhanced_prompt": enhanced_prompt[:200] + "..." if len(enhanced_prompt) > 200 else enhanced_prompt,
+                "enhanced_prompt": enhanced_prompt,
                 "generation_success": generation_success,
                 "image_data": safe_image_data,
                 "error_message": error_message,

@@ -1,6 +1,6 @@
 """
-Gemini AI için kullanılan tüm prompt şablonları
-Merkezi prompt yönetimi için oluşturulmuştur
+Gemini AI prompt templates and utilities.
+Centralized prompt management for design generation.
 """
 
 import json
@@ -8,22 +8,15 @@ from config import logger
 
 class GeminiPrompts:
     """
-    Gemini AI servisi için tüm prompt şablonlarını içeren sınıf
+    Gemini AI prompt templates for design generation
     """
     
     @staticmethod
     def get_design_suggestion_prompt(room_type: str, design_style: str, notes: str, additional_context: str = "") -> str:
         """
-        Tasarım önerisi için ana prompt şablonu (ESKİ VERSİYON - HİBRİT OLMAYAN)
+        Generate design suggestion prompt for legacy system.
         
-        Args:
-            room_type: Oda tipi
-            design_style: Tasarım stili
-            notes: Kullanıcı notları
-            additional_context: Ek bağlam bilgisi (renk paleti, ürün kategorileri vs.)
-            
-        Returns:
-            str: Formatlanmış prompt
+        Returns: Formatted prompt string for Gemini AI
         """
         return f"""
 Sen bir konut iç mimarı ve ev dekorasyon uzmanısın. Türkiye'de yaşayan bir aile/kişi için **EV İÇİ KONUT ODASI** tasarım önerisi hazırlayacaksın.
@@ -101,16 +94,9 @@ Sen bir konut iç mimarı ve ev dekorasyon uzmanısın. Türkiye'de yaşayan bir
     @staticmethod
     def get_hybrid_design_suggestion_prompt(room_type: str, design_style: str, notes: str, additional_context: str = "") -> str:
         """
-        HİBRİT tasarım önerisi için prompt şablonu - Function Calling ile gerçek ürün arama
+        Generate hybrid design prompt with function calling support.
         
-        Args:
-            room_type: Oda tipi
-            design_style: Tasarım stili
-            notes: Kullanıcı notları
-            additional_context: Ek bağlam bilgisi (renk paleti, ürün kategorileri vs.)
-            
-        Returns:
-            str: Hibrit yaklaşım için formatlanmış prompt
+        Returns: Formatted prompt for real product search + AI generation
         """
         return f"""
 Sen bir konut iç mimarı ve ev dekorasyon uzmanısın. Türkiye'de yaşayan bir aile/kişi için **EV İÇİ KONUT ODASI** hibrit tasarım önerisi hazırlayacaksın.
@@ -193,268 +179,40 @@ Mutlaka aşağıdaki JSON formatında cevap ver:
         color_info: str = ""
     ) -> str:
         """
-        Imagen 4 için hibrit sistem parametrelere odaklı prompt geliştirme talebi
+        Generate Turkish→English translation for Imagen 4 - Ultra strict and concise.
         
-        Args:
-            room_type: Oda tipi
-            design_style: Tasarım stili
-            notes: Kullanıcı notları
-            design_title: Tasarım başlığı
-            design_description: Tasarım açıklaması
-            products_text: Hibrit ürünler listesi metni (gerçek + fake ürünler)
-            dimensions_info: Oda boyutları bilgisi
-            color_info: Renk paleti bilgisi
-            
-        Returns:
-            str: Hibrit sistem için parametreler odaklı Imagen prompt geliştirme talebi
+        Returns: Gemini prompt for creating optimized English Imagen prompt
         """
-        # Map room type to clear home terminology
-        home_room_type = PromptUtils.map_room_type_to_home_english(room_type)
-        
-        return f"""
-Sen bir AI görsel üretim uzmanısın. Aşağıdaki **KONUT İÇ MEKAN** tasarım bilgilerini kullanarak HİBRİT SİSTEM ile kullanıcının verdiği parametrelere TAM UYUMLU Imagen 4 prompt'u oluştur.
+        return f"""TASK: Create English Imagen prompt from Turkish data
 
-**ÖNEMLİ: HİBRİT SİSTEM KURALLARI:**
-- Gerçek ürün referansları görsel ilham kaynağı olarak kullanılmalı
-- AI yaratıcı öğeler tasarım konseptini tamamlamalı
-- Tüm öğeler (gerçek + yaratıcı) uyumlu bir bütün oluşturmalı
-- Kullanıcı parametrelerine SIKI UYUM sağlanmalı
-
-**ÖNEMLİ: KULLANICI PARAMETRELERİNE SIKI UYUM KURALLARI:**
-- Verilen oda boyutları mutlaka görsele yansıtılmalı
-- Seçilen renk paleti odanın DOMİNANT renkleri olmalı  
-- Belirtilen ürün kategorileri odada AÇIKÇA GÖRÜNÜR olmalı
-- Tasarım stili görselin ana karakterini belirlemeli
-- Kullanıcı notları görselde net şekilde yansıtılmalı
-
-**Konut İç Mekan Tasarım Bilgileri:**
-- Ev Odası Tipi: {home_room_type}
-- Tasarım Stili: {design_style}
-{dimensions_info}{color_info}- Kullanıcı Notları: {notes}
-- Tasarım Başlığı: {design_title}
-- Tasarım Açıklaması: {design_description}
-
+INPUT:
+Room: {room_type}
+Style: {design_style}
+Notes: {notes}
+{color_info}
 {products_text}
 
-**HİBRİT PARAMETRELERİ YANSITAN PROMPT OLUŞTURMA KURALLARI:**
+RULES:
+- Start with "Photo-realistic"
+- MAXIMUM 480 characters total
+- MAXIMUM 5 products mentioned
+- 100% English only - zero Turkish characters
+- salon→living room, yatak→bedroom, mutfak→kitchen, banyo→bathroom, çocuk→kids room
+- Focus only on visual elements for image generation
 
-1. **ODA BOYUTLARI VURGUSU**: Eğer boyut bilgisi varsa, odanın büyüklük hissini prompt'a ekle (spacious/compact/medium-sized)
-2. **RENK PALETİ DOMİNANSI - ÇOK ÖNEMLİ**: Verilen renk paletini mutlaka "dominated by [ana renk], featuring [diğer renkler]" formatında vurgula. Renk paleti odanın EN BASKUN özelliği olmalı!
-3. **HİBRİT ÜRÜN ENTEGRASYONu - RENK ADAPTASYONU**: 
-   - Gerçek ürün referanslarını "inspired by [ürün tasarım şekli]" formatında dahil et
-   - ÖNEMLI: Ürün şekillerini/tasarımlarını koru ama renklerini seçilen palette'e uyarla
-   - "Product design maintained but recolored to match palette" ifadesi kullan
-   - Yaratıcı öğeleri "featuring [yaratıcı açıklama]" şeklinde entegre et
-   - Her iki tip ürünü de görsel odak noktası olarak belirt
-4. **STIL KARAKTERİZASYONU**: Tasarım stilini odanın temel özelliği olarak vurgula
-5. **KULLANICI NOTLARI ENTEGRASYONu**: Özel istekleri prompt'un ana parçası olarak dahil et
-
-**Hibrit Görsel Teknik Gereksinimler:**
-- Photo-realistic home interior photography
-- Professional interior design visualization  
-- Sharp focus on both real product references and creative elements
-- Natural home lighting that enhances color palette DOMINANCE
-- Wide-angle view showing room proportions accurately
-- Seamless integration of referenced and creative design elements
-
-**ÖNEMLİ HATIRLATMALAR:**
-- RENK PALETİ MUTLAKA UYGULANMALI - görselin ana karakteristiği olmalı!
-- Parametrelere uygun olmayan genel/belirsiz ifadeler kullanma
-- Her parametre (boyut, renk, kategori, stil) prompt'ta net şekilde yer almalı
-- Hibrit ürün sistemi (gerçek referans + yaratıcı) prompt'ta açıkça belirtilmeli
-- Odanın EV/KONUT karakteri vurgulanmalı (residential home interior)
-- Maksimum 500 karakter limit'i içinde tüm parametreleri dahil et
-
-Sadece hibrit parametrelere uyumlu İngilizce prompt'u döndür, açıklama yapma.
-"""
-
-    @staticmethod
-    def get_fallback_imagen_prompt(room_type: str, design_style: str, width: int = None, length: int = None, color_info: str = "", product_categories: list = None, hybrid_mode: bool = True) -> str:
-        """
-        Imagen 4 için hibrit sistem parametrelere uygun yedek konut odası prompt'u (Gemini başarısız olursa)
-        
-        Args:
-            room_type: Ev odası tipi
-            design_style: Tasarım stili
-            width: Oda genişliği (cm)
-            length: Oda uzunluğu (cm) 
-            color_info: Renk bilgisi
-            product_categories: Ürün kategorileri
-            hybrid_mode: Hibrit mod aktif mi (gerçek + yaratıcı öğeler)
-            
-        Returns:
-            str: Hibrit sistem için parametrelere uygun yedek konut Imagen prompt'u
-        """
-        # Room type'ı ev odası terminolojisine çevir
-        home_room_type = room_type.lower()
-        if 'salon' in home_room_type or 'oturma' in home_room_type:
-            home_room_type = 'living room'
-        elif 'yatak' in home_room_type:
-            home_room_type = 'bedroom'
-        elif 'mutfak' in home_room_type:
-            home_room_type = 'kitchen'
-        elif 'banyo' in home_room_type:
-            home_room_type = 'bathroom'
-        else:
-            home_room_type = f'home {room_type.lower()}'
-        
-        # Oda boyutu karakterizasyonu
-        size_descriptor = ""
-        if width and length:
-            area = (width * length) / 10000  # cm2 to m2
-            if area < 10:
-                size_descriptor = "compact "
-            elif area > 25:
-                size_descriptor = "spacious "
-            else:
-                size_descriptor = "medium-sized "
-        
-        # Renk bilgisi analizi - GELİŞTİRİLMİŞ RENK PALETİ İŞLEME
-        color_descriptor = ""
-        if color_info:
-            try:
-                import json
-                if isinstance(color_info, str):
-                    color_data = json.loads(color_info)
-                else:
-                    color_data = color_info
-                
-                if isinstance(color_data, dict):
-                    # Yeni frontend yapısını destekle
-                    if color_data.get('colorName'):
-                        color_name = color_data['colorName'].lower()
-                        color_descriptor = f" dominated by {color_name} tones"
-                        
-                        # Renk paletini de ekle
-                        if color_data.get('colorPalette') and len(color_data['colorPalette']) > 0:
-                            primary_color = color_data['colorPalette'][0]  # İlk renk dominant renk
-                            # Hex kodu varsa renk tanımlama yap
-                            if primary_color.startswith('#'):
-                                color_descriptor = f" dominated by {color_name} palette ({primary_color})"
-                    
-                    elif color_data.get('dominantColor'):
-                        dominant_color = color_data['dominantColor']
-                        # Hex kodundan renk ismi çıkar
-                        if dominant_color.startswith('#'):
-                            color_descriptor = f" with {dominant_color} color scheme"
-                        else:
-                            color_descriptor = f" dominated by {dominant_color.lower()}"
-                            
-                # Özel renk paletleri için özel tanımlamalar
-                logger.info(f"🎨 Color processing: {color_info}")
-                
-            except Exception as e:
-                logger.warning(f"Color info parsing failed: {e}, using fallback")
-                # Geliştirilmiş fallback: Renk isimlerini ara
-                color_lower = color_info.lower()
-                if 'okyanus' in color_lower or 'ocean' in color_lower:
-                    color_descriptor = " dominated by deep ocean blue tones with teal accents"
-                elif 'beyaz' in color_lower or 'white' in color_lower:
-                    color_descriptor = " dominated by white"
-                elif 'siyah' in color_lower or 'black' in color_lower:
-                    color_descriptor = " dominated by black"
-                elif 'gri' in color_lower or 'gray' in color_lower:
-                    color_descriptor = " dominated by gray"
-                elif 'mavi' in color_lower or 'blue' in color_lower:
-                    color_descriptor = " dominated by blue tones"
-                elif 'yeşil' in color_lower or 'green' in color_lower:
-                    color_descriptor = " dominated by green tones"
-        
-        # Ürün kategorisi vurgusu
-        category_descriptor = ""
-        if product_categories and len(product_categories) > 0:
-            # Kategorileri İngilizce'ye çevir
-            category_mappings = {
-                'Ev Mobilyaları': 'furniture',
-                'Ev Tekstili': 'textiles',
-                'Ev Aydınlatması': 'lighting',
-                'Ev Dekoratif Objeler': 'decor',
-                'Mutfak': 'kitchen items',
-                'Banyo': 'bathroom fixtures'
-            }
-            
-            english_categories = []
-            for cat in product_categories:
-                if isinstance(cat, dict) and cat.get('name'):
-                    cat_name = cat['name']
-                elif isinstance(cat, str):
-                    cat_name = cat
-                else:
-                    continue
-                    
-                english_cat = category_mappings.get(cat_name, cat_name.lower())
-                english_categories.append(english_cat)
-            
-            if english_categories:
-                category_descriptor = f" prominently featuring {', '.join(english_categories[:2])}"
-        
-        # Final hibrit prompt oluşturma
-        if hybrid_mode:
-            prompt = f"Photo-realistic residential {design_style.lower()} style {size_descriptor}{home_room_type} interior{color_descriptor}{category_descriptor}, hybrid design combining real product references with creative elements, family house room, cozy domestic space, professional interior photography, natural lighting"
-        else:
-            prompt = f"Photo-realistic residential {design_style.lower()} style {size_descriptor}{home_room_type} interior{color_descriptor}{category_descriptor}, family house room, cozy domestic space, professional interior photography, natural lighting"
-        
-        # 500 karakter limitini kontrol et (hibrit için biraz daha uzun)
-        if len(prompt) > 500:
-            # Kısalt
-            if hybrid_mode:
-                prompt = f"Photo-realistic {design_style.lower()} {size_descriptor}{home_room_type}{color_descriptor}{category_descriptor}, hybrid design with real and creative elements, residential interior, natural lighting"
-            else:
-                prompt = f"Photo-realistic {design_style.lower()} {size_descriptor}{home_room_type}{color_descriptor}{category_descriptor}, residential interior, natural lighting"
-        
-        return prompt
+Your response must be exactly 480 characters or less, pure English:"""
 
 class PromptUtils:
     """
-    Prompt'lar için yardımcı fonksiyonlar
+    Utility functions for prompt generation
     """
-    
-    @staticmethod
-    def map_room_type_to_home_english(room_type: str) -> str:
-        """
-        Türkçe oda tiplerini ev odası İngilizce terimlerine çevirir
-        
-        Args:
-            room_type: Türkçe oda tipi
-            
-        Returns:
-            str: İngilizce ev odası terimi
-        """
-        room_mapping = {
-            'salon': 'home living room',
-            'oturma odası': 'family living room', 
-            'oturma': 'living room',
-            'yatak odası': 'home bedroom',
-            'yatak': 'bedroom',
-            'mutfak': 'home kitchen',
-            'banyo': 'home bathroom',
-            'çalışma odası': 'home office',
-            'ofis': 'home office',
-            'yemek odası': 'dining room',
-            'balkon': 'home balcony',
-            'teras': 'home terrace',
-            'çocuk odası': 'children bedroom',
-            'misafir odası': 'guest bedroom'
-        }
-        
-        room_lower = room_type.lower()
-        for turkish_term, english_term in room_mapping.items():
-            if turkish_term in room_lower:
-                return english_term
-        
-        # Fallback: add "home" prefix to make it clear it's residential
-        return f"home {room_type.lower()}"
     
     @staticmethod
     def build_additional_context(parsed_info: dict) -> str:
         """
-        Parse edilmiş bilgilerden ek bağlam oluşturur
+        Build additional context from parsed user information.
         
-        Args:
-            parsed_info: Parse edilmiş kullanıcı bilgileri
-            
-        Returns:
-            str: Ek bağlam metni
+        Returns: Formatted context string
         """
         additional_context = ""
         
@@ -532,13 +290,9 @@ class PromptUtils:
     @staticmethod
     def format_products_for_imagen(products: list) -> str:
         """
-        Hibrit ürün listesini Imagen prompt'u için detaylı formatlar - Gerçek ürün açıklamaları + referans görseller dahil
+        Format hybrid product list for Imagen prompt generation.
         
-        Args:
-            products: Hibrit ürün listesi (gerçek + fake ürünler karışık)
-            
-        Returns:
-            str: Hibrit formatlanmış ürün metni (açıklamalar + görsel referanslar)
+        Returns: Formatted product text with real/AI product descriptions
         """
         if not products or len(products) == 0:
             return ""
@@ -572,81 +326,46 @@ class PromptUtils:
             else:
                 fake_products.append(product_info)
         
-        # Hibrit ürün listesi formatla
-        products_text = f"**HİBRİT ÜRÜN SİSTEMİ** ({len(real_products)} gerçek + {len(fake_products)} AI ürün):\n\n"
+        # Ürün listesi formatla - KOMPAKT
+        products_text = f"**ÜRÜN LİSTESİ** ({len(real_products)} gerçek + {len(fake_products)} AI ürün):\n\n"
         
-        # Seçilen kategorileri vurgula
+        # Seçilen kategorileri kısa listele
         category_names = list(products_by_category.keys())
-        products_text += "**KULLANICI TARAFINDAN SEÇİLEN KATEGORİLER** (Bu kategorilerden ürünler odada MUTLAKA GÖRÜNÜR olmalı):\n"
-        products_text += f"{', '.join(category_names)}\n\n"
+        products_text += f"**KATEGORİLER**: {', '.join(category_names)}\n\n"
         
-        # Gerçek ürünleri detaylı listele
+        # Gerçek ürünleri KISA formatta listele
         if real_products:
-            products_text += "**GERÇEK ÜRÜN REFERANSLARI** (use these as visual inspiration):\n"
+            products_text += "**GERÇEK ÜRÜNLER**:\n"
             for product in real_products:
-                products_text += f"- {product['name']}"
+                # KISA FORMAT: Sadece isim + temel özellik
+                short_desc = product['name']
                 if product['description']:
-                    products_text += f": {product['description']}"
-                if product['image_path']:
-                    products_text += f" (reference: {product['image_path']})"
-                products_text += "\n"
+                    # Açıklamayı kısalt: ilk 25 karakter + temel kelimeler
+                    desc = product['description'][:25].split(',')[0].split('.')[0]
+                    short_desc += f" ({desc})"
+                products_text += f"- {short_desc}\n"
             products_text += "\n"
         
-        # Fake ürünleri yaratıcı açıklamalarla listele
+        # AI ürünleri de KISA formatta listele
         if fake_products:
-            products_text += "**YARATICI TASARIM ÖĞELERİ** (creative interpretation):\n"
+            products_text += "**AI ÜRÜNLER**:\n"
             for product in fake_products:
-                products_text += f"- {product['name']}"
+                short_desc = product['name']
                 if product['description']:
-                    products_text += f": {product['description']}"
-                products_text += "\n"
+                    # Kısa açıklama: sadece stil/renk/temel özellik
+                    desc = product['description'][:20].split(',')[0].split('.')[0]
+                    short_desc += f" ({desc})"
+                products_text += f"- {short_desc}\n"
             products_text += "\n"
-        
-        # İngilizce kategori çevirisi prompt için
-        category_mappings = {
-            'Ev Mobilyaları': 'home furniture',
-            'Ev Tekstili': 'home textiles and fabrics', 
-            'Ev Aydınlatması': 'home lighting fixtures',
-            'Ev Dekoratif Objeler': 'home decorative objects',
-            'Mutfak': 'kitchen appliances and items',
-            'Banyo': 'bathroom fixtures and accessories',
-            'Yatak Odası': 'bedroom furniture',
-            'Oturma Odası': 'living room furniture',
-            'Halı': 'rugs and carpets',
-            'TV Ünitesi': 'TV stands and entertainment units',
-            'Kitaplık': 'bookshelves and storage',
-            'Aydınlatma': 'lighting fixtures',
-            'Aksesuar': 'decorative accessories'
-        }
-        
-        english_categories = []
-        for cat in category_names:
-            english_cat = category_mappings.get(cat, cat.lower())
-            english_categories.append(english_cat)
-        
-        if english_categories:
-            products_text += f"**USER SELECTED FOCUS CATEGORIES** (must be prominently featured): {', '.join(english_categories)}\n"
-            products_text += "Ensure these categories are clearly visible and well-represented in the room design.\n\n"
-        
-        # Hibrit prompt talimatları
-        products_text += "**HİBRİT VİZÜEL TALİMATLARI**:\n"
-        products_text += "- Include both referenced real products and creatively interpreted elements\n"
-        products_text += "- Real product references should inspire similar items in the visualization\n"
-        products_text += "- Creative elements should complement the overall design concept\n"
-        products_text += "- All items should work together harmoniously in the space\n"
         
         return products_text
     
     @staticmethod
     def extract_dimensions_info_for_imagen(parsed_info: dict) -> str:
         """
-        Oda boyutları bilgisini Imagen prompt'u için detaylı formatlar
+        Extract room dimensions for Imagen prompt formatting.
         
-        Args:
-            parsed_info: Parse edilmiş kullanıcı bilgileri
-            
-        Returns:
-            str: Detaylı formatlanmış boyut bilgisi
+        Returns: Formatted dimension information string
         """
         dimensions_info = ""
         
