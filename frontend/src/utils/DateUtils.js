@@ -4,7 +4,7 @@
  */
 class DateUtils {
   /**
-   * Format date to Turkish locale
+   * Format date as a long date (en-US locale)
    * @param {Date|string} date - Date to format
    * @param {Object} options - Intl.DateTimeFormat options
    * @returns {string} Formatted date
@@ -19,17 +19,17 @@ class DateUtils {
       ...options
     };
     
-    return new Intl.DateTimeFormat('tr-TR', defaultOptions).format(new Date(date));
+    return new Intl.DateTimeFormat('en-US', defaultOptions).format(new Date(date));
   }
 
   /**
-   * Format date to short format (DD/MM/YYYY)
+   * Format date to short format (MM/DD/YYYY)
    * @param {Date|string} date - Date to format
    * @returns {string} Short formatted date
    */
   static formatShort(date) {
     if (!date) return '';
-    return new Intl.DateTimeFormat('tr-TR', {
+    return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit'
@@ -37,7 +37,7 @@ class DateUtils {
   }
 
   /**
-   * Format time to Turkish locale
+   * Format time (en-US locale)
    * @param {Date|string} date - Date to format
    * @param {boolean} includeSeconds - Include seconds
    * @returns {string} Formatted time
@@ -51,11 +51,11 @@ class DateUtils {
       ...(includeSeconds && { second: '2-digit' })
     };
     
-    return new Intl.DateTimeFormat('tr-TR', options).format(new Date(date));
+    return new Intl.DateTimeFormat('en-US', options).format(new Date(date));
   }
 
   /**
-   * Get relative time (e.g., "2 saat önce")
+   * Get relative time (e.g., "2 hours ago")
    * @param {Date|string} date - Date to compare
    * @returns {string} Relative time
    */
@@ -71,13 +71,13 @@ class DateUtils {
     const diffInDays = Math.floor(diffInHours / 24);
     
     if (diffInSeconds < 60) {
-      return 'Az önce';
+      return 'Just now';
     } else if (diffInMinutes < 60) {
-      return `${diffInMinutes} dakika önce`;
+      return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
     } else if (diffInHours < 24) {
-      return `${diffInHours} saat önce`;
+      return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
     } else if (diffInDays < 7) {
-      return `${diffInDays} gün önce`;
+      return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
     } else {
       return DateUtils.formatShort(date);
     }

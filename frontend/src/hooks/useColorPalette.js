@@ -91,8 +91,8 @@ export const useColorPalette = () => {
   // Get available categories
   const availableCategories = useMemo(() => {
     const categories = [
-      { id: 'popular', name: 'Popüler Paletler' },
-      { id: 'all', name: 'Tüm Paletler' }
+      { id: 'popular', name: 'Popular Palettes' },
+      { id: 'all', name: 'All Palettes' }
     ];
     
     // Add category-specific options
@@ -109,7 +109,7 @@ export const useColorPalette = () => {
   // Validation
   const isValid = useMemo(() => {
     if (useCustomDescription) {
-      // Minimum karakter sınırı kaldırıldı - boş bile olabilir
+      // Minimum length requirement removed - may even be empty
       return true;
     }
     return selectedPalette !== null;
@@ -148,7 +148,7 @@ export const useColorPalette = () => {
   // Get validation message
   const getValidationMessage = useCallback(() => {
     if (!useCustomDescription && !selectedPalette) {
-      return 'Lütfen bir renk paleti seçin veya özel açıklama girin.';
+      return 'Please select a color palette or enter a custom description.';
     }
     return '';
   }, [useCustomDescription, selectedPalette]);

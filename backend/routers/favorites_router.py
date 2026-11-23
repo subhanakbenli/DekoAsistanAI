@@ -218,7 +218,7 @@ async def get_my_favorites(
                     "image_url": f"/static/mood_boards/{get_clean_image_filename(fav.MoodBoard.image_path)}" if fav.MoodBoard and fav.MoodBoard.image_path else None,
                     "mood_board_id": fav.MoodBoard.mood_board_id if fav.MoodBoard else None,
                     "generation_time": fav.MoodBoard.generation_time_seconds if fav.MoodBoard else None,
-                    "debug_original_path": fav.MoodBoard.image_path if fav.MoodBoard else None  # Debug için
+                    "debug_original_path": fav.MoodBoard.image_path if fav.MoodBoard else None  # For debugging
                 },
                 "created_at": fav.UserFavoriteDesign.created_at.isoformat()
             }

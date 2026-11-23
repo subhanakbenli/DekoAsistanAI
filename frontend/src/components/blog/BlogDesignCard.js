@@ -37,7 +37,7 @@ const BlogDesignCard = memo(({
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('tr-TR', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -75,7 +75,7 @@ const BlogDesignCard = memo(({
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
             </div>
-            <p className="text-xs">Görsel bulunamadı</p>
+            <p className="text-xs">Image not found</p>
           </div>
         </div>
         
@@ -122,7 +122,7 @@ const BlogDesignCard = memo(({
                 ? 'bg-red-500/80 text-white' 
                 : 'bg-gray-800/60 text-gray-300 hover:bg-red-500/80 hover:text-white'
             } ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
-            title={isAuthenticated ? (isFavorited ? 'Favorilerden çıkar' : 'Favorilere ekle') : 'Favorilere eklemek için giriş yapın'}
+            title={isAuthenticated ? (isFavorited ? 'Remove from favorites' : 'Add to favorites') : 'Log in to add to favorites'}
           >
             {isFavoriting ? (
               <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

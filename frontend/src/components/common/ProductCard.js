@@ -66,7 +66,7 @@ const ProductCard = ({ product, index, categoryIcons }) => {
           {/* Real product indicator */}
           {product.is_real && (
             <span className="text-xs font-semibold px-2 py-1 rounded-full bg-green-600 text-white">
-              ✓ Gerçek
+              ✓ Real
             </span>
           )}
         </div>
@@ -101,11 +101,11 @@ const ProductCard = ({ product, index, categoryIcons }) => {
       <div className="mt-3 pt-2 border-t border-gray-700">
         <div className="flex items-center justify-between">
           <span className="text-xs text-gray-400">
-            #{index + 1} önerisi
+            Suggestion #{index + 1}
           </span>
           <div className="flex items-center space-x-2">
             {product.is_real && product.product_link && (
-              <span className="text-xs text-blue-400">🔗 Tıklanabilir</span>
+              <span className="text-xs text-blue-400">🔗 Clickable</span>
             )}
             <div className={`w-2 h-2 rounded-full ${cardColor.split(' ')[0].replace('border-', 'bg-')}`}></div>
           </div>

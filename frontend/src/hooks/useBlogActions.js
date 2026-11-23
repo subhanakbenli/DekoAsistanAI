@@ -47,7 +47,7 @@ export const useBlogActions = (state) => {
 
     } catch (err) {
       console.error('Error fetching blog posts:', err);
-      setErrorState('Blog gönderileri yüklenirken bir hata oluştu');
+      setErrorState('An error occurred while loading blog posts');
       updateBlogPosts([]);
     } finally {
       setLoadingState(false);

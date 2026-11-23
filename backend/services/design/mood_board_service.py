@@ -64,11 +64,11 @@ class MoodBoardService:
         products: list = None,
         design_id: str = None,
         user_id: int = None,
-        color_info: str = "",  # Frontend'den gelen formatlanmış renk bilgisi
-        width: int = None,  # Oda genişliği (cm)
-        length: int = None,  # Oda uzunluğu (cm)
-        height: int = None,   # Oda yüksekliği (cm)
-        parsed_info: Dict[str, Any] = None  # Parse edilmiş kullanıcı bilgileri
+        color_info: str = "",  # Formatted color info coming from the frontend
+        width: int = None,  # Room width (cm)
+        length: int = None,  # Room length (cm)
+        height: int = None,   # Room height (cm)
+        parsed_info: Dict[str, Any] = None  # Parsed user information
     ) -> Dict[str, Any]:
         """Generate room visualization with real-time progress tracking and WebSocket updates."""
         
@@ -79,7 +79,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "preparing_prompt",
                 "progress_percentage": 5,
-                "message": "Oda görseli konsepti hazırlanıyor...",
+                "message": "Preparing room visual concept...",
                 "mood_board_id": mood_board_id
             })
             
@@ -88,7 +88,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "preparing_prompt",
                 "progress_percentage": 10,
-                "message": "Notlar analiz ediliyor...",
+                "message": "Analyzing notes...",
                 "mood_board_id": mood_board_id
             })
             
@@ -125,14 +125,14 @@ class MoodBoardService:
             dimensions_info = ""
             if width and length:
                 if height:
-                    dimensions_info = f"Oda Boyutları: {width}cm x {length}cm x {height}cm"
+                    dimensions_info = f"Room Dimensions: {width}cm x {length}cm x {height}cm"
                 else:
-                    dimensions_info = f"Oda Boyutları: {width}cm x {length}cm"
+                    dimensions_info = f"Room Dimensions: {width}cm x {length}cm"
             
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "preparing_prompt", 
                 "progress_percentage": 15,
-                "message": "AI prompt hazırlanıyor...",
+                "message": "Preparing AI prompt...",
                 "mood_board_id": mood_board_id
             })
             
@@ -146,7 +146,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "generating_image",
                 "progress_percentage": 20,
-                "message": "AI görsel oluşturma modeli başlatılıyor...",
+                "message": "Starting AI image generation model...",
                 "mood_board_id": mood_board_id
             })
             
@@ -157,7 +157,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "processing_image",
                 "progress_percentage": 75,
-                "message": "Görsel işleniyor...",
+                "message": "Processing image...",
                 "mood_board_id": mood_board_id
             })
             
@@ -167,7 +167,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "processing_image",
                     "progress_percentage": 80,
-                    "message": "Görsel dosyaya kaydediliyor...",
+                    "message": "Saving image to file...",
                     "mood_board_id": mood_board_id
                 })
                 image_file_path = self._save_mood_board_image(mood_board_id, image_data["base64"])
@@ -179,7 +179,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "finalizing",
                 "progress_percentage": 90,
-                "message": "Oda görseli tamamlanıyor...",
+                "message": "Finalizing room visual...",
                 "mood_board_id": mood_board_id
             })
             
@@ -223,7 +223,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "completed",
                 "progress_percentage": 100,
-                "message": "Oda görseli başarıyla tamamlandı!",
+                "message": "Room visual completed successfully!",
                 "mood_board_id": mood_board_id
             })
             
@@ -287,7 +287,7 @@ class MoodBoardService:
             logger.error(f"Error generating room visualization: {str(e)}")
             await websocket_manager.send_mood_board_error(
                 connection_id, 
-                f"Oda görseli oluşturulurken hata oluştu: {str(e)}"
+                f"An error occurred while generating the room visual: {str(e)}"
             )
             
             # Save error log
@@ -325,8 +325,8 @@ class MoodBoardService:
         design_description: str,
         products: list = None,
         parsed_info: Dict[str, Any] = None,
-        color_info: str = "",  # Frontend'den gelen formatlanmış renk bilgisi
-        dimensions_info: str = ""  # Frontend'den gelen formatlanmış boyut bilgisi
+        color_info: str = "",  # Formatted color info coming from the frontend
+        dimensions_info: str = ""  # Formatted dimension info coming from the frontend
     ) -> str:
         """Create optimized Imagen 4 prompt using Gemini with frontend parameters."""
         
@@ -335,10 +335,10 @@ class MoodBoardService:
         products_text = PromptUtils.format_products_for_imagen(products)
         logger.debug(f"Formatted products_text: {products_text[:500]}...")
         
-        # Renk bilgisi direkt kullan (frontend'den formatlanmış geliyor)
+        # Use color info directly (it comes formatted from the frontend)
         final_color_info = color_info
         
-        # Boyut bilgisi: Frontend'den geleni öncelik ver, yoksa parse edilmişten al  
+        # Dimension info: prefer the frontend value, otherwise take it from the parsed info  
         final_dimensions_info = dimensions_info if dimensions_info.strip() else PromptUtils.extract_dimensions_info_for_imagen(parsed_info)
         
         # Use centralized prompt template
@@ -353,7 +353,7 @@ class MoodBoardService:
             color_info=final_color_info
         )
         print(f"Generated prompt for Imagen: {str(prompt_enhancement_request)}...")  # Debug log
-        # Log Imagen enhancement request (Gemini'ye gönderilen prompt)
+        # Log Imagen enhancement request (prompt sent to Gemini)
         self.imagen_prompt_logger.log_imagen_enhancement_request(
             room_type=room_type,
             design_style=design_style,
@@ -370,10 +370,10 @@ class MoodBoardService:
             response = self.gemini_model.generate_content(prompt_enhancement_request)
             enhanced_prompt = response.text.strip()
             
-            # Gemini'den ne gelirse onu kullan - hiç kontrol etme!
-            logger.info(f"Gemini response alındı, olduğu gibi kullanılıyor: {enhanced_prompt[:100]}...")
+            # Use whatever Gemini returns - no checks at all!
+            logger.info(f"Gemini response received, using it as is: {enhanced_prompt[:100]}...")
             
-            # Log final Imagen prompt (Gemini'den geldiği gibi)
+            # Log final Imagen prompt (as received from Gemini)
             self.imagen_prompt_logger.log_final_imagen_prompt(
                 enhanced_prompt=enhanced_prompt,
                 original_request_data={
@@ -390,20 +390,20 @@ class MoodBoardService:
             return enhanced_prompt
             
         except Exception as e:
-            logger.error(f"Gemini API hatası: {str(e)}")
-            # FALLBACK KALDIRILDI - Hatayı görmek için exception'ı raise et
+            logger.error(f"Gemini API error: {str(e)}")
+            # FALLBACK REMOVED - raise the exception to surface the error
             raise Exception(f"Gemini prompt generation failed: {str(e)}")
     
     async def _simulate_image_generation_progress(self, connection_id: str, mood_board_id: str):
         """Background progress simulation for smooth user experience during AI image generation."""
         try:
             progress_steps = [
-                (58, "Görsel kompozisyonu hazırlanıyor..."),
-                (61, "Renk paleti uygulanıyor..."),
-                (64, "Mekan detayları oluşturuluyor..."),
-                (67, "Dekoratif öğeler ekleniyor..."),
-                (68, "Işık ve gölge efektleri hesaplanıyor..."),
-                (69, "Görsel kalitesi optimize ediliyor...")
+                (58, "Preparing image composition..."),
+                (61, "Applying color palette..."),
+                (64, "Creating space details..."),
+                (67, "Adding decorative elements..."),
+                (68, "Calculating light and shadow effects..."),
+                (69, "Optimizing image quality...")
             ]
             
             for progress, message in progress_steps:
@@ -463,7 +463,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "generating_image",
                     "progress_percentage": 25,
-                    "message": "AI modeli başlatılıyor...",
+                    "message": "Starting AI model...",
                     "mood_board_id": mood_board_id
                 })
             
@@ -481,7 +481,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "generating_image",
                     "progress_percentage": 35,
-                    "message": "Görsel oluşturma modeli yükleniyor...",
+                    "message": "Loading image generation model...",
                     "mood_board_id": mood_board_id
                 })
             
@@ -493,7 +493,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "generating_image",
                     "progress_percentage": 45,
-                    "message": "AI görsel oluşturmaya başlıyor...",
+                    "message": "AI is starting image generation...",
                     "mood_board_id": mood_board_id
                 })
             
@@ -513,7 +513,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "generating_image",
                     "progress_percentage": 55,
-                    "message": "Görsel oluşturuluyor... (Bu işlem birkaç saniye sürebilir)",
+                    "message": "Generating image... (This may take a few seconds)",
                     "mood_board_id": mood_board_id
                 })
             
@@ -543,7 +543,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "generating_image",
                     "progress_percentage": 65,
-                    "message": "Görsel sonucu işleniyor...",
+                    "message": "Processing image result...",
                     "mood_board_id": mood_board_id
                 })
             
@@ -559,7 +559,7 @@ class MoodBoardService:
                     await websocket_manager.update_mood_board_progress(connection_id, {
                         "stage": "generating_image",
                         "progress_percentage": 70,
-                        "message": "Görsel dönüştürülüyor...",
+                        "message": "Converting image...",
                         "mood_board_id": mood_board_id
                     })
                 
@@ -668,7 +668,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "generating_image",
                     "progress_percentage": 35,
-                    "message": "Multimodal AI modeli başlatılıyor...",
+                    "message": "Starting multimodal AI model...",
                     "mood_board_id": mood_board_id
                 })
             
@@ -686,7 +686,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "generating_image",
                     "progress_percentage": 45,
-                    "message": "Multimodal görsel model yükleniyor...",
+                    "message": "Loading multimodal image model...",
                     "mood_board_id": mood_board_id
                 })
             
@@ -698,7 +698,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "generating_image",
                     "progress_percentage": 50,
-                    "message": f"Referans fotoğrafları hazırlanıyor ({len(reference_images)} adet)...",
+                    "message": f"Preparing reference photos ({len(reference_images)} images)...",
                     "mood_board_id": mood_board_id
                 })
             
@@ -726,15 +726,15 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "generating_image",
                     "progress_percentage": 55,
-                    "message": f"Multimodal AI görsel oluşturuyor ({len(reference_pil_images)} referans ile)...",
+                    "message": f"Multimodal AI is generating the image (with {len(reference_pil_images)} references)...",
                     "mood_board_id": mood_board_id
                 })
             
             # Generate image with enhanced text-based multimodal approach
             def generate_multimodal_sync():
                 try:
-                    # KULLANICI TALEBİ: "gemini ne dönerse onu kullanalım bok da yolalsa okeyiz"
-                    # Gemini'den gelen prompt'u hiç değiştirmeden kullan!
+                    # USER REQUEST: "use whatever Gemini returns, even if it's garbage, we're okay with it"
+                    # Use the prompt from Gemini without any changes!
                     
                     # Generate with PURE Gemini prompt - NO MODIFICATIONS
                     images = generation_model.generate_images(
@@ -751,7 +751,7 @@ class MoodBoardService:
                     
                 except Exception as multimodal_error:
                     logger.error(f"Pure Gemini multimodal generation failed: {str(multimodal_error)}")
-                    # FALLBACK KALDIRILDI - Gerçek hatayı görmek için exception raise et
+                    # FALLBACK REMOVED - raise the exception to surface the real error
                     raise multimodal_error
             
             # Create a background task for progress simulation during generation
@@ -778,7 +778,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "generating_image",
                     "progress_percentage": 70,
-                    "message": "Multimodal görsel sonucu işleniyor...",
+                    "message": "Processing multimodal image result...",
                     "mood_board_id": mood_board_id
                 })
             
@@ -872,12 +872,12 @@ class MoodBoardService:
         """Progress simulation for multimodal image generation with enhanced timing."""
         try:
             progress_steps = [
-                (58, "Referans fotoğrafları analiz ediliyor..."),
-                (61, "Ürün özelliklerini öğreniyor..."),
-                (64, "Mekan kompozisyonunu hesaplıyor..."),
-                (67, "Gerçek ürünleri tasarıma entegre ediyor..."),
-                (68, "Hibrit görsel sentezi yapılıyor..."),
-                (69, "Multimodal görsel optimize ediliyor...")
+                (58, "Analyzing reference photos..."),
+                (61, "Learning product features..."),
+                (64, "Calculating space composition..."),
+                (67, "Integrating real products into the design..."),
+                (68, "Performing hybrid image synthesis..."),
+                (69, "Optimizing multimodal image...")
             ]
             
             for progress, message in progress_steps:
@@ -906,17 +906,17 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "generating_image",
                     "progress_percentage": 50,
-                    "message": "Yedek görsel sistemi kullanılıyor...",
+                    "message": "Using backup image system...",
                     "mood_board_id": mood_board_id
                 })
             
             # Create more detailed progress simulation for fallback
             fallback_steps = [
-                (52, "Placeholder görsel hazırlanıyor..."),
-                (55, "Temel görsel yapısı oluşturuluyor..."),
-                (58, "Görsel formatı belirleniyor..."),
-                (62, "Demo içeriği ekleniyor..."),
-                (66, "Görsel son haline getiriliyor...")
+                (52, "Preparing placeholder image..."),
+                (55, "Creating basic image structure..."),
+                (58, "Determining image format..."),
+                (62, "Adding demo content..."),
+                (66, "Finalizing image...")
             ]
             
             for progress, message in fallback_steps:
@@ -950,7 +950,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "generating_image",
                     "progress_percentage": 70,
-                    "message": "Yedek görsel hazırlandı",
+                    "message": "Backup image ready",
                     "mood_board_id": mood_board_id
                 })
             
@@ -1012,7 +1012,7 @@ class MoodBoardService:
             },
             "error": True,
             "error_message": error_message,
-            "fallback_message": "Oda görseli oluşturulamadı. Lütfen tekrar deneyin.",
+            "fallback_message": "The room visual could not be generated. Please try again.",
             "generation_metadata": {
                 "model": self.settings.IMAGEN_MODEL_NAME,
                 "generated_at": datetime.now().isoformat(),
@@ -1109,10 +1109,10 @@ class MoodBoardService:
         design_id: str = None,
         user_id: int = None,
         color_info: str = "",
-        width: int = None,  # Oda genişliği (cm)
-        length: int = None,  # Oda uzunluğu (cm)
-        height: int = None,   # Oda yüksekliği (cm)
-        product_categories: list = None  # Kullanıcının seçtiği ürün kategorileri
+        width: int = None,  # Room width (cm)
+        length: int = None,  # Room length (cm)
+        height: int = None,   # Room height (cm)
+        product_categories: list = None  # Product categories selected by the user
     ) -> Dict[str, Any]:
         """Generate room visualization using hybrid system with real product images + AI descriptions."""
         mood_board_id = str(uuid.uuid4())
@@ -1126,7 +1126,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "preparing_prompt",
                 "progress_percentage": 5,
-                "message": "Hibrit tasarım promtu hazırlanıyor (gerçek ürün fotoğrafları + AI açıklamaları)...",
+                "message": "Preparing hybrid design prompt (real product photos + AI descriptions)...",
                 "mood_board_id": mood_board_id
             })
             
@@ -1176,7 +1176,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "preparing_prompt",
                 "progress_percentage": 10,
-                "message": f"Hibrit içerik hazırlandı: {len(real_product_images)} gerçek ürün fotoğrafı + {len(fake_product_descriptions)} AI açıklaması",
+                "message": f"Hybrid content ready: {len(real_product_images)} real product photos + {len(fake_product_descriptions)} AI descriptions",
                 "mood_board_id": mood_board_id
             })
             
@@ -1186,7 +1186,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "loading_images",
                     "progress_percentage": 15,
-                    "message": f"Gerçek ürün fotoğrafları yükleniyor... ({len(real_product_images)} adet)",
+                    "message": f"Loading real product photos... ({len(real_product_images)} photos)",
                     "mood_board_id": mood_board_id
                 })
                 
@@ -1225,7 +1225,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "downloading_images",
                     "progress_percentage": 20,
-                    "message": f"Ürün fotoğrafları hazır: {success_count}/{total_count} başarılı",
+                    "message": f"Product photos ready: {success_count}/{total_count} succeeded",
                     "mood_board_id": mood_board_id
                 })
                 
@@ -1234,7 +1234,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "preparing_prompt",
                     "progress_percentage": 20,
-                    "message": "Gerçek ürün fotoğrafı yok, text-only mod",
+                    "message": "No real product photos, text-only mode",
                     "mood_board_id": mood_board_id
                 })
             
@@ -1242,9 +1242,9 @@ class MoodBoardService:
             dimensions_info = ""
             if width and length:
                 if height:
-                    dimensions_info = f"Oda Boyutları: {width}cm x {length}cm x {height}cm"
+                    dimensions_info = f"Room Dimensions: {width}cm x {length}cm x {height}cm"
                 else:
-                    dimensions_info = f"Oda Boyutları: {width}cm x {length}cm"
+                    dimensions_info = f"Room Dimensions: {width}cm x {length}cm"
             
             # Create hybrid prompt combining real product references and AI descriptions  
             enhanced_prompt = await self._create_hybrid_imagen_prompt(
@@ -1255,7 +1255,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "optimizing_prompt", 
                 "progress_percentage": 25,
-                "message": "Hibrit multimodal prompt optimize ediliyor...",
+                "message": "Optimizing hybrid multimodal prompt...",
                 "mood_board_id": mood_board_id
             })
             
@@ -1263,7 +1263,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "generating_image",
                 "progress_percentage": 30,
-                "message": f"AI multimodal görsel oluşturuyor ({len(loaded_real_products)} fotoğraf + yaratıcı tasarım)...",
+                "message": f"AI is generating a multimodal image ({len(loaded_real_products)} photos + creative design)...",
                 "mood_board_id": mood_board_id
             })
             
@@ -1277,7 +1277,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "processing_image",
                 "progress_percentage": 75,
-                "message": "Hibrit görsel işleniyor...",
+                "message": "Processing hybrid image...",
                 "mood_board_id": mood_board_id
             })
             
@@ -1287,7 +1287,7 @@ class MoodBoardService:
                 await websocket_manager.update_mood_board_progress(connection_id, {
                     "stage": "processing_image",
                     "progress_percentage": 80,
-                    "message": "Hibrit görsel kaydediliyor...",
+                    "message": "Saving hybrid image...",
                     "mood_board_id": mood_board_id
                 })
                 image_file_path = self._save_mood_board_image(mood_board_id, image_data["base64"])
@@ -1296,7 +1296,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "finalizing",
                 "progress_percentage": 90,
-                "message": "Hibrit oda görseli tamamlanıyor...",
+                "message": "Finalizing hybrid room visual...",
                 "mood_board_id": mood_board_id
             })
             
@@ -1351,7 +1351,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "completed",
                 "progress_percentage": 100,
-                "message": "Hibrit oda görseli başarıyla oluşturuldu!",
+                "message": "Hybrid room visual created successfully!",
                 "mood_board_id": mood_board_id,
                 "image_data": mood_board_data["image_data"]
             })
@@ -1374,7 +1374,7 @@ class MoodBoardService:
             await websocket_manager.update_mood_board_progress(connection_id, {
                 "stage": "error",
                 "progress_percentage": 0,
-                "message": f"Hibrit görsel oluşturma hatası: {str(e)}",
+                "message": f"Hybrid image generation error: {str(e)}",
                 "mood_board_id": mood_board_id
             })
             raise
@@ -1394,19 +1394,19 @@ class MoodBoardService:
     ) -> str:
         """Create enhanced Imagen prompt for hybrid system using Gemini."""
         
-        # Ürünleri format et
+        # Format products
         products_text = ""
         if real_product_images:
-            products_text += "GERÇEK ÜRÜNLER:\n"
+            products_text += "REAL PRODUCTS:\n"
             for product in real_product_images:
                 products_text += f"- {product['category']}: {product['name']} - {product.get('description', '')}\n"
         
         if fake_product_descriptions:
-            products_text += "AI ÜRÜNLER:\n"
+            products_text += "AI PRODUCTS:\n"
             for product in fake_product_descriptions:
                 products_text += f"- {product['category']}: {product['name']} - {product['description']}\n"
         
-        # Gemini'ye gönderilecek prompt template'ini kullan
+        # Use the prompt template to send to Gemini
         prompt_enhancement_request = GeminiPrompts.get_imagen_prompt_enhancement_request(
             room_type=room_type,
             design_style=design_style,
@@ -1418,14 +1418,14 @@ class MoodBoardService:
             color_info=color_info
         )
         
-        logger.info(f"🤖 Hybrid prompt Gemini'ye gönderiliyor: {prompt_enhancement_request[:200]}...")
+        logger.info(f"🤖 Sending hybrid prompt to Gemini: {prompt_enhancement_request[:200]}...")
         
         try:
-            # Gemini'den prompt al
+            # Get prompt from Gemini
             response = self.gemini_model.generate_content(prompt_enhancement_request)
             enhanced_prompt = response.text.strip()
             
-            logger.info(f"✅ Gemini'den hybrid prompt alındı: {enhanced_prompt[:100]}...")
+            logger.info(f"✅ Hybrid prompt received from Gemini: {enhanced_prompt[:100]}...")
             
             # Log hybrid Imagen prompt
             self.imagen_prompt_logger.log_final_imagen_prompt(
@@ -1446,8 +1446,8 @@ class MoodBoardService:
             return enhanced_prompt
             
         except Exception as e:
-            logger.error(f"❌ Hybrid Gemini API hatası: {str(e)}")
-            # FALLBACK KALDIRILDI - Hatayı görmek için exception'ı raise et
+            logger.error(f"❌ Hybrid Gemini API error: {str(e)}")
+            # FALLBACK REMOVED - raise the exception to surface the error
             raise Exception(f"Hybrid Gemini prompt generation failed: {str(e)}")
 
 

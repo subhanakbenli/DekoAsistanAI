@@ -36,9 +36,9 @@ const BlogHeader = memo(({
             </div>
             <div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-                Tasarım Blogu
+                Design Blog
               </h1>
-              <p className="text-xs text-gray-400">AI destekli tasarımları keşfedin</p>
+              <p className="text-xs text-gray-400">Explore AI-powered designs</p>
             </div>
           </div>
 
@@ -51,7 +51,7 @@ const BlogHeader = memo(({
                     type="text"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder="Tasarım ara..."
+                    placeholder="Search designs..."
                     className="w-full bg-gray-800 border border-gray-600 rounded-l-xl px-4 py-2.5 pr-10 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
                   />
                   {searchInput && (
@@ -82,7 +82,7 @@ const BlogHeader = memo(({
           {/* Right: Stats */}
           <div className="text-right hidden lg:block">
             {stats && (
-              <p className="text-xs text-gray-400">{stats.total_posts} Tasarım</p>
+              <p className="text-xs text-gray-400">{stats.total_posts} Designs</p>
             )}
           </div>
         </div>
@@ -98,7 +98,7 @@ const BlogHeader = memo(({
                     type="text"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder="Tasarım ara..."
+                    placeholder="Search designs..."
                     className="w-full bg-gray-800 border border-gray-600 rounded-l-xl px-4 py-3 pr-10 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
                   />
                   {searchInput && (
@@ -121,7 +121,7 @@ const BlogHeader = memo(({
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                   </svg>
-                  <span>Ara</span>
+                  <span>Search</span>
                 </button>
               </div>
             </form>
@@ -136,7 +136,7 @@ const BlogHeader = memo(({
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
               </svg>
-              <span>{showFilters ? 'Filtreleri Gizle' : 'Filtreleri Göster'}</span>
+              <span>{showFilters ? 'Hide Filters' : 'Show Filters'}</span>
             </button>
           </div>
         </div>

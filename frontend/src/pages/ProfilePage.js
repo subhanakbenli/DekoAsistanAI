@@ -60,11 +60,11 @@ const ProfilePage = () => {
       const updatedUser = await authService.updateProfile(formData);
       setUser(updatedUser);
       setIsEditing(false);
-      setMessage({ type: 'success', text: 'Profil başarıyla güncellendi!' });
+      setMessage({ type: 'success', text: 'Profile updated successfully!' });
     } catch (error) {
       setMessage({ 
         type: 'error', 
-        text: error.message || 'Profil güncellenirken bir hata oluştu.' 
+        text: error.message || 'An error occurred while updating your profile.' 
       });
     } finally {
       setLoading(false);

@@ -63,7 +63,7 @@ export class BlogBusinessLogic {
       return {
         success: false,
         data: [],
-        error: error.message || 'Blog yazıları yüklenirken bir hata oluştu'
+        error: error.message || 'An error occurred while loading blog posts'
       };
     }
   }
@@ -88,7 +88,7 @@ export class BlogBusinessLogic {
           design_styles: [],
           sort_options: []
         },
-        error: error.message || 'Filtre seçenekleri yüklenirken bir hata oluştu'
+        error: error.message || 'An error occurred while loading filter options'
       };
     }
   }
@@ -109,7 +109,7 @@ export class BlogBusinessLogic {
       return {
         success: false,
         data: null,
-        error: error.message || 'Blog istatistikleri yüklenirken bir hata oluştu'
+        error: error.message || 'An error occurred while loading blog statistics'
       };
     }
   }

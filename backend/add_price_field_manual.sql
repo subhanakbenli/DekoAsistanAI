@@ -4,7 +4,7 @@
 ALTER TABLE designs ADD COLUMN price FLOAT NULL;
 
 -- Add comment for documentation
-COMMENT ON COLUMN designs.price IS 'Fiyat limiti (TL) - kullanicinin belirttigi maksimum butce';
+COMMENT ON COLUMN designs.price IS 'Price limit (TL) - maximum budget specified by the user';
 
 -- Update existing records to have NULL price (which means no limit)
 -- This is safe since we're adding a nullable column

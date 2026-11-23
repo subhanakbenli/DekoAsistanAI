@@ -17,13 +17,13 @@ const BlogResultsHeader = memo(({
   return (
     <div className="flex items-center justify-between">
       <div className="text-gray-400 text-sm">
-        {postsCount} tasarım gösteriliyor
+        Showing {postsCount} designs
         {hasActiveFilters && (
           <button
             onClick={onClearFilters}
             className="ml-2 text-purple-400 hover:text-purple-300 underline"
           >
-            (filtreleri temizle)
+            (clear filters)
           </button>
         )}
       </div>

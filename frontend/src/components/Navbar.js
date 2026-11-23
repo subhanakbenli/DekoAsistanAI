@@ -52,7 +52,7 @@ const Navbar = () => {
                     to="/studio"
                     className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
                   >
-                    Tasarım Stüdyosu
+                    Design Studio
                   </Link>
                   <Link
                     to="/favorites"
@@ -61,7 +61,7 @@ const Navbar = () => {
                     {/* <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                     </svg> */}
-                    <span>Favorilerim</span>
+                    <span>My Favorites</span>
                   </Link>
                   
                   {/* User Menu */}
@@ -82,13 +82,13 @@ const Navbar = () => {
                         to="/profile"
                         className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                       >
-                        Profil
+                        Profile
                       </Link>
                       <button
                         onClick={handleLogout}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                       >
-                        Çıkış Yap
+                        Log Out
                       </button>
                     </div>
                   </div>
@@ -99,13 +99,13 @@ const Navbar = () => {
                     to="/login"
                     className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
                   >
-                    Giriş Yap
+                    Log In
                   </Link>
                   <Link
                     to="/register"
                     className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
                   >
-                    Kayıt Ol
+                    Sign Up
                   </Link>
                 </>
               )}
@@ -138,7 +138,7 @@ const Navbar = () => {
                 className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Ana Sayfa
+                Home
               </Link>
               
               <Link
@@ -156,14 +156,14 @@ const Navbar = () => {
                     className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Tasarım Stüdyosu
+                    Design Studio
                   </Link>
                   <Link
                     to="/favorites"
                     className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    🤍 Favorilerim
+                    🤍 My Favorites
                   </Link>
                   <div className="border-t border-gray-700 pt-3">
                     <div className="px-3 py-2 text-sm text-gray-400">
@@ -174,13 +174,13 @@ const Navbar = () => {
                       className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      Profil
+                      Profile
                     </Link>
                     <button
                       onClick={handleLogout}
                       className="text-gray-300 hover:text-white block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors"
                     >
-                      Çıkış Yap
+                      Log Out
                     </button>
                   </div>
                 </>
@@ -191,14 +191,14 @@ const Navbar = () => {
                     className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Giriş Yap
+                    Log In
                   </Link>
                   <Link
                     to="/register"
                     className="bg-purple-600 hover:bg-purple-700 text-white block px-3 py-2 rounded-md text-base font-medium transition-colors"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Kayıt Ol
+                    Sign Up
                   </Link>
                 </>
               )}

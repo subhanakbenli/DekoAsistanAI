@@ -51,19 +51,19 @@ class GeminiClient(BaseService):
         self.log_operation("Gemini client initialized with Function Calling support")
     
     def save_gemini_api_call_to_file(self, prompt_text, api_type="function_calling", response_preview=None):
-        """Gemini API'ye gönderilen prompt'ları ve aldığı cevapları kaydet."""
+        """Save prompts sent to the Gemini API and the responses received."""
         try:
-            # logs klasörünün var olduğundan emin ol
+            # Make sure the logs folder exists
             logs_dir = os.path.join("logs")
             if not os.path.exists(logs_dir):
                 os.makedirs(logs_dir)
             
-            # Dosya adını tarih ile oluştur
+            # Build the file name from the date
             today = datetime.now().strftime("%Y-%m-%d")
             filename = f"gemini_api_calls_{today}.json"
             filepath = os.path.join(logs_dir, filename)
             
-            # Kayıt edilecek veri
+            # Data to record
             log_entry = {
                 "timestamp": datetime.now().isoformat(),
                 "api_type": api_type,
@@ -72,14 +72,14 @@ class GeminiClient(BaseService):
                 "response_preview": response_preview[:500] + "..." if response_preview and len(response_preview) > 500 else response_preview
             }
             
-            # Dosyaya ekle (append mode)
+            # Append to file (append mode)
             with open(filepath, "a", encoding="utf-8") as f:
                 f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
                 
-            logger.info(f"Gemini API call kaydedildi: {filepath}")
+            logger.info(f"Gemini API call saved: {filepath}")
             
         except Exception as e:
-            logger.error(f"Gemini API call kaydedilemedi: {str(e)}")
+            logger.error(f"Could not save Gemini API call: {str(e)}")
     
     def generate_content(self, prompt: str) -> Optional[str]:
         """
@@ -126,7 +126,7 @@ class GeminiClient(BaseService):
             logger.info("Starting Function Calling session with Gemini")
             logger.debug(f"Prompt length: {len(prompt)} characters")
             
-            # Gemini API'ye gönderilecek prompt'u kaydet
+            # Save the prompt to be sent to the Gemini API
             self.save_gemini_api_call_to_file(
                 prompt_text=prompt,
                 api_type="function_calling_with_tools"
@@ -182,7 +182,7 @@ class GeminiClient(BaseService):
             if hasattr(response, 'text') and response.text:
                 logger.info(f"Successfully completed Function Calling session in {iteration} iterations")
                 
-                # Final response'u da kaydet
+                # Also save the final response
                 self.save_gemini_api_call_to_file(
                     prompt_text=prompt,
                     api_type="function_calling_response",

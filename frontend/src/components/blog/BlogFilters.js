@@ -25,7 +25,7 @@ const BlogFilters = memo(({
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
           <span>🔍</span>
-          <span>Filtreler</span>
+          <span>Filters</span>
         </h3>
         
         {hasActiveFilters && (
@@ -33,7 +33,7 @@ const BlogFilters = memo(({
             onClick={onClearFilters}
             className="text-purple-400 hover:text-purple-300 text-sm underline transition-colors"
           >
-            Temizle
+            Clear
           </button>
         )}
       </div>
@@ -43,7 +43,7 @@ const BlogFilters = memo(({
         {/* Sort Options */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-3">
-            📊 Sıralama
+            📊 Sort By
           </label>
           <select
             value={filters.sort_by}
@@ -62,7 +62,7 @@ const BlogFilters = memo(({
         {/* Room Type Filter */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-3">
-            🏠 Oda Tipi
+            🏠 Room Type
           </label>
           <select
             value={filters.room_type}
@@ -70,7 +70,7 @@ const BlogFilters = memo(({
             disabled={loading}
             className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 disabled:opacity-50"
           >
-            <option value="">Tüm Odalar</option>
+            <option value="">All Rooms</option>
             {filterOptions.room_types?.map(type => (
               <option key={type.value} value={type.value}>
                 {type.label} ({type.count})
@@ -82,7 +82,7 @@ const BlogFilters = memo(({
         {/* Design Style Filter */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-3">
-            🎨 Tasarım Stili
+            🎨 Design Style
           </label>
           <select
             value={filters.design_style}
@@ -90,7 +90,7 @@ const BlogFilters = memo(({
             disabled={loading}
             className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 disabled:opacity-50"
           >
-            <option value="">Tüm Stiller</option>
+            <option value="">All Styles</option>
             {filterOptions.design_styles?.map(style => (
               <option key={style.value} value={style.value}>
                 {style.label} ({style.count})
@@ -102,7 +102,7 @@ const BlogFilters = memo(({
         {/* Active Filters Display */}
         {hasActiveFilters && (
           <div className="pt-4 border-t border-gray-700">
-            <div className="text-sm text-gray-400 mb-2">Aktif Filtreler:</div>
+            <div className="text-sm text-gray-400 mb-2">Active Filters:</div>
             <div className="flex flex-wrap gap-2">
               
               {filters.room_type && (
@@ -152,7 +152,7 @@ const BlogFilters = memo(({
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Filtreler yükleniyor...
+              Loading filters...
             </div>
           </div>
         )}

@@ -6,7 +6,7 @@ from alembic import context
 import asyncio
 
 # Import your models here
-from config.database import Base
+from config.database import Base, DATABASE_URL
 from models.user_models import User, UserProfile
 from models.design_models_db import (
     Design, UserFavoriteDesign, UserFavoriteProduct, MoodBoard, Product,
@@ -15,6 +15,9 @@ from models.design_models_db import (
 
 # this is the Alembic Config object
 config = context.config
+
+# Read the database URL from .env instead of alembic.ini
+config.set_main_option("sqlalchemy.url", DATABASE_URL.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:

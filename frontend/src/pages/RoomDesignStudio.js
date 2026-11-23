@@ -6,7 +6,7 @@ import { usePerformanceTracker } from '../hooks/usePerformance';
 
 // Layout configuration constants - KISS principle ✨
 const LAYOUT_CONFIGS = {
-  // Yeni 3-section layout: Section 1 (30%) + Section 2 (70%) + AI Önerileri (100%)
+  // New 3-section layout: Section 1 (30%) + Section 2 (70%) + AI Suggestions (100%)
   MAIN_LAYOUT: "space-y-8",
   TOP_SECTIONS: "grid grid-cols-1 lg:grid-cols-[30%_70%] gap-3",
   AI_RESULTS_FULL: "w-full"
@@ -34,7 +34,7 @@ const RoomDesignStudio = memo(() => {
   // Simplified layout logic - KISS principle ✨
   const scrollToResults = useCallback(() => {
     if (result) {
-      // AI önerileri section'ına scroll
+      // Scroll to the AI suggestions section
       const resultsSection = document.getElementById('ai-results-section');
       if (resultsSection) {
         resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -42,10 +42,10 @@ const RoomDesignStudio = memo(() => {
     }
   }, [result]);
 
-  // Result değiştiğinde scroll yap
+  // Scroll when the result changes
   React.useEffect(() => {
     if (result) {
-      setTimeout(scrollToResults, 300); // Animation için kısa delay
+      setTimeout(scrollToResults, 300); // Short delay for the animation
     }
   }, [result, scrollToResults]);
 
@@ -57,13 +57,13 @@ const RoomDesignStudio = memo(() => {
           
           <StudioHeader />
 
-          {/* Yeni Layout: Section 1 (40%) + Section 2 (60%) */}
+          {/* New layout: Section 1 (40%) + Section 2 (60%) */}
           <div className={LAYOUT_CONFIGS.MAIN_LAYOUT}>
             
-            {/* Üst Kısım: Oda Kurulumu (30%) + Tasarım Tercihleri (70%) */}
+            {/* Top: Room Setup (30%) + Design Preferences (70%) */}
             <div className={LAYOUT_CONFIGS.TOP_SECTIONS}>
               
-              {/* Section 1: Oda Kurulumu (30%) */}
+              {/* Section 1: Room Setup (30%) */}
               <div className="space-y-6">
                 <StudioSidebar
                   form={form}
@@ -74,7 +74,7 @@ const RoomDesignStudio = memo(() => {
                 />
               </div>
 
-              {/* Section 2: Tasarım Tercihleri (70%) */}
+              {/* Section 2: Design Preferences (70%) */}
               <div className="space-y-6">
                 <StudioDesignForm
                   form={form}
@@ -87,7 +87,7 @@ const RoomDesignStudio = memo(() => {
 
             </div>
 
-            {/* Alt Kısım: AI Önerileri (100% genişlik) */}
+            {/* Bottom: AI Suggestions (100% width) */}
             <div id="ai-results-section" className={LAYOUT_CONFIGS.AI_RESULTS_FULL}>
               <StudioResultPanel
                 result={result}

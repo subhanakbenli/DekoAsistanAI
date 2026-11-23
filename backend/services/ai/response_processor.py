@@ -112,7 +112,7 @@ class ResponseProcessor:
         return processed_products
     
     def _process_hashtags(self, hashtags: List[str]) -> Dict[str, Any]:
-        """Process and validate hashtags - artık direkt Türkçe geliyor."""
+        """Process and validate hashtags - they now come directly in the target language."""
         if not hashtags or len(hashtags) != 10:
             logger.warning(f"Invalid hashtags received: {hashtags}. Expected 10 hashtags.")
             return {"en": [], "tr": [], "display": []}
@@ -126,11 +126,11 @@ class ResponseProcessor:
             tag = tag.lower().replace(' ', '_').replace('-', '_')
             validated_hashtags.append(tag)
         
-        # AI artık Türkçe üretiyor, çeviri gereksiz
+        # AI now generates hashtags directly, no translation needed
         return {
-            "en": [],  # İngilizce empty
-            "tr": validated_hashtags,  # Türkçe hashtag'lar
-            "display": validated_hashtags,  # Display için Türkçe
+            "en": [],  # English (empty)
+            "tr": validated_hashtags,  # Primary hashtag list (stored under the "tr" key)
+            "display": validated_hashtags,  # Used for display
             "unknown": []
         }
     
@@ -160,12 +160,12 @@ class ResponseProcessor:
                 continue
             
             # Detect section headers
-            if any(keyword in line.upper() for keyword in ["TASARIM BAŞLIĞI", "BAŞLIK"]):
+            if any(keyword in line.upper() for keyword in ["TASARIM BAŞLIĞI", "BAŞLIK", "DESIGN TITLE", "TITLE"]):
                 current_section = "title"
                 sections["title"] = line.split(':')[-1].strip() if ':' in line else line
-            elif any(keyword in line.upper() for keyword in ["DETAYLI AÇIKLAMA", "AÇIKLAMA"]):
+            elif any(keyword in line.upper() for keyword in ["DETAYLI AÇIKLAMA", "AÇIKLAMA", "DETAILED DESCRIPTION", "DESCRIPTION"]):
                 current_section = "description"
-            elif any(keyword in line.upper() for keyword in ["SATINALINMASI GEREKEN", "ÜRÜN"]):
+            elif any(keyword in line.upper() for keyword in ["SATINALINMASI GEREKEN", "ÜRÜN", "PRODUCTS TO PURCHASE", "PRODUCT"]):
                 current_section = "product_suggestion"
             elif current_section == "title" and not sections["title"]:
                 sections["title"] = line
@@ -243,7 +243,7 @@ class ResponseProcessor:
         else:
             # Just product name
             name = line.strip()
-            description = f"{category} ürünü"
+            description = f"{category} product"
         
         if len(name) > 2:
             return {
@@ -258,7 +258,7 @@ class ResponseProcessor:
     def _create_product_suggestion_text(self, products: List[Dict[str, str]]) -> str:
         """Create product suggestion text from products list."""
         if not products:
-            return "Ürün önerileri mevcut değil."
+            return "No product suggestions available."
         
         # Group by category
         categories = {}
@@ -273,8 +273,8 @@ class ResponseProcessor:
         for category, category_products in categories.items():
             text_parts.append(f"- {category}")
             for product in category_products:
-                name = product.get('name', 'Ürün')
-                desc = product.get('description', 'Açıklama yok')
+                name = product.get('name', 'Product')
+                desc = product.get('description', 'No description')
                 text_parts.append(f"  • {name} - {desc}")
             text_parts.append("")
         
@@ -283,10 +283,10 @@ class ResponseProcessor:
     def _create_error_response(self, response_text: str, room_type: str, design_style: str) -> Dict[str, Any]:
         """Create error response."""
         return {
-            "title": f"Tasarım Önerileri - {design_style} {room_type}",
-            "description": "Geçici bir hata nedeniyle özel tasarım önerileri oluşturulamadı. Lütfen tekrar deneyin.",
+            "title": f"Design Suggestions - {design_style} {room_type}",
+            "description": "Custom design suggestions could not be generated due to a temporary error. Please try again.",
             "hashtags": {"en": [], "tr": [], "display": []},
-            "product_suggestion": "Ürün önerileri şu anda mevcut değil.",
+            "product_suggestion": "Product suggestions are currently unavailable.",
             "products": [],
             "raw_response": response_text,
             "error": True

@@ -14,9 +14,9 @@ const LoadingState = () => (
           <span className="text-2xl">⏳</span>
         </div>
         <h2 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-4">
-          Yükleniyor...
+          Loading...
         </h2>
-        <p className="text-gray-400">Kullanıcı bilgileri alınıyor</p>
+        <p className="text-gray-400">Fetching user details</p>
       </div>
     </div>
   </div>

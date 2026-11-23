@@ -9,12 +9,12 @@ class RoomDesignUtils {
    * Room types with Turkish labels
    */
   static ROOM_TYPES = {
-    'living_room': 'Oturma Odası',
-    'bedroom': 'Yatak Odası',
-    'kitchen': 'Mutfak',
-    'bathroom': 'Banyo',
-    'office': 'Çalışma Odası',
-    'dining_room': 'Yemek Odası'
+    'living_room': 'Living Room',
+    'bedroom': 'Bedroom',
+    'kitchen': 'Kitchen',
+    'bathroom': 'Bathroom',
+    'office': 'Study',
+    'dining_room': 'Dining Room'
   };
 
   /**
@@ -22,11 +22,11 @@ class RoomDesignUtils {
    */
   static DESIGN_STYLES = {
     'modern': 'Modern',
-    'classic': 'Klasik',
+    'classic': 'Classic',
     'minimalist': 'Minimalist',
-    'industrial': 'Endüstriyel',
-    'scandinavian': 'İskandinav',
-    'bohemian': 'Bohem'
+    'industrial': 'Industrial',
+    'scandinavian': 'Scandinavian',
+    'bohemian': 'Bohemian'
   };
 
   /**
@@ -78,7 +78,7 @@ class RoomDesignUtils {
     const styleLabel = RoomDesignUtils.DESIGN_STYLES[form.designStyle] || form.designStyle;
 
     return {
-      suggestion: `${styleLabel} tarzında ${roomTypeLabel} için öneriler hazır!`,
+      suggestion: `Suggestions for your ${styleLabel} ${roomTypeLabel} are ready!`,
       area: `${area.toFixed(1)} m²`,
       dimensions: `${form.width} × ${form.length} × ${form.height} cm`,
       extras: form.extras || [],
@@ -102,24 +102,24 @@ class RoomDesignUtils {
     
     // Very small room (less than 5m²)
     if (area < 5) {
-      warnings.push('Oda çok küçük görünüyor. Gerçekçi mi?');
+      warnings.push('The room looks very small. Is that realistic?');
       isRealistic = false;
     }
     
     // Very large room (more than 100m²)
     if (area > 100) {
-      warnings.push('Oda çok büyük görünüyor. Gerçekçi mi?');
+      warnings.push('The room looks very large. Is that realistic?');
     }
     
     // Very low ceiling (less than 200cm)
     if (height < 200) {
-      warnings.push('Tavan çok alçak görünüyor.');
+      warnings.push('The ceiling looks very low.');
       isRealistic = false;
     }
     
     // Very high ceiling (more than 400cm)
     if (height > 400) {
-      warnings.push('Tavan çok yüksek görünüyor.');
+      warnings.push('The ceiling looks very high.');
     }
 
     return { isRealistic, warnings };

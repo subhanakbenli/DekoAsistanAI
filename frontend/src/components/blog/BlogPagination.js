@@ -61,12 +61,13 @@ const BlogPagination = memo(({
       
       {/* Items Info */}
       <div className="text-sm text-gray-400 order-2 sm:order-1">
+        {'Showing '}
         <span className="font-medium text-white">{startItem}</span>
         {' - '}
         <span className="font-medium text-white">{endItem}</span>
-        {' / '}
+        {' of '}
         <span className="font-medium text-white">{totalItems}</span>
-        {' tasarım gösteriliyor'}
+        {' designs'}
       </div>
 
       {/* Pagination Controls */}
@@ -139,7 +140,7 @@ const BlogPagination = memo(({
         >
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
             <option key={page} value={page}>
-              Sayfa {page}
+              Page {page}
             </option>
           ))}
         </select>

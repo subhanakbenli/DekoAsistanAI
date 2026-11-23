@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-backend/data/jsonlaryeni dizinindeki JSON dosyalarını PostgreSQL products tablosuna yükleyen script
+Script that loads the JSON files in the backend/data/jsonlaryeni directory into the PostgreSQL products table
 """
 
 import json
@@ -12,14 +12,14 @@ from sqlalchemy import create_engine, MetaData, Table, Column, String, Integer, 
 from sqlalchemy.sql import func
 from config.settings import settings
 
-# Sync database URL oluştur  
+# Build the sync database URL  
 DATABASE_URL = f"postgresql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
 
-# Dizin yolları
+# Directory paths
 JSONLAR_DIR = Path("data/jsonlaryeni")
 PRODUCTS_DIR = Path("data/products")
 
-# Product tablosunu tanımla (modeller arası bağımlılığı önlemek için)
+# Define the products table (to avoid cross-model dependencies)
 metadata = MetaData()
 
 products_table = Table(
@@ -41,27 +41,27 @@ products_table = Table(
 )
 
 def load_jsonlaryeni_to_products():
-    """backend/data/jsonlaryeni dizinindeki JSON dosyalarını veritabanına yükler"""
+    """Load the JSON files in the backend/data/jsonlaryeni directory into the database"""
     
-    # Veritabanı bağlantısı
+    # Database connection
     engine = create_engine(DATABASE_URL)
     
-    # Products tablosunu oluştur (eğer yoksa)
+    # Create the products table (if it does not exist)
     metadata.create_all(bind=engine, checkfirst=True)
     
-    # Session oluştur
+    # Create session
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     session = SessionLocal()
     
     try:
-        # JSON dosyalarını listele
+        # List the JSON files
         json_files = list(JSONLAR_DIR.glob("*.json"))
         
         if not json_files:
-            print(f"❌ {JSONLAR_DIR} dizininde JSON dosyası bulunamadı!")
+            print(f"❌ No JSON files found in the {JSONLAR_DIR} directory!")
             return
         
-        print("📦 backend/data/jsonlaryeni verilerini Products tablosuna yükleniyor...")
+        print("📦 Loading backend/data/jsonlaryeni data into the Products table...")
         print("=" * 70)
         
         total_loaded = 0
@@ -69,7 +69,7 @@ def load_jsonlaryeni_to_products():
         file_summary = {}
         
         for json_file in json_files:
-            print(f"\n📄 {json_file.name} işleniyor...")
+            print(f"\n📄 Processing {json_file.name}...")
             
             try:
                 with open(json_file, 'r', encoding='utf-8') as f:
@@ -80,19 +80,19 @@ def load_jsonlaryeni_to_products():
                 
                 for product_data in products_data:
                     try:
-                        # UUID oluştur
+                        # Generate UUID
                         product_id = str(uuid.uuid4())
                         
-                        # Boyutları çıkar (dimensions dict'inden)
+                        # Extract dimensions (from the dimensions dict)
                         dimensions = product_data.get('dimensions', {})
                         if dimensions is None:
-                            dimensions = {}  # None ise boş dict kullan
+                            dimensions = {}  # Use an empty dict if None
                         
                         width_cm = dimensions.get('width_cm') if isinstance(dimensions, dict) else None
                         depth_cm = dimensions.get('depth_cm') if isinstance(dimensions, dict) else None
                         height_cm = dimensions.get('height_cm') if isinstance(dimensions, dict) else None
                         
-                        # Raw SQL insert kullan
+                        # Use a raw SQL insert
                         insert_query = products_table.insert().values(
                             id=product_id,
                             product_name=product_data['product_name'],
@@ -112,11 +112,11 @@ def load_jsonlaryeni_to_products():
                         loaded_count += 1
                         
                     except Exception as e:
-                        print(f"      ❌ Hata: {product_data.get('product_name', 'Unknown')}: {e}")
+                        print(f"      ❌ Error: {product_data.get('product_name', 'Unknown')}: {e}")
                         skipped_count += 1
                         continue
                 
-                print(f"    ✅ {loaded_count} ürün eklendi, {skipped_count} atlandı")
+                print(f"    ✅ {loaded_count} products added, {skipped_count} skipped")
                 file_summary[json_file.name] = {
                     'loaded': loaded_count,
                     'skipped': skipped_count
@@ -125,28 +125,28 @@ def load_jsonlaryeni_to_products():
                 total_skipped += skipped_count
                 
             except Exception as e:
-                print(f"    ❌ Dosya okuma hatası: {e}")
+                print(f"    ❌ File read error: {e}")
                 continue
         
-        # Değişiklikleri kaydet
+        # Commit changes
         session.commit()
         
-        print(f"\n🎉 Başarıyla tamamlandı!")
-        print(f"📊 Toplam {total_loaded} ürün veritabanına yüklendi")
-        print(f"⚠️  Toplam {total_skipped} ürün atlandı (hata nedeniyle)")
+        print(f"\n🎉 Completed successfully!")
+        print(f"📊 {total_loaded} products loaded into the database in total")
+        print(f"⚠️  {total_skipped} products skipped in total (due to errors)")
         
-        # Dosya bazında özet
-        print(f"\n📋 Dosya bazında özet:")
+        # Per-file summary
+        print(f"\n📋 Per-file summary:")
         for filename, stats in file_summary.items():
-            print(f"  • {filename}: {stats['loaded']} yüklendi, {stats['skipped']} atlandı")
+            print(f"  • {filename}: {stats['loaded']} loaded, {stats['skipped']} skipped")
         
-        # Kontrol: Veritabanındaki toplam ürün sayısı
+        # Check: total number of products in the database
         result = session.execute(text("SELECT COUNT(*) FROM products")).fetchone()
         total_in_db = result[0] if result else 0
-        print(f"\n📋 Veritabanındaki toplam ürün sayısı: {total_in_db}")
+        print(f"\n📋 Total number of products in the database: {total_in_db}")
         
-        # Kategori dağılımı
-        print(f"\n📊 Kategori dağılımı:")
+        # Category distribution
+        print(f"\n📊 Category distribution:")
         category_result = session.execute(text("""
             SELECT category, COUNT(*) as count 
             FROM products 
@@ -155,34 +155,34 @@ def load_jsonlaryeni_to_products():
         """)).fetchall()
         
         for category, count in category_result:
-            print(f"  • {category}: {count} ürün")
+            print(f"  • {category}: {count} products")
             
     except Exception as e:
-        print(f"❌ Genel hata: {e}")
+        print(f"❌ General error: {e}")
         session.rollback()
         raise
     finally:
         session.close()
 
 def verify_loaded_data():
-    """Yüklenen verileri doğrular"""
+    """Verify the loaded data"""
     engine = create_engine(DATABASE_URL)
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     session = SessionLocal()
     
     try:
-        # Veritabanında ürün var mı kontrol et
+        # Check whether there are products in the database
         result = session.execute(text("SELECT COUNT(*) FROM products")).fetchone()
         total_products = result[0] if result else 0
         
         if total_products == 0:
-            print(f"\n❌ Veritabanında ürün bulunamadı. Önce verileri yükleyin.")
+            print(f"\n❌ No products found in the database. Load the data first.")
             return
             
-        print(f"\n🔍 Veri doğrulama:")
+        print(f"\n🔍 Data verification:")
         print("=" * 30)
         
-        # Örnek ürünler
+        # Sample products
         sample_result = session.execute(text("""
             SELECT product_name, category, style, color, width_cm, depth_cm, height_cm, product_link
             FROM products 
@@ -192,14 +192,14 @@ def verify_loaded_data():
         for row in sample_result:
             product_name, category, style, color, width_cm, depth_cm, height_cm, product_link = row
             print(f"\n📦 {product_name}")
-            print(f"   Kategori: {category}")
-            print(f"   Stil: {style}")
-            print(f"   Renk: {color}")
-            print(f"   Boyutlar: {width_cm}x{depth_cm}x{height_cm} cm")
+            print(f"   Category: {category}")
+            print(f"   Style: {style}")
+            print(f"   Color: {color}")
+            print(f"   Dimensions: {width_cm}x{depth_cm}x{height_cm} cm")
             print(f"   Link: {product_link}")
         
-        # Stil dağılımı
-        print(f"\n🎨 Stil dağılımı:")
+        # Style distribution
+        print(f"\n🎨 Style distribution:")
         style_result = session.execute(text("""
             SELECT style, COUNT(*) as count 
             FROM products 
@@ -208,10 +208,10 @@ def verify_loaded_data():
         """)).fetchall()
         
         for style, count in style_result:
-            print(f"  • {style}: {count} ürün")
+            print(f"  • {style}: {count} products")
         
-        # Renk dağılımı (en popüler 10)
-        print(f"\n🌈 En popüler renkler:")
+        # Color distribution (top 10)
+        print(f"\n🌈 Most popular colors:")
         color_result = session.execute(text("""
             SELECT color, COUNT(*) as count 
             FROM products 
@@ -221,20 +221,20 @@ def verify_loaded_data():
         """)).fetchall()
         
         for color, count in color_result:
-            print(f"  • {color}: {count} ürün")
+            print(f"  • {color}: {count} products")
             
     except Exception as e:
-        print(f"❌ Doğrulama hatası: {e}")
+        print(f"❌ Verification error: {e}")
     finally:
         session.close()
 
 def clear_products_table():
-    """Products tablosunu temizler - DİKKAT: Tüm ürünler silinir!"""
-    print("⚠️  DİKKAT: Bu işlem products tablosundaki TÜM verileri silecek!")
-    choice = input("Devam etmek istiyorsanız 'EVET' yazın: ")
+    """Clear the products table - WARNING: all products are deleted!"""
+    print("⚠️  WARNING: This will delete ALL data in the products table!")
+    choice = input("Type 'YES' if you want to continue: ")
     
-    if choice != 'EVET':
-        print("İşlem iptal edildi.")
+    if choice != 'YES':
+        print("Operation cancelled.")
         return
     
     engine = create_engine(DATABASE_URL)
@@ -242,24 +242,24 @@ def clear_products_table():
     session = SessionLocal()
     
     try:
-        # Önce mevcut sayıyı al
+        # First get the current count
         result = session.execute(text("SELECT COUNT(*) FROM products")).fetchone()
         deleted_count = result[0] if result else 0
         
-        # Tüm ürünleri sil
+        # Delete all products
         session.execute(text("DELETE FROM products"))
         session.commit()
         
-        print(f"🗑️  {deleted_count} ürün silindi.")
+        print(f"🗑️  {deleted_count} products deleted.")
         
     except Exception as e:
-        print(f"❌ Silme hatası: {e}")
+        print(f"❌ Delete error: {e}")
         session.rollback()
     finally:
         session.close()
 
 if __name__ == "__main__":
-    print("🏠 DekoAsistanAI - jsonlaryeni -> Products Veritabanı Yükleme Script'i")
+    print("🏠 DekoAsistanAI - jsonlaryeni -> Products Database Loading Script")
     print("=" * 75)
     
     import sys
@@ -276,16 +276,16 @@ if __name__ == "__main__":
         load_jsonlaryeni_to_products()
         verify_loaded_data()
         
-        print(f"\n✅ Başarıyla tamamlandı!")
-        print(f"\n💡 Notlar:")
-        print(f"   • Fiyat alanları JSON dosyalarından alındı")
-        print(f"   • Resim yolları JSON dosyalarından alındı") 
-        print(f"   • Resimler data/products/kategori/ dizinlerinde bulunuyor")
-        print(f"   • Tabloyu temizlemek için: python load_dataset.py --clear")
-        print(f"   • Sadece doğrulama için: python load_dataset.py --verify")
+        print(f"\n✅ Completed successfully!")
+        print(f"\n💡 Notes:")
+        print(f"   • Price fields were taken from the JSON files")
+        print(f"   • Image paths were taken from the JSON files") 
+        print(f"   • Images are located in the data/products/<category>/ directories")
+        print(f"   • To clear the table: python load_dataset.py --clear")
+        print(f"   • To verify only: python load_dataset.py --verify")
         
     except KeyboardInterrupt:
-        print(f"\n⏹️  İşlem kullanıcı tarafından durduruldu.")
+        print(f"\n⏹️  Operation stopped by the user.")
     except Exception as e:
-        print(f"\n❌ Beklenmeyen hata: {e}")
+        print(f"\n❌ Unexpected error: {e}")
         raise

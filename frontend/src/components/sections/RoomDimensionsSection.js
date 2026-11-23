@@ -2,20 +2,20 @@ import React from 'react';
 import Tooltip from '../common/Tooltip';
 
 /**
- * Oda boyutları section'ı - Sadece temel boyutlar
- * @param {Object} form - Form state'i
- * @param {Function} handleChange - Form değişiklik handler'ı
+ * Room dimensions section - basic dimensions only
+ * @param {Object} form - Form state
+ * @param {Function} handleChange - Form change handler
  */
 const RoomDimensionsSection = ({ 
   form, 
   handleChange
 }) => {
-  // Boyut sınırları
-  const MAX_HEIGHT = 2000; // 20 metre = 2000 cm
-  const MAX_WIDTH = 5000;  // 50 metre = 5000 cm  
-  const MAX_LENGTH = 5000; // 50 metre = 5000 cm
+  // Dimension limits
+  const MAX_HEIGHT = 2000; // 20 meters = 2000 cm
+  const MAX_WIDTH = 5000;  // 50 meters = 5000 cm  
+  const MAX_LENGTH = 5000; // 50 meters = 5000 cm
 
-  // Sınır aşım kontrolü
+  // Limit check
   const isHeightOverLimit = form.height && parseInt(form.height) > MAX_HEIGHT;
   const isWidthOverLimit = form.width && parseInt(form.width) > MAX_WIDTH;
   const isLengthOverLimit = form.length && parseInt(form.length) > MAX_LENGTH;
@@ -23,18 +23,18 @@ const RoomDimensionsSection = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center mb-2">
-        <h2 className="text-base font-semibold">📐 Oda Boyutları</h2>
-        <Tooltip text="Odanızın temel boyutlarını girin">
+        <h2 className="text-base font-semibold">📐 Room Dimensions</h2>
+        <Tooltip text="Enter the basic dimensions of your room">
           <span className="ml-2 text-blue-400 cursor-help">ℹ️</span>
         </Tooltip>
       </div>
 
-      {/* Boyut girişleri */}
+      {/* Dimension inputs */}
       <div className="space-y-2.5">
         <div className="relative">
-          <Tooltip text="Odanın yüksekliği (zemin-tavan) cm cinsinden. Maksimum: 20 metre (2000 cm)">
+          <Tooltip text="Room height (floor to ceiling) in cm. Maximum: 20 meters (2000 cm)">
             <label className="block text-sm text-gray-300 mb-0.5 cursor-help">
-              ⬆️ Yükseklik (cm) <span className="text-xs text-gray-400">(Max: 2000cm)</span>
+              ⬆️ Height (cm) <span className="text-xs text-gray-400">(Max: 2000cm)</span>
             </label>
           </Tooltip>
           <input 
@@ -53,17 +53,17 @@ const RoomDimensionsSection = ({
           />
           {isHeightOverLimit && (
             <p className="text-xs text-red-400 mt-1">
-              ⚠️ Maksimum yükseklik 20 metre (2000 cm) olmalıdır
+              ⚠️ Maximum height is 20 meters (2000 cm)
             </p>
           )}
         </div>
         
-        {/* Genişlik ve Uzunluk yan yana */}
+        {/* Width and length side by side */}
         <div className="grid grid-cols-2 gap-2">
           <div className="relative">
-            <Tooltip text="Odanın genişliği (sol-sağ) cm cinsinden. Maksimum: 50 metre (5000 cm)">
+            <Tooltip text="Room width (left to right) in cm. Maximum: 50 meters (5000 cm)">
               <label className="block text-sm text-gray-300 mb-0.5 cursor-help">
-                ↔️ Genişlik (cm) <span className="text-xs text-gray-400">(Max: 5000cm)</span>
+                ↔️ Width (cm) <span className="text-xs text-gray-400">(Max: 5000cm)</span>
               </label>
             </Tooltip>
             <input 
@@ -82,14 +82,14 @@ const RoomDimensionsSection = ({
             />
             {isWidthOverLimit && (
               <p className="text-xs text-red-400 mt-1">
-                ⚠️ Maksimum genişlik 50 metre (5000 cm) olmalıdır
+                ⚠️ Maximum width is 50 meters (5000 cm)
               </p>
             )}
           </div>
           <div className="relative">
-            <Tooltip text="Odanın uzunluğu (yukarı-aşağı) cm cinsinden. Maksimum: 50 metre (5000 cm)">
+            <Tooltip text="Room length (top to bottom) in cm. Maximum: 50 meters (5000 cm)">
               <label className="block text-sm text-gray-300 mb-0.5 cursor-help">
-                ↕️ Uzunluk (cm) <span className="text-xs text-gray-400">(Max: 5000cm)</span>
+                ↕️ Length (cm) <span className="text-xs text-gray-400">(Max: 5000cm)</span>
               </label>
             </Tooltip>
             <input 
@@ -108,22 +108,22 @@ const RoomDimensionsSection = ({
             />
             {isLengthOverLimit && (
               <p className="text-xs text-red-400 mt-1">
-                ⚠️ Maksimum uzunluk 50 metre (5000 cm) olmalıdır
+                ⚠️ Maximum length is 50 meters (5000 cm)
               </p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Alan hesaplaması ve bilgi */}
+      {/* Area calculation and info */}
       {form.width && form.length && (
         <div className="bg-gray-700 p-2 rounded text-sm">
           <p className="text-green-300">
-            📏 Oda Alanı: <strong>{((parseInt(form.width) * parseInt(form.length)) / 10000).toFixed(1)} m²</strong>
+            📏 Room Area: <strong>{((parseInt(form.width) * parseInt(form.length)) / 10000).toFixed(1)} m²</strong>
           </p>
           {form.height && (
             <p className="text-blue-300 text-xs mt-1">
-              📦 Hacim: {((parseInt(form.width) * parseInt(form.length) * parseInt(form.height)) / 1000000).toFixed(1)} m³
+              📦 Volume: {((parseInt(form.width) * parseInt(form.length) * parseInt(form.height)) / 1000000).toFixed(1)} m³
             </p>
           )}
         </div>

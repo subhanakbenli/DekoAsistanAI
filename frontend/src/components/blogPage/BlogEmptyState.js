@@ -15,13 +15,13 @@ const BlogEmptyState = memo(({ filters, onClearFilters, onNavigateToStudio }) =>
       </div>
       
       <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-4">
-        Henüz paylaşılan tasarım yok
+        No designs shared yet
       </h3>
       
       <p className="text-gray-400 mb-8 max-w-md mx-auto">
         {hasActiveFilters 
-          ? 'Arama kriterlerinize uygun tasarım bulunamadı. Filtreleri temizleyerek tüm tasarımları görebilirsiniz.'
-          : 'İlk tasarımı paylaşan siz olun! Tasarım stüdyosuna giderek AI destekli tasarımlar oluşturun.'
+          ? 'No designs match your search criteria. Clear the filters to see all designs.'
+          : 'Be the first to share a design! Head to the design studio to create AI-powered designs.'
         }
       </p>
       
@@ -31,7 +31,7 @@ const BlogEmptyState = memo(({ filters, onClearFilters, onNavigateToStudio }) =>
             onClick={onClearFilters}
             className="bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-xl transition-colors"
           >
-            🔄 Filtreleri Temizle
+            🔄 Clear Filters
           </button>
         )}
         
@@ -39,7 +39,7 @@ const BlogEmptyState = memo(({ filters, onClearFilters, onNavigateToStudio }) =>
           onClick={onNavigateToStudio}
           className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
         >
-          🎨 Tasarım Oluştur
+          🎨 Create a Design
         </button>
       </div>
     </div>

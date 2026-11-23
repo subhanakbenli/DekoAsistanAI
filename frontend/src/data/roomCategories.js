@@ -16,59 +16,59 @@ export const ROOM_TYPES = {
 };
 
 export const PRODUCT_CATEGORIES = {
-  // Oturma ve Dinlenme
-  KOLTUK: { id: 'koltuk', name: 'Koltuk Takımı', icon: '🛋️' },
-  BERJER: { id: 'berjer', name: 'Berjer', icon: '🪑' },
+  // Seating and lounging
+  KOLTUK: { id: 'koltuk', name: 'Koltuk Takımı', label: 'Sofa Set', icon: '🛋️' },
+  BERJER: { id: 'berjer', name: 'Berjer', label: 'Armchair', icon: '🪑' },
   
-  // Yataklar
-  YATAK: { id: 'yatak', name: 'Yatak', icon: '🛏️' },
-  COCUK_YATAGI: { id: 'cocuk_yatagi', name: 'Çocuk Yatağı', icon: '🛏️' },
-  RANZA: { id: 'ranza', name: 'Ranza', icon: '🛏️' },
+  // Beds
+  YATAK: { id: 'yatak', name: 'Yatak', label: 'Bed', icon: '🛏️' },
+  COCUK_YATAGI: { id: 'cocuk_yatagi', name: 'Çocuk Yatağı', label: 'Kids\' Bed', icon: '🛏️' },
+  RANZA: { id: 'ranza', name: 'Ranza', label: 'Bunk Bed', icon: '🛏️' },
   
-  // Depolama
-  GARDROP: { id: 'gardrop', name: 'Gardırop', icon: '👕' },
-  DOLAP: { id: 'dolap', name: 'Dolap', icon: '🗄️' },
-  KOMODIN: { id: 'komodin', name: 'Komodin', icon: '🏠' },
-  KITAPLIK: { id: 'kitaplik', name: 'Kitaplık', icon: '📚' },
-  OYUNCAK_DOLABI: { id: 'oyuncak_dolabi', name: 'Oyuncak Dolabı', icon: '🧸' },
-  DOSYA_DOLABI: { id: 'dosya_dolabi', name: 'Dosya Dolabı', icon: '📁' },
+  // Storage
+  GARDROP: { id: 'gardrop', name: 'Gardırop', label: 'Wardrobe', icon: '👕' },
+  DOLAP: { id: 'dolap', name: 'Dolap', label: 'Cabinet', icon: '🗄️' },
+  KOMODIN: { id: 'komodin', name: 'Komodin', label: 'Nightstand', icon: '🏠' },
+  KITAPLIK: { id: 'kitaplik', name: 'Kitaplık', label: 'Bookcase', icon: '📚' },
+  OYUNCAK_DOLABI: { id: 'oyuncak_dolabi', name: 'Oyuncak Dolabı', label: 'Toy Cabinet', icon: '🧸' },
+  DOSYA_DOLABI: { id: 'dosya_dolabi', name: 'Dosya Dolabı', label: 'File Cabinet', icon: '📁' },
   
-  // Masalar
-  SEHPA: { id: 'sehpa', name: 'Sehpa', icon: '🪑' },
-  TV_UNITESI: { id: 'tv_unitesi', name: 'TV Ünitesi', icon: '📺' },
-  YEMEK_MASASI: { id: 'yemek_masasi', name: 'Yemek Masası', icon: '🍽️' },
-  CALISMA_MASASI: { id: 'calisma_masasi', name: 'Çalışma Masası', icon: '💻' },
-  BUFE: { id: 'bufe', name: 'Büfe', icon: '🍽️' },
+  // Tables
+  SEHPA: { id: 'sehpa', name: 'Sehpa', label: 'Coffee Table', icon: '🪑' },
+  TV_UNITESI: { id: 'tv_unitesi', name: 'TV Ünitesi', label: 'TV Unit', icon: '📺' },
+  YEMEK_MASASI: { id: 'yemek_masasi', name: 'Yemek Masası', label: 'Dining Table', icon: '🍽️' },
+  CALISMA_MASASI: { id: 'calisma_masasi', name: 'Çalışma Masası', label: 'Desk', icon: '💻' },
+  BUFE: { id: 'bufe', name: 'Büfe', label: 'Sideboard', icon: '🍽️' },
   
-  // Sandalyeler
-  SANDALYE: { id: 'sandalye', name: 'Sandalye', icon: '🪑' },
-  BAR_TABURESI: { id: 'bar_taburesi', name: 'Bar Taburesi', icon: '🪑' },
+  // Chairs
+  SANDALYE: { id: 'sandalye', name: 'Sandalye', label: 'Chair', icon: '🪑' },
+  BAR_TABURESI: { id: 'bar_taburesi', name: 'Bar Taburesi', label: 'Bar Stool', icon: '🪑' },
   
-  // Mutfak & Banyo
-  MUTFAK_DOLABI: { id: 'mutfak_dolabi', name: 'Mutfak Dolabı', icon: '🏠' },
-  TEZGAH: { id: 'tezgah', name: 'Tezgah', icon: '🏠' },
-  LAVABO: { id: 'lavabo', name: 'Lavabo', icon: '🚿' },
-  DUS: { id: 'dus', name: 'Duş Kabini', icon: '🚿' },
-  BANYO_DEPOLAMA: { id: 'banyo_depolama', name: 'Banyo Depolama', icon: '🧴' },
+  // Kitchen & bathroom
+  MUTFAK_DOLABI: { id: 'mutfak_dolabi', name: 'Mutfak Dolabı', label: 'Kitchen Cabinet', icon: '🏠' },
+  TEZGAH: { id: 'tezgah', name: 'Tezgah', label: 'Countertop', icon: '🏠' },
+  LAVABO: { id: 'lavabo', name: 'Lavabo', label: 'Sink', icon: '🚿' },
+  DUS: { id: 'dus', name: 'Duş Kabini', label: 'Shower Cabin', icon: '🚿' },
+  BANYO_DEPOLAMA: { id: 'banyo_depolama', name: 'Banyo Depolama', label: 'Bathroom Storage', icon: '🧴' },
   
-  // Dekorasyon
-  AYDINLATMA: { id: 'aydinlatma', name: 'Aydınlatma', icon: '💡' },
-  HALI: { id: 'hali', name: 'Halı', icon: '🪔' },
-  PERDE: { id: 'perde', name: 'Perde', icon: '🪟' },
-  AYNA: { id: 'ayna', name: 'Ayna', icon: '🪞' },
-  DEKORATIF_OBJELER: { id: 'dekoratif_objeler', name: 'Dekoratif Objeler', icon: '🎨' },
-  DUVAR_DEKORASYONU: { id: 'duvar_dekorasyonu', name: 'Duvar Dekorasyonu', icon: '🖼️' },
-  AKSESUAR: { id: 'aksesuar', name: 'Aksesuar', icon: '✨' },
+  // Decoration
+  AYDINLATMA: { id: 'aydinlatma', name: 'Aydınlatma', label: 'Lighting', icon: '💡' },
+  HALI: { id: 'hali', name: 'Halı', label: 'Rug', icon: '🪔' },
+  PERDE: { id: 'perde', name: 'Perde', label: 'Curtains', icon: '🪟' },
+  AYNA: { id: 'ayna', name: 'Ayna', label: 'Mirror', icon: '🪞' },
+  DEKORATIF_OBJELER: { id: 'dekoratif_objeler', name: 'Dekoratif Objeler', label: 'Decorative Objects', icon: '🎨' },
+  DUVAR_DEKORASYONU: { id: 'duvar_dekorasyonu', name: 'Duvar Dekorasyonu', label: 'Wall Decor', icon: '🖼️' },
+  AKSESUAR: { id: 'aksesuar', name: 'Aksesuar', label: 'Accessories', icon: '✨' },
   
-  // Özel Alanlar
-  OYUN_ALANI: { id: 'oyun_alani', name: 'Oyun Alanı', icon: '🎮' }
+  // Special areas
+  OYUN_ALANI: { id: 'oyun_alani', name: 'Oyun Alanı', label: 'Play Area', icon: '🎮' }
 };
 
 export const roomCategories = {
   [ROOM_TYPES.SALON]: {
-    name: 'Salon',
+    name: 'Living Room',
     icon: '🛋️',
-    description: 'Oturma ve sosyal alan tasarımı',
+    description: 'Design for seating and social space',
     suggestedProducts: [
       PRODUCT_CATEGORIES.KOLTUK,
       PRODUCT_CATEGORIES.SEHPA,
@@ -83,20 +83,20 @@ export const roomCategories = {
     ],
     popularCombinations: [
       {
-        name: 'Klasik Salon',
+        name: 'Classic Living Room',
         products: ['koltuk', 'sehpa', 'tv_unitesi', 'hali']
       },
       {
-        name: 'Modern Salon',
+        name: 'Modern Living Room',
         products: ['koltuk', 'sehpa', 'aydinlatma', 'dekoratif_objeler']
       }
     ]
   },
 
   [ROOM_TYPES.YATAK_ODASI]: {
-    name: 'Yatak Odası',
+    name: 'Bedroom',
     icon: '🛏️',
-    description: 'Dinlenme ve kişisel alan tasarımı',
+    description: 'Design for rest and personal space',
     suggestedProducts: [
       PRODUCT_CATEGORIES.YATAK,
       PRODUCT_CATEGORIES.GARDROP,
@@ -112,20 +112,20 @@ export const roomCategories = {
     ],
     popularCombinations: [
       {
-        name: 'Romantik Yatak Odası',
+        name: 'Romantic Bedroom',
         products: ['yatak', 'komodin', 'gardrop', 'ayna', 'perde']
       },
       {
-        name: 'Minimal Yatak Odası',
+        name: 'Minimal Bedroom',
         products: ['yatak', 'gardrop', 'aydinlatma']
       }
     ]
   },
 
   [ROOM_TYPES.COCUK_ODASI]: {
-    name: 'Çocuk Odası',
+    name: 'Kids\' Room',
     icon: '🧸',
-    description: 'Güvenli ve yaratıcı çocuk alanı',
+    description: 'A safe and creative space for kids',
     suggestedProducts: [
       PRODUCT_CATEGORIES.COCUK_YATAGI,
       PRODUCT_CATEGORIES.OYUN_ALANI,
@@ -142,20 +142,20 @@ export const roomCategories = {
     ],
     popularCombinations: [
       {
-        name: 'Oyun Odası',
+        name: 'Playroom',
         products: ['cocuk_yatagi', 'oyun_alani', 'oyuncak_dolabi', 'hali']
       },
       {
-        name: 'Çalışma Odası',
+        name: 'Study Corner',
         products: ['cocuk_yatagi', 'calisma_masasi', 'kitaplik', 'aydinlatma']
       }
     ]
   },
 
   [ROOM_TYPES.MUTFAK]: {
-    name: 'Mutfak',
+    name: 'Kitchen',
     icon: '🍳',
-    description: 'Fonksiyonel ve modern mutfak tasarımı',
+    description: 'Functional, modern kitchen design',
     suggestedProducts: [
       PRODUCT_CATEGORIES.MUTFAK_DOLABI,
       PRODUCT_CATEGORIES.TEZGAH,
@@ -170,20 +170,20 @@ export const roomCategories = {
     ],
     popularCombinations: [
       {
-        name: 'Modern Mutfak',
+        name: 'Modern Kitchen',
         products: ['mutfak_dolabi', 'tezgah', 'aydinlatma', 'bar_taburesi']
       },
       {
-        name: 'Klasik Mutfak',
+        name: 'Classic Kitchen',
         products: ['mutfak_dolabi', 'tezgah', 'dekoratif_objeler']
       }
     ]
   },
 
   [ROOM_TYPES.BANYO]: {
-    name: 'Banyo',
+    name: 'Bathroom',
     icon: '🚿',
-    description: 'Hijyenik ve şık banyo tasarımı',
+    description: 'Hygienic, stylish bathroom design',
     suggestedProducts: [
       PRODUCT_CATEGORIES.LAVABO,
       PRODUCT_CATEGORIES.DUS,
@@ -198,20 +198,20 @@ export const roomCategories = {
     ],
     popularCombinations: [
       {
-        name: 'Modern Banyo',
+        name: 'Modern Bathroom',
         products: ['lavabo', 'dus', 'ayna', 'aydinlatma']
       },
       {
-        name: 'Lüks Banyo',
+        name: 'Luxury Bathroom',
         products: ['lavabo', 'dus', 'ayna', 'banyo_depolama', 'aksesuar']
       }
     ]
   },
 
   [ROOM_TYPES.YEMEK_ODASI]: {
-    name: 'Yemek Odası',
+    name: 'Dining Room',
     icon: '🍽️',
-    description: 'Sosyal yemek ve ağırlama alanı',
+    description: 'A space for dining and entertaining',
     suggestedProducts: [
       PRODUCT_CATEGORIES.YEMEK_MASASI,
       PRODUCT_CATEGORIES.SANDALYE,
@@ -226,20 +226,20 @@ export const roomCategories = {
     ],
     popularCombinations: [
       {
-        name: 'Klasik Yemek Odası',
+        name: 'Classic Dining Room',
         products: ['yemek_masasi', 'sandalye', 'bufe', 'aydinlatma']
       },
       {
-        name: 'Modern Yemek Odası',
+        name: 'Modern Dining Room',
         products: ['yemek_masasi', 'sandalye', 'dekoratif_objeler']
       }
     ]
   },
 
   [ROOM_TYPES.CALISMA_ODASI]: {
-    name: 'Çalışma Odası',
+    name: 'Study',
     icon: '💻',
-    description: 'Verimli ve organize çalışma alanı',
+    description: 'An efficient, organized workspace',
     suggestedProducts: [
       PRODUCT_CATEGORIES.CALISMA_MASASI,
       PRODUCT_CATEGORIES.SANDALYE,
@@ -258,16 +258,16 @@ export const roomCategories = {
         products: ['calisma_masasi', 'sandalye', 'kitaplik', 'aydinlatma']
       },
       {
-        name: 'Kütüphane',
+        name: 'Library',
         products: ['calisma_masasi', 'kitaplik', 'dosya_dolabi', 'aydinlatma']
       }
     ]
   },
 
   [ROOM_TYPES.MISAFIR_ODASI]: {
-    name: 'Misafir Odası',
+    name: 'Guest Room',
     icon: '🏠',
-    description: 'Konforlu misafir ağırlama alanı',
+    description: 'A comfortable space for hosting guests',
     suggestedProducts: [
       PRODUCT_CATEGORIES.YATAK,
       PRODUCT_CATEGORIES.DOLAP,
@@ -282,11 +282,11 @@ export const roomCategories = {
     ],
     popularCombinations: [
       {
-        name: 'Misafir Yatak Odası',
+        name: 'Guest Bedroom',
         products: ['yatak', 'komodin', 'dolap', 'perde']
       },
       {
-        name: 'Çok Amaçlı Oda',
+        name: 'Multipurpose Room',
         products: ['koltuk', 'sehpa', 'dolap', 'aydinlatma']
       }
     ]

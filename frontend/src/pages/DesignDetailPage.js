@@ -28,7 +28,7 @@ const DesignDetailPage = () => {
       
     } catch (error) {
       console.error('Error fetching design details:', error);
-      setError(error.message || 'Tasarım detayları yüklenirken bir hata oluştu.');
+      setError(error.message || 'An error occurred while loading the design details.');
     } finally {
       setLoading(false);
     }
@@ -70,7 +70,7 @@ const DesignDetailPage = () => {
 
         {!loading && !design && !error && (
            <div className="text-center py-12">
-             <h1 className="text-2xl font-bold text-gray-400">Tasarım bulunamadı</h1>
+             <h1 className="text-2xl font-bold text-gray-400">Design not found</h1>
            </div>
         )}
       </div>

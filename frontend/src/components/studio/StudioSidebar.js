@@ -22,8 +22,8 @@ const StudioSidebar = ({
           1
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-blue-300">Oda Kurulumu</h3>
-          <p className="text-xs text-gray-400">Mekanınızın ölçülerini belirleyin</p>
+          <h3 className="text-lg font-semibold text-blue-300">Room Setup</h3>
+          <p className="text-xs text-gray-400">Set the dimensions of your space</p>
         </div>
       </div>
       <RoomDimensionsSection

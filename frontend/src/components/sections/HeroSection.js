@@ -22,7 +22,7 @@ const HeroSection = () => {
             Deko Asistan
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Yapay zeka destekli iç mekan tasarımı. Odanızı hayal edin, biz gerçeğe dönüştürelim.
+            AI-powered interior design. Imagine your room, and we will bring it to life.
           </p>
         </div>
 
@@ -31,7 +31,7 @@ const HeroSection = () => {
             Hayal Et! 🚀
           </Button>
           <Button variant="secondary">
-            Nasıl Çalışır?
+            How It Works
           </Button>
         </div>
 

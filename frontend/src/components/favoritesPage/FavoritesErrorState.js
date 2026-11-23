@@ -16,7 +16,7 @@ const FavoritesErrorState = memo(({ error, onRetry }) => {
         </div>
         <div className="ml-3 flex-1">
           <h3 className="text-sm font-medium text-red-300">
-            Bir hata oluştu
+            Something went wrong
           </h3>
           <div className="mt-2 text-sm text-red-400">
             {error}
@@ -27,7 +27,7 @@ const FavoritesErrorState = memo(({ error, onRetry }) => {
                 onClick={onRetry}
                 className="bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition-colors"
               >
-                Tekrar Dene
+                Try Again
               </button>
             </div>
           )}

@@ -25,15 +25,15 @@ const ProfileForm = ({
   <Card className="p-6">
     <div className="flex items-center justify-between mb-6">
       <h3 className="text-lg font-semibold text-white">
-        {isEditing ? '✏️ Profili Düzenle' : '📋 Profil Bilgileri'}
+        {isEditing ? '✏️ Edit Profile' : '📋 Profile Details'}
       </h3>
       {isEditing && (
         <div className="flex space-x-2">
           <Button onClick={onCancel} variant="secondary" size="small">
-            İptal
+            Cancel
           </Button>
           <Button onClick={onSubmit} size="small" disabled={loading}>
-            {loading ? '💾 Kaydediliyor...' : '💾 Kaydet'}
+            {loading ? '💾 Saving...' : '💾 Save'}
           </Button>
         </div>
       )}
@@ -42,39 +42,39 @@ const ProfileForm = ({
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          label="Ad"
+          label="First Name"
           name="first_name"
-          value={isEditing ? formData.first_name : (user.first_name || 'Belirtilmemiş')}
+          value={isEditing ? formData.first_name : (user.first_name || 'Not specified')}
           onChange={onInputChange}
-          placeholder="Adınızı girin"
+          placeholder="Enter your first name"
           readOnly={!isEditing}
         />
         
         <FormField
-          label="Soyad"
+          label="Last Name"
           name="last_name"
-          value={isEditing ? formData.last_name : (user.last_name || 'Belirtilmemiş')}
+          value={isEditing ? formData.last_name : (user.last_name || 'Not specified')}
           onChange={onInputChange}
-          placeholder="Soyadınızı girin"
+          placeholder="Enter your last name"
           readOnly={!isEditing}
         />
         
         <div className="md:col-span-2">
           <FormField
-            label="E-posta"
-            value={`${user.email} (değiştirilemez)`}
+            label="Email"
+            value={`${user.email} (cannot be changed)`}
             readOnly={true}
           />
         </div>
         
         <div className="md:col-span-2">
           <FormField
-            label="Hakkımda"
+            label="About Me"
             name="bio"
             type="textarea"
-            value={isEditing ? formData.bio : (user.bio || 'Henüz bir açıklama eklenmemiş.')}
+            value={isEditing ? formData.bio : (user.bio || 'No bio added yet.')}
             onChange={onInputChange}
-            placeholder="Kendinizden bahsedin..."
+            placeholder="Tell us about yourself..."
             readOnly={!isEditing}
           />
         </div>

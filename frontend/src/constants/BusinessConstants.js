@@ -7,42 +7,42 @@ export class BusinessConstants {
   static ROOM_TYPES = {
     LIVING_ROOM: {
       key: 'living_room',
-      label: 'Oturma Odası',
+      label: 'Living Room',
       icon: '🛋️',
       minArea: 12, // m²
       maxArea: 50
     },
     BEDROOM: {
       key: 'bedroom',
-      label: 'Yatak Odası',
+      label: 'Bedroom',
       icon: '🛏️',
       minArea: 8,
       maxArea: 30
     },
     KITCHEN: {
       key: 'kitchen',
-      label: 'Mutfak',
+      label: 'Kitchen',
       icon: '🍳',
       minArea: 6,
       maxArea: 25
     },
     BATHROOM: {
       key: 'bathroom',
-      label: 'Banyo',
+      label: 'Bathroom',
       icon: '🚿',
       minArea: 3,
       maxArea: 15
     },
     OFFICE: {
       key: 'office',
-      label: 'Çalışma Odası',
+      label: 'Study',
       icon: '💼',
       minArea: 6,
       maxArea: 20
     },
     DINING_ROOM: {
       key: 'dining_room',
-      label: 'Yemek Odası',
+      label: 'Dining Room',
       icon: '🍽️',
       minArea: 10,
       maxArea: 30
@@ -55,37 +55,37 @@ export class BusinessConstants {
       key: 'modern',
       label: 'Modern',
       icon: '🏢',
-      description: 'Temiz çizgiler ve minimal tasarım'
+      description: 'Clean lines and minimal design'
     },
     CLASSIC: {
       key: 'classic',
-      label: 'Klasik',
+      label: 'Classic',
       icon: '🏛️',
-      description: 'Zarif ve zamansız tasarım'
+      description: 'Elegant, timeless design'
     },
     MINIMALIST: {
       key: 'minimalist',
       label: 'Minimalist',
       icon: '⚪',
-      description: 'Sade ve fonksiyonel yaklaşım'
+      description: 'A simple, functional approach'
     },
     INDUSTRIAL: {
       key: 'industrial',
-      label: 'Endüstriyel',
+      label: 'Industrial',
       icon: '⚙️',
-      description: 'Ham malzemeler ve metal detaylar'
+      description: 'Raw materials and metal details'
     },
     SCANDINAVIAN: {
       key: 'scandinavian',
-      label: 'İskandinav',
+      label: 'Scandinavian',
       icon: '🌲',
-      description: 'Doğal malzemeler ve açık renkler'
+      description: 'Natural materials and light colors'
     },
     BOHEMIAN: {
       key: 'bohemian',
-      label: 'Bohem',
+      label: 'Bohemian',
       icon: '🎨',
-      description: 'Rengarenk ve sanatsal yaklaşım'
+      description: 'A colorful, artistic approach'
     }
   };
 
@@ -93,49 +93,49 @@ export class BusinessConstants {
   static PRODUCT_CATEGORIES = {
     FURNITURE: {
       key: 'Mobilyalar',
-      label: 'Mobilyalar',
+      label: 'Furniture',
       icon: '🪑',
       priority: 1
     },
     LIGHTING: {
       key: 'Aydınlatma',
-      label: 'Aydınlatma',
+      label: 'Lighting',
       icon: '💡',
       priority: 2
     },
     DECORATIVE: {
       key: 'Dekoratif Ürünler',
-      label: 'Dekoratif Ürünler',
+      label: 'Decorative Items',
       icon: '🎨',
       priority: 3
     },
     ACCESSORIES: {
       key: 'Aksesuarlar',
-      label: 'Aksesuarlar',
+      label: 'Accessories',
       icon: '✨',
       priority: 4
     },
     TEXTILE: {
       key: 'Tekstil',
-      label: 'Tekstil',
+      label: 'Textiles',
       icon: '🧵',
       priority: 5
     },
     DECORATIVE_OBJECTS: {
       key: 'Dekoratif Objeler',
-      label: 'Dekoratif Objeler',
+      label: 'Decorative Objects',
       icon: '🏺',
       priority: 6
     },
     PLANTS: {
       key: 'Bitkiler',
-      label: 'Bitkiler',
+      label: 'Plants',
       icon: '🪴',
       priority: 7
     },
     CURTAINS: {
       key: 'Perdeler',
-      label: 'Perdeler',
+      label: 'Curtains',
       icon: '🪟',
       priority: 8
     }

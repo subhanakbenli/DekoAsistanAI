@@ -4,26 +4,26 @@ import ColorPalette from '../common/ColorPalette';
 import ProductCategorySelector from '../common/ProductCategorySelector';
 
 /**
- * Oda bilgileri section'ı - React.memo ile optimize edilmiş
- * @param {Object} form - Form state'i
- * @param {Function} handleChange - Form değişiklik handler'ı
- * @param {Function} handleSubmit - Form gönderme handler'ı
- * @param {boolean} isLoading - Yükleme durumu
+ * Room details section - optimized with React.memo
+ * @param {Object} form - Form state
+ * @param {Function} handleChange - Form change handler
+ * @param {Function} handleSubmit - Form submit handler
+ * @param {boolean} isLoading - Loading state
  */
 const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) => {
-  // Boyut sınırları
+  // Dimension limits
   const MAX_HEIGHT = 2000; // 20m
 
-  // Color selection callback'ini optimize et
+  // Memoize the color selection callback
   const handleColorSelection = useCallback((colorData) => {
     console.log('🎨 [RoomInfoSection] handleColorSelection called with:', colorData);
     
-    // Form state'e renk bilgisini ekle
+    // Add color info to the form state
     if (colorData.isValid) {
       const colorInfo = colorData.selection;
       console.log('🎨 [RoomInfoSection] colorInfo to be set:', colorInfo);
       
-      // handleChange kullanarak form'a renk bilgisini ekle
+      // Add color info to the form via handleChange
       const event = {
         target: {
           name: 'colorPalette',
@@ -38,16 +38,16 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
     }
   }, [handleChange]);
 
-  // Product selection callback'ini optimize et
+  // Memoize the product selection callback
   const handleProductSelection = useCallback((productData) => {
     console.log('📦 [RoomInfoSection] handleProductSelection called with:', productData);
     
-    // Form state'e ürün bilgisini ekle
+    // Add product info to the form state
     if (productData.isValid) {
       const productInfo = productData.selection;
       console.log('📦 [RoomInfoSection] productInfo to be set:', productInfo);
       
-      // handleChange kullanarak form'a ürün bilgisini ekle
+      // Add product info to the form via handleChange
       const event = {
         target: {
           name: 'productCategories',
@@ -64,34 +64,34 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
   const MAX_WIDTH = 5000;  // 50m
   const MAX_LENGTH = 5000; // 50m
   
-  // Sınır aşım kontrolü
+  // Limit check
   const isHeightOverLimit = form.height && parseInt(form.height) > MAX_HEIGHT;
   const isWidthOverLimit = form.width && parseInt(form.width) > MAX_WIDTH;
   const isLengthOverLimit = form.length && parseInt(form.length) > MAX_LENGTH;
   const hasLimitExceeded = isHeightOverLimit || isWidthOverLimit || isLengthOverLimit;
   
-  // Notes artık opsiyonel - form validation'dan kaldırıldı
+  // Notes are now optional - removed from form validation
   const isFormValid = form.width && form.length && form.height && !hasLimitExceeded;
 
   return (
     <div className="space-y-3">
       <div className="flex items-center mb-2">
-        <h2 className="text-base font-semibold">🏠 Oda Bilgileri</h2>
-        <Tooltip text="Odanızın özelliklerini tanımlayın">
+        <h2 className="text-base font-semibold">🏠 Room Details</h2>
+        <Tooltip text="Describe the features of your room">
           <span className="ml-2 text-blue-400 cursor-help">ℹ️</span>
         </Tooltip>
       </div>
 
-      {/* Ana Layout: Sol taraf (Oda Bilgileri) + Sağ taraf (Ürün Önerileri) */}
+      {/* Main layout: left (room details) + right (product suggestions) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Sol Taraf: Oda Türü, Tasarım Tarzı ve Renk Paleti - Alt Alta */}
+        {/* Left: room type, design style and color palette - stacked */}
         <div className="space-y-4">
-          {/* Oda Türü */}
+          {/* Room type */}
           <div>
-            <Tooltip text="Tasarlayacağınız odanın türünü seçin">
+            <Tooltip text="Choose the type of room you want to design">
               <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
-                🏠 Oda Türü
+                🏠 Room Type
               </label>
             </Tooltip>
             <select 
@@ -100,20 +100,20 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
               onChange={handleChange} 
               className="w-full p-1.5 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 transition-colors"
             >
-              <option value="salon">🛋️ Salon</option>
-              <option value="yatak">🛏️ Yatak Odası</option>
-              <option value="çocuk">🧸 Çocuk Odası</option>
-              <option value="mutfak">🍳 Mutfak</option>
-              <option value="banyo">🛁 Banyo</option>
-              <option value="calisma">💻 Çalışma Odası</option>
+              <option value="salon">🛋️ Living Room</option>
+              <option value="yatak">🛏️ Bedroom</option>
+              <option value="çocuk">🧸 Kids' Room</option>
+              <option value="mutfak">🍳 Kitchen</option>
+              <option value="banyo">🛁 Bathroom</option>
+              <option value="calisma">💻 Study</option>
             </select>
           </div>
 
-          {/* Tasarım Tarzı */}
+          {/* Design style */}
           <div>
-            <Tooltip text="Odanızın tasarım stilini belirleyin">
+            <Tooltip text="Choose the design style for your room">
               <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
-                🎨 Tasarım Tarzı
+                🎨 Design Style
               </label>
             </Tooltip>
             <select 
@@ -124,13 +124,13 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
             >
               <option value="modern">✨ Modern</option>
               <option value="minimal">🎯 Minimal</option>
-              <option value="klasik">🏛️ Klasik</option>
-              <option value="endüstriyel">🏭 Endüstriyel</option>
-              <option value="iskandinav">🌲 İskandinav</option>
+              <option value="klasik">🏛️ Classic</option>
+              <option value="endüstriyel">🏭 Industrial</option>
+              <option value="iskandinav">🌲 Scandinavian</option>
             </select>
           </div>
 
-          {/* Renk Paleti */}
+          {/* Color palette */}
           <div>
             <ColorPalette 
               className="compact-palette"
@@ -138,11 +138,11 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
             />
           </div>
 
-          {/* Fiyat Limiti */}
+          {/* Price limit */}
           <div>
-            <Tooltip text="Bütçenize uygun ürün önerilerini almak için maksimum fiyat limitinizi girin">
+            <Tooltip text="Enter your maximum price limit to get product suggestions that fit your budget">
               <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
-                💰 Fiyat Limiti (TL)
+                💰 Price Limit (TL)
               </label>
             </Tooltip>
             <input
@@ -150,18 +150,18 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
               name="price"
               value={form.price}
               onChange={handleChange}
-              placeholder="Örnek: 25000"
+              placeholder="Example: 25000"
               min="0"
               step="500"
               className="w-full p-1.5 rounded bg-gray-700 text-white border border-gray-600 focus:border-blue-500 transition-colors"
             />
             <p className="text-xs text-gray-400 mt-1">
-              ℹ️ Boş bırakırsanız tüm fiyat aralığından öneriler gelir
+              ℹ️ Leave empty to get suggestions from every price range
             </p>
           </div>
         </div>
 
-        {/* Sağ Taraf: Ürün Kategorisi */}
+        {/* Right: product category */}
         <div>
           <ProductCategorySelector 
             roomType={form.roomType}
@@ -172,24 +172,24 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
       </div>
 
       <div>
-        <Tooltip text="Tasarımınız için özel isteklerinizi belirtin (isteğe bağlı)">
+        <Tooltip text="Describe any special requests for your design (optional)">
           <label className="block text-sm text-gray-300 mb-1.5 cursor-help">
-            📝 Tasarım Notları <span className="text-gray-500 text-xs">(İsteğe bağlı)</span>
+            📝 Design Notes <span className="text-gray-500 text-xs">(Optional)</span>
           </label>
         </Tooltip>
         <textarea 
           name="notes" 
           rows={8} 
-          placeholder="İsteğe bağlı: Açık renkler, doğal ışık, çocuk güvenliği gibi özel isteklerinizi yazabilirsiniz..." 
+          placeholder="Optional: describe any special requests, such as light colors, natural light or child safety..." 
           className="w-full p-1.5 rounded bg-gray-700 border border-gray-600 focus:border-blue-500 transition-colors resize-none" 
           value={form.notes} 
           onChange={handleChange}
         />
       </div>
 
-      {/* Buton section'ı - ortalı ve kompakt */}
+      {/* Button section - centered and compact */}
       <div className="mt-2.5 pt-1.5 border-t border-gray-600">
-        <Tooltip text="Oda boyutlarını doldurduktan sonra tasarım önerisi oluşturmak için tıklayın (notlar isteğe bağlı)">
+        <Tooltip text="After filling in the room dimensions, click to generate a design suggestion (notes are optional)">
           <button 
             onClick={handleSubmit} 
             className="w-full bg-green-600 hover:bg-green-700 py-2 px-4 rounded-lg font-semibold text-base transition-colors flex items-center justify-center shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed"
@@ -198,12 +198,12 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
             {isLoading ? (
               <>
                 <span className="mr-2">⏳</span>
-                Gönderiliyor...
+                Submitting...
               </>
             ) : (
               <>
                 <span className="mr-2">🎯</span>
-                Tasarım Önerisi Oluştur
+                Generate Design Suggestion
               </>
             )}
           </button>
@@ -212,8 +212,8 @@ const RoomInfoSection = memo(({ form, handleChange, handleSubmit, isLoading }) =
         {(!isFormValid || hasLimitExceeded) && (
           <p className="text-xs text-yellow-400 text-center mt-1">
             {hasLimitExceeded 
-              ? '⚠️ Boyut sınırları aşıldı - lütfen düzeltin'
-              : '⚠️ Lütfen boyutları ve tasarım notlarını doldurun'
+              ? '⚠️ Dimension limits exceeded - please correct them'
+              : '⚠️ Please fill in the dimensions and design notes'
             }
           </p>
         )}

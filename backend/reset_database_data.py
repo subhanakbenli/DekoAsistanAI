@@ -1,7 +1,7 @@
 """
 Database data reset script.
-Bu script veritabanındaki tüm tabloların verilerini siler ama tablo yapılarını korur.
-alembic_version tablosu korunur.
+This script deletes the data in all database tables but keeps the table structures.
+The alembic_version table is preserved.
 """
 import asyncio
 import sys
@@ -10,24 +10,24 @@ from config.database import engine
 from config.settings import settings
 
 async def reset_database_data():
-    """Veritabanındaki tüm verileri sil (alembic_version hariç)."""
+    """Delete all data in the database (except alembic_version)."""
     
-    print("🚨 DİKKAT: Bu işlem veritabanındaki TÜM VERİLERİ silecek!")
-    print("Sadece tablo yapıları korunacak. alembic_version tablosu dokunulmayacak.")
-    print(f"Hedef veritabanı: {settings.DB_NAME}")
+    print("🚨 WARNING: This will delete ALL DATA in the database!")
+    print("Only the table structures will be kept. The alembic_version table will not be touched.")
+    print(f"Target database: {settings.DB_NAME}")
     print("-" * 50)
     
-    # Kullanıcıdan onay al
-    confirm = input("Devam etmek istediğinizden emin misiniz? (EVET yazın): ")
-    if confirm != "EVET":
-        print("İşlem iptal edildi.")
+    # Ask the user for confirmation
+    confirm = input("Are you sure you want to continue? (type YES): ")
+    if confirm != "YES":
+        print("Operation cancelled.")
         return
     
     try:
         async with engine.begin() as conn:
-            print("🔍 Mevcut tabloları kontrol ediliyor...")
+            print("🔍 Checking existing tables...")
             
-            # Tüm tabloları listele (alembic_version hariç)
+            # List all tables (except alembic_version)
             result = await conn.execute(text("""
                 SELECT table_name 
                 FROM information_schema.tables 
@@ -40,67 +40,67 @@ async def reset_database_data():
             tables = [row[0] for row in result.fetchall()]
             
             if not tables:
-                print("❌ Silinecek tablo bulunamadı.")
+                print("❌ No tables found to delete.")
                 return
                 
-            print(f"📋 Silinecek tablolar ({len(tables)} adet):")
+            print(f"📋 Tables to be cleared ({len(tables)}):")
             for table in tables:
                 print(f"  - {table}")
             
             print("\n" + "="*50)
-            final_confirm = input("Bu tabloların TÜM VERİLERİNİ silmek istediğinizden emin misiniz? (EVET yazın): ")
-            if final_confirm != "EVET":
-                print("İşlem iptal edildi.")
+            final_confirm = input("Are you sure you want to delete ALL DATA in these tables? (type YES): ")
+            if final_confirm != "YES":
+                print("Operation cancelled.")
                 return
             
-            print("\n🗑️  Veri silme işlemi başlıyor...")
+            print("\n🗑️  Starting data deletion...")
             
-            # Foreign key bağımlılıklarına göre tabloları sırala (child -> parent)
-            # Bu sırayla silersek foreign key constraint ihlali yaşamayız
+            # Order tables by foreign key dependencies (child -> parent)
+            # Deleting in this order avoids foreign key constraint violations
             table_order = [
-                'blog_post_likes',      # blog_posts'a bağlı
-                'blog_posts',           # designs'a bağlı
-                'design_hashtags',      # designs'a bağlı
-                'user_favorite_designs', # users ve designs'a bağlı
-                'user_favorite_products', # users'a bağlı (designs opsiyonel)
-                'mood_boards',          # users ve designs'a bağlı
-                'designs',              # users'a bağlı
-                'user_profiles',        # users'a bağlı
-                'products',             # Bağımsız
-                'hashtags',             # Bağımsız
-                'users'                 # En son
+                'blog_post_likes',      # depends on blog_posts
+                'blog_posts',           # depends on designs
+                'design_hashtags',      # depends on designs
+                'user_favorite_designs', # depends on users and designs
+                'user_favorite_products', # depends on users (designs optional)
+                'mood_boards',          # depends on users and designs
+                'designs',              # depends on users
+                'user_profiles',        # depends on users
+                'products',             # Independent
+                'hashtags',             # Independent
+                'users'                 # Last
             ]
             
-            # Sadece mevcut tabloları işle, sıralı şekilde
+            # Process only existing tables, in order
             ordered_tables = [t for t in table_order if t in tables]
-            # Listede olmayan tabloları da ekle
+            # Also add tables not in the list
             remaining_tables = [t for t in tables if t not in table_order]
             all_tables_ordered = ordered_tables + remaining_tables
             
-            # Her tabloyu temizle
+            # Clear each table
             deleted_counts = {}
             for table in all_tables_ordered:
                 try:
-                    # Önce mevcut kayıt sayısını al
+                    # First get the current record count
                     count_result = await conn.execute(text(f"SELECT COUNT(*) FROM {table}"))
                     initial_count = count_result.scalar()
                     
                     if initial_count > 0:
-                        # Tüm verileri sil
+                        # Delete all data
                         await conn.execute(text(f"DELETE FROM {table}"))
                         deleted_counts[table] = initial_count
-                        print(f"  ✅ {table}: {initial_count} kayıt silindi")
+                        print(f"  ✅ {table}: {initial_count} records deleted")
                     else:
-                        print(f"  ⚪ {table}: Zaten boş")
+                        print(f"  ⚪ {table}: Already empty")
                         
                 except Exception as e:
-                    print(f"  ❌ {table}: Hata - {str(e)}")
+                    print(f"  ❌ {table}: Error - {str(e)}")
             
-            # Sequence'leri sıfırla (AUTO_INCREMENT ID'ler için)
-            print("\n🔢 ID sequence'leri sıfırlanıyor...")
+            # Reset sequences (for AUTO_INCREMENT IDs)
+            print("\n🔢 Resetting ID sequences...")
             for table in all_tables_ordered:
                 try:
-                    # Bu tabloda serial/identity column var mı kontrol et
+                    # Check whether this table has a serial/identity column
                     seq_result = await conn.execute(text(f"""
                         SELECT column_name
                         FROM information_schema.columns 
@@ -111,48 +111,48 @@ async def reset_database_data():
                     seq_columns = [row[0] for row in seq_result.fetchall()]
                     
                     for col in seq_columns:
-                        # Sequence adını bul ve sıfırla
+                        # Find the sequence name and reset it
                         await conn.execute(text(f"""
                             SELECT setval(pg_get_serial_sequence('{table}', '{col}'), 1, false)
                         """))
-                        print(f"  ✅ {table}.{col} sequence sıfırlandı")
+                        print(f"  ✅ {table}.{col} sequence reset")
                         
                 except Exception as e:
-                    print(f"  ⚠️  {table} sequence sıfırlama: {str(e)}")
+                    print(f"  ⚠️  {table} sequence reset: {str(e)}")
             
             print("\n" + "="*50)
-            print("✅ VERİTABANI TEMİZLEME TAMAMLANDI!")
-            print(f"🔢 Toplam silinen kayıt sayısı: {sum(deleted_counts.values())}")
+            print("✅ DATABASE CLEANUP COMPLETED!")
+            print(f"🔢 Total records deleted: {sum(deleted_counts.values())}")
             
             if deleted_counts:
-                print("\n📊 Detaylı rapor:")
+                print("\n📊 Detailed report:")
                 for table, count in deleted_counts.items():
-                    print(f"  - {table}: {count} kayıt")
+                    print(f"  - {table}: {count} records")
             
-            print("\n💡 alembic_version tablosu korundu.")
-            print("💡 Tablo yapıları değiştirilmedi.")
-            print("💡 ID sequence'leri 1'den başlayacak şekilde sıfırlandı.")
+            print("\n💡 The alembic_version table was preserved.")
+            print("💡 Table structures were not changed.")
+            print("💡 ID sequences were reset to start from 1.")
             
     except Exception as e:
-        print(f"❌ Hata oluştu: {str(e)}")
+        print(f"❌ An error occurred: {str(e)}")
         return False
     
     return True
 
 async def verify_reset():
-    """Temizleme işlemini doğrula."""
-    print("\n🔍 Temizleme işlemi doğrulanıyor...")
+    """Verify the cleanup."""
+    print("\n🔍 Verifying cleanup...")
     
     try:
         async with engine.begin() as conn:
-            # Tüm tabloları kontrol et
+            # Check all tables
             result = await conn.execute(text("""
                 SELECT 
                     table_name,
                     (SELECT COUNT(*) FROM information_schema.tables t2 WHERE t2.table_name = t1.table_name) as exists,
                     CASE 
-                        WHEN table_name = 'alembic_version' THEN 'KORUNDU'
-                        ELSE 'TEMİZLENDİ'
+                        WHEN table_name = 'alembic_version' THEN 'PRESERVED'
+                        ELSE 'CLEARED'
                     END as status
                 FROM information_schema.tables t1
                 WHERE table_schema = 'public' 
@@ -162,36 +162,36 @@ async def verify_reset():
             
             tables = result.fetchall()
             
-            print("📋 Tablo durumları:")
+            print("📋 Table statuses:")
             for table_name, exists, status in tables:
                 if table_name == 'alembic_version':
-                    # alembic_version kayıt sayısını kontrol et
+                    # Check the alembic_version record count
                     count_result = await conn.execute(text("SELECT COUNT(*) FROM alembic_version"))
                     count = count_result.scalar()
-                    print(f"  ✅ {table_name}: {status} ({count} kayıt)")
+                    print(f"  ✅ {table_name}: {status} ({count} records)")
                 else:
-                    # Diğer tabloların kayıt sayısını kontrol et
+                    # Check the record count of the other tables
                     count_result = await conn.execute(text(f"SELECT COUNT(*) FROM {table_name}"))
                     count = count_result.scalar()
                     if count == 0:
-                        print(f"  ✅ {table_name}: BOŞ (0 kayıt)")
+                        print(f"  ✅ {table_name}: EMPTY (0 records)")
                     else:
-                        print(f"  ⚠️  {table_name}: {count} kayıt (beklenmeyen!)")
+                        print(f"  ⚠️  {table_name}: {count} records (unexpected!)")
             
     except Exception as e:
-        print(f"❌ Doğrulama hatası: {str(e)}")
+        print(f"❌ Verification error: {str(e)}")
 
 if __name__ == "__main__":
-    print("🗃️  DekoAsistanAI - Veritabanı Veri Temizleme")
+    print("🗃️  DekoAsistanAI - Database Data Cleanup")
     print("=" * 50)
     
-    # Ana işlemi çalıştır
+    # Run the main operation
     success = asyncio.run(reset_database_data())
     
     if success:
-        # Doğrulama yap
+        # Run verification
         asyncio.run(verify_reset())
-        print("\n🎉 İşlem başarıyla tamamlandı!")
+        print("\n🎉 Operation completed successfully!")
     else:
-        print("\n💥 İşlem başarısız!")
+        print("\n💥 Operation failed!")
         sys.exit(1)

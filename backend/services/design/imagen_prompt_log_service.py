@@ -7,7 +7,7 @@ from config import logger
 class ImagenPromptLogService:
     """
     Service for logging Imagen prompts and related data.
-    Basit bir şekilde tüm Imagen prompt işlemlerini loglar.
+    Simply logs all Imagen prompt operations.
     """
     
     def __init__(self):
@@ -16,11 +16,11 @@ class ImagenPromptLogService:
         logger.debug("Imagen Prompt Log Service initialized")
     
     def _ensure_logs_dir_exists(self):
-        """Logs klasörünün var olduğundan emin ol."""
+        """Make sure the logs folder exists."""
         os.makedirs(self.logs_dir, exist_ok=True)
     
     def _get_log_filename(self, log_type: str) -> str:
-        """Günlük log dosya adını oluştur."""
+        """Build the daily log file name."""
         today = datetime.now().strftime("%Y-%m-%d")
         return os.path.join(self.logs_dir, f"{log_type}_{today}.json")
     
@@ -37,18 +37,18 @@ class ImagenPromptLogService:
         additional_data: Dict[str, Any] = None
     ) -> None:
         """
-        Imagen prompt geliştirme talebi için Gemini'ye gönderilen prompt'u logla.
+        Log the prompt sent to Gemini for an Imagen prompt enhancement request.
         
         Args:
-            room_type: Oda tipi
-            design_style: Tasarım stili
-            notes: Kullanıcı notları
-            design_title: Tasarım başlığı
-            design_description: Tasarım açıklaması
-            products_text: Ürün metni
-            dimensions_info: Boyut bilgisi
-            color_info: Renk bilgisi
-            additional_data: Ek veriler
+            room_type: Room type
+            design_style: Design style
+            notes: User notes
+            design_title: Design title
+            design_description: Design description
+            products_text: Product text
+            dimensions_info: Dimension info
+            color_info: Color info
+            additional_data: Additional data
         """
         try:
             log_entry = {
@@ -81,13 +81,13 @@ class ImagenPromptLogService:
         additional_data: Dict[str, Any] = None
     ) -> None:
         """
-        Imagen'e gönderilen final prompt'u logla.
+        Log the final prompt sent to Imagen.
         
         Args:
-            enhanced_prompt: Imagen'e gönderilen final prompt
-            original_request_data: Orijinal istek verileri
-            prompt_source: Prompt kaynağı (gemini_enhanced, fallback vs.)
-            additional_data: Ek veriler
+            enhanced_prompt: Final prompt sent to Imagen
+            original_request_data: Original request data
+            prompt_source: Prompt source (gemini_enhanced, fallback, etc.)
+            additional_data: Additional data
         """
         try:
             log_entry = {
@@ -116,18 +116,18 @@ class ImagenPromptLogService:
         additional_data: Dict[str, Any] = None
     ) -> None:
         """
-        Imagen görsel üretim sonucunu logla.
+        Log the Imagen image generation result.
         
         Args:
-            enhanced_prompt: Kullanılan prompt
-            generation_success: Üretim başarısı
-            image_data: Görsel verileri (base64 hariç)
-            error_message: Hata mesajı
-            generation_time_ms: Üretim süresi (ms)
-            additional_data: Ek veriler
+            enhanced_prompt: Prompt used
+            generation_success: Whether generation succeeded
+            image_data: Image data (excluding base64)
+            error_message: Error message
+            generation_time_ms: Generation time (ms)
+            additional_data: Additional data
         """
         try:
-            # Image data'dan base64'ü çıkar (log boyutunu küçültmek için)
+            # Strip base64 from image data (to keep the log small)
             safe_image_data = {}
             if image_data:
                 safe_image_data = {k: v for k, v in image_data.items() if k != "base64"}
@@ -153,10 +153,10 @@ class ImagenPromptLogService:
             logger.error(f"Error logging Imagen generation result: {str(e)}")
     
     def _append_to_log_file(self, log_type: str, log_entry: Dict[str, Any]) -> None:
-        """Log entry'yi dosyaya ekle."""
+        """Append the log entry to the file."""
         log_file = self._get_log_filename(log_type)
         
-        # Dosya varsa oku, yoksa boş liste oluştur
+        # Read the file if it exists, otherwise start with an empty list
         if os.path.exists(log_file):
             try:
                 with open(log_file, 'r', encoding='utf-8') as f:
@@ -166,15 +166,15 @@ class ImagenPromptLogService:
         else:
             logs = []
         
-        # Yeni entry'yi ekle
+        # Add the new entry
         logs.append(log_entry)
         
-        # Dosyaya yaz
+        # Write to file
         with open(log_file, 'w', encoding='utf-8') as f:
             json.dump(logs, f, ensure_ascii=False, indent=2)
     
     def get_daily_logs(self, log_type: str, date: str = None) -> list:
-        """Belirli bir günün loglarını getir."""
+        """Get the logs for a given day."""
         if not date:
             date = datetime.now().strftime("%Y-%m-%d")
         
@@ -191,7 +191,7 @@ class ImagenPromptLogService:
             return []
     
     def get_log_summary(self, date: str = None) -> Dict[str, Any]:
-        """Günlük log özetini getir."""
+        """Get the daily log summary."""
         if not date:
             date = datetime.now().strftime("%Y-%m-%d")
         

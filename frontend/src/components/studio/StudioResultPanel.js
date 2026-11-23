@@ -19,10 +19,10 @@ const StudioResultPanel = ({
       <div className="flex items-center justify-center h-96 bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-600">
         <div className="text-center">
           <div className="text-4xl mb-4">🎨</div>
-          <h3 className="text-lg font-semibold text-gray-300 mb-2">AI Önerileri</h3>
+          <h3 className="text-lg font-semibold text-gray-300 mb-2">AI Suggestions</h3>
           <p className="text-sm text-gray-500">
-            Tasarım tercihlerinizi tamamlayın ve<br />
-            yapay zeka destekli önerilerinizi görün
+            Complete your design preferences to<br />
+            see your AI-powered suggestions
           </p>
         </div>
       </div>
@@ -55,10 +55,10 @@ const ResultHeader = ({ result, isConnected }) => {
         </div>
         <div>
           <h3 className="text-lg font-semibold text-purple-300">
-            AI Önerileri
+            AI Suggestions
           </h3>
           <p className="text-xs text-gray-400">
-            Yapay zeka destekli tasarım önerileri
+            AI-powered design suggestions
           </p>
         </div>
       </div>
@@ -76,7 +76,7 @@ const ConnectionStatus = ({ isConnected }) => {
     return (
       <div className="flex items-center space-x-2 text-xs">
         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-        <span className="text-green-400">Bağlı</span>
+        <span className="text-green-400">Connected</span>
       </div>
     );
   }
@@ -84,7 +84,7 @@ const ConnectionStatus = ({ isConnected }) => {
   return (
     <div className="flex items-center space-x-2 text-xs">
       <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-      <span className="text-red-400">Çevrimdışı</span>
+      <span className="text-red-400">Offline</span>
     </div>
   );
 };

@@ -43,10 +43,10 @@ const LoginPage = () => {
             </div>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-white">
-            Hesabınıza Giriş Yapın
+            Log In to Your Account
           </h2>
           <p className="mt-2 text-sm text-gray-400">
-            Tasarım stüdyosuna erişim için giriş yapın
+            Log in to access the design studio
           </p>
         </div>
 
@@ -61,7 +61,7 @@ const LoginPage = () => {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                E-posta Adresi
+                Email Address
               </label>
               <input
                 id="email"
@@ -72,13 +72,13 @@ const LoginPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="ornek@email.com"
+                placeholder="example@email.com"
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Şifre
+                Password
               </label>
               <input
                 id="password"
@@ -89,7 +89,7 @@ const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Şifrenizi girin"
+                placeholder="Enter your password"
               />
             </div>
 
@@ -102,23 +102,23 @@ const LoginPage = () => {
                 {isLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Giriş yapılıyor...
+                    Logging in...
                   </div>
                 ) : (
-                  'Giriş Yap'
+                  'Log In'
                 )}
               </button>
             </div>
 
             <div className="text-center">
               <p className="text-sm text-gray-400">
-                Hesabınız yok mu?{' '}
+                No account yet?{' '}
                 <Link
                   to="/register"
                   state={{ from: location.state?.from }}
                   className="font-medium text-purple-400 hover:text-purple-300 transition-colors"
                 >
-                  Kayıt olun
+                  Sign up
                 </Link>
               </p>
             </div>
@@ -131,7 +131,7 @@ const LoginPage = () => {
             to="/"
             className="text-sm text-gray-400 hover:text-gray-300 transition-colors"
           >
-            ← Ana sayfaya dön
+            ← Back to home
           </Link>
         </div>
       </div>

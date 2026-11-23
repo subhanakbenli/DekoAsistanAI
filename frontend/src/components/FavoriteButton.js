@@ -40,7 +40,7 @@ const FavoriteButton = ({
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      showError(error.message || 'Bir hata oluştu');
+      showError(error.message || 'Something went wrong');
     } finally {
       setIsProcessing(false);
     }
@@ -98,10 +98,10 @@ const FavoriteButton = ({
           `}
           title={
             !isAuthenticated 
-              ? 'Favorilere eklemek için giriş yapın'
+              ? 'Log in to add to favorites'
               : isFavorited 
-                ? 'Favorilerden çıkar'
-                : 'Favorilere ekle'
+                ? 'Remove from favorites'
+                : 'Add to favorites'
           }
         >
           {isProcessing ? (
@@ -114,7 +114,7 @@ const FavoriteButton = ({
         {/* Login tooltip */}
         {showLoginTooltip && (
           <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-sm rounded-lg whitespace-nowrap z-50">
-            Giriş yapın
+            Log in
             <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-black"></div>
           </div>
         )}
@@ -141,16 +141,16 @@ const FavoriteButton = ({
         `}
         title={
           !isAuthenticated 
-            ? 'Favorilere eklemek için giriş yapın'
+            ? 'Log in to add to favorites'
             : isFavorited 
-              ? 'Favorilerden çıkar'
-              : 'Favorilere ekle'
+              ? 'Remove from favorites'
+              : 'Add to favorites'
         }
       >
         {isProcessing ? (
           <>
             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            <span>İşleniyor...</span>
+            <span>Processing...</span>
           </>
         ) : (
           <>
@@ -160,10 +160,10 @@ const FavoriteButton = ({
             />
             <span>
               {!isAuthenticated 
-                ? 'Favorilere Ekle'
+                ? 'Add to Favorites'
                 : isFavorited 
-                  ? 'Favorilerde'
-                  : 'Favorilere Ekle'
+                  ? 'In Favorites'
+                  : 'Add to Favorites'
               }
             </span>
           </>
@@ -173,7 +173,7 @@ const FavoriteButton = ({
       {/* Login tooltip */}
       {showLoginTooltip && (
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-sm rounded-lg whitespace-nowrap z-50">
-          Favorilere eklemek için giriş yapın
+          Log in to add to favorites
           <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-black"></div>
         </div>
       )}

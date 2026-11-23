@@ -17,12 +17,12 @@ const FavoritesEmptyState = memo(({ type }) => {
         </span>
       </div>
       <h3 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-3">
-        {type === 'designs' ? 'Henüz favori tasarımınız yok' : 'Henüz favori ürününüz yok'}
+        {type === 'designs' ? 'You have no favorite designs yet' : 'You have no favorite products yet'}
       </h3>
       <p className="text-gray-400 mb-6 max-w-md mx-auto text-sm">
         {type === 'designs' 
-          ? 'Beğendiğiniz tasarımları favorilere ekleyerek burada görüntüleyebilirsiniz.'
-          : 'Beğendiğiniz ürünleri favorilere ekleyerek burada görüntüleyebilirsiniz.'
+          ? 'Add designs you like to your favorites to see them here.'
+          : 'Add products you like to your favorites to see them here.'
         }
       </p>
       <button
@@ -31,7 +31,7 @@ const FavoritesEmptyState = memo(({ type }) => {
                  text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 
                  transform hover:scale-105 shadow-lg hover:shadow-xl"
       >
-        {type === 'designs' ? '🎨 Tasarım Oluştur' : '🏠 Tasarım Stüdyosuna Git'}
+        {type === 'designs' ? '🎨 Create a Design' : '🏠 Go to Design Studio'}
       </button>
     </div>
   );

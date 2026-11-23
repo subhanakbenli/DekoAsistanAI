@@ -15,12 +15,12 @@ export class BlogErrorHandler extends ErrorHandler {
    */
   static handleFetchError(error) {
     if (error.response?.status === 503) {
-      return 'Sunucu geçici olarak kullanılamıyor, lütfen tekrar deneyin';
+      return 'The server is temporarily unavailable, please try again';
     }
     if (error.code === 'NETWORK_ERROR') {
-      return 'İnternet bağlantınızı kontrol edin';
+      return 'Check your internet connection';
     }
-    return 'Blog gönderileri yüklenirken bir hata oluştu';
+    return 'An error occurred while loading blog posts';
   }
 
   /**
@@ -29,7 +29,7 @@ export class BlogErrorHandler extends ErrorHandler {
    * @returns {string} User-friendly error message
    */
   static handleFilterError(error) {
-    return 'Filtre seçenekleri yüklenirken bir hata oluştu';
+    return 'An error occurred while loading filter options';
   }
 
   /**

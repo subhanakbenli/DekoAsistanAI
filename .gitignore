@@ -182,3 +182,8 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+# Runtime data: logs (including dated rotations), generated images, product data
+*.log.*
+backend/logs/
+backend/data/mood_boards/
+backend/data/products/

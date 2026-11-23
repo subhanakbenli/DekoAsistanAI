@@ -162,7 +162,7 @@ class HashtagService:
         return {
             "en": english_hashtags,
             "tr": turkish_hashtags,
-            "display": turkish_hashtags,  # Default display language is Turkish (with English fallbacks)
+            "display": [h if h.startswith('#') else '#' + h for h in english_hashtags],  # The UI is English
             "unknown": unknown_hashtags  # For analytics/tracking
         }
     

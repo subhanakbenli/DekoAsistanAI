@@ -35,15 +35,15 @@ export class ValidationUtils {
     const errors = [];
     
     // Width validation
-    const widthError = this.validateRoomDimension(form.width, 'Oda genişliği', this.LIMITS.ROOM.MAX_WIDTH);
+    const widthError = this.validateRoomDimension(form.width, 'Room width', this.LIMITS.ROOM.MAX_WIDTH);
     if (widthError) errors.push(widthError);
     
     // Length validation
-    const lengthError = this.validateRoomDimension(form.length, 'Oda uzunluğu', this.LIMITS.ROOM.MAX_LENGTH);
+    const lengthError = this.validateRoomDimension(form.length, 'Room length', this.LIMITS.ROOM.MAX_LENGTH);
     if (lengthError) errors.push(lengthError);
     
     // Height validation
-    const heightError = this.validateRoomDimension(form.height, 'Oda yüksekliği', this.LIMITS.ROOM.MAX_HEIGHT);
+    const heightError = this.validateRoomDimension(form.height, 'Room height', this.LIMITS.ROOM.MAX_HEIGHT);
     if (heightError) errors.push(heightError);
     
     // Notes validation - OPTIONAL (removed from required fields)
@@ -77,20 +77,20 @@ export class ValidationUtils {
    */
   static validateRoomDimension(value, fieldName, maxValue) {
     if (!value) {
-      return `${fieldName} gerekli`;
+      return `${fieldName} is required`;
     }
     
     const numValue = parseInt(value);
     if (isNaN(numValue)) {
-      return `${fieldName} geçerli bir sayı olmalıdır`;
+      return `${fieldName} must be a valid number`;
     }
     
     if (numValue < this.LIMITS.ROOM.MIN_SIZE) {
-      return `${fieldName} minimum ${this.LIMITS.ROOM.MIN_SIZE}cm olmalıdır`;
+      return `${fieldName} must be at least ${this.LIMITS.ROOM.MIN_SIZE}cm`;
     }
     
     if (numValue > maxValue) {
-      return `${fieldName} maksimum ${maxValue}cm (${maxValue/100}m) olmalıdır`;
+      return `${fieldName} must be at most ${maxValue}cm (${maxValue/100}m)`;
     }
     
     return null;
@@ -105,15 +105,15 @@ export class ValidationUtils {
    */
   static validateEmail(email) {
     if (!email?.trim()) {
-      return { isValid: false, error: 'E-posta adresi gerekli' };
+      return { isValid: false, error: 'Email address is required' };
     }
     
     if (email.length > this.LIMITS.EMAIL.MAX_LENGTH) {
-      return { isValid: false, error: 'E-posta adresi çok uzun' };
+      return { isValid: false, error: 'Email address is too long' };
     }
     
     if (!this.PATTERNS.EMAIL.test(email)) {
-      return { isValid: false, error: 'Geçerli bir e-posta adresi girin' };
+      return { isValid: false, error: 'Enter a valid email address' };
     }
     
     return { isValid: true };
@@ -127,13 +127,13 @@ export class ValidationUtils {
    */
   static validatePassword(password, requireStrong = false) {
     if (!password) {
-      return { isValid: false, error: 'Şifre gerekli', strength: 'none' };
+      return { isValid: false, error: 'Password is required', strength: 'none' };
     }
     
     if (password.length < this.LIMITS.PASSWORD.MIN_LENGTH) {
       return { 
         isValid: false, 
-        error: `Şifre en az ${this.LIMITS.PASSWORD.MIN_LENGTH} karakter olmalıdır`,
+        error: `Password must be at least ${this.LIMITS.PASSWORD.MIN_LENGTH} characters`,
         strength: 'weak'
       };
     }
@@ -141,7 +141,7 @@ export class ValidationUtils {
     if (password.length > this.LIMITS.PASSWORD.MAX_LENGTH) {
       return { 
         isValid: false, 
-        error: 'Şifre çok uzun',
+        error: 'Password is too long',
         strength: 'weak'
       };
     }
@@ -152,7 +152,7 @@ export class ValidationUtils {
     if (requireStrong && strength === 'weak') {
       return {
         isValid: false,
-        error: 'Şifre en az bir büyük harf, bir küçük harf, bir sayı ve bir özel karakter içermelidir',
+        error: 'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character',
         strength
       };
     }
@@ -191,7 +191,7 @@ export class ValidationUtils {
     
     requiredFields.forEach(field => {
       if (!data[field] || (typeof data[field] === 'string' && !data[field].trim())) {
-        errors.push(`${field} gerekli`);
+        errors.push(`${field} is required`);
       }
     });
     
@@ -244,7 +244,7 @@ export class ValidationUtils {
     // Check if both door and window are positioned on the same wall
     if (door && window && door.hasDoor && window.hasWindow) {
       if (door.position === window.position) {
-        return 'Kapı ve pencere aynı duvarda olamaz';
+        return 'The door and window cannot be on the same wall';
       }
     }
 
@@ -261,11 +261,11 @@ export class ValidationUtils {
 
     if (colorPalette.type === 'custom') {
       if (!colorPalette.description || colorPalette.description.trim().length < 10) {
-        return 'Özel renk açıklaması en az 10 karakter olmalıdır';
+        return 'Custom color description must be at least 10 characters';
       }
     } else if (colorPalette.type === 'palette') {
       if (!colorPalette.palette || !colorPalette.palette.id) {
-        return 'Geçersiz renk paleti seçimi';
+        return 'Invalid color palette selection';
       }
     }
 
@@ -282,11 +282,11 @@ export class ValidationUtils {
 
     if (productCategories.type === 'custom') {
       if (!productCategories.description || productCategories.description.trim().length < 10) {
-        return 'Özel ürün açıklaması en az 10 karakter olmalıdır';
+        return 'Custom product description must be at least 10 characters';
       }
     } else if (productCategories.type === 'categories') {
       if (!productCategories.productIds || productCategories.productIds.length === 0) {
-        return 'En az bir ürün kategorisi seçmelisiniz';
+        return 'You must select at least one product category';
       }
     }
 

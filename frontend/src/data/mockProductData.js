@@ -6,33 +6,33 @@
  * Test data for development and testing
  */
 export const mockProductData = {
-  title: "Modern Oturma Odası Konsepti",
-  description: "Bu oturma odası için modern minimalist konsepti seçildi. Beyaz, gri ve ahşap tonlarının uyumlu bir şekilde kullanıldığı, sade ve fonksiyonel bir tasarım.",
+  title: "Modern Living Room Concept",
+  description: "A modern minimalist concept was chosen for this living room: a simple, functional design that combines white, gray and wood tones in harmony.",
   products: [
     {
       category: "Mobilyalar",
-      name: "L Şeklinde Koltuk Takımı",
-      description: "Açık gri kumaş, modern tasarım, küçük alanlar için ideal fonksiyonel çözüm"
+      name: "L-Shaped Sofa Set",
+      description: "Light gray fabric, modern design, an ideal functional solution for small spaces"
     },
     {
       category: "Mobilyalar", 
-      name: "Cam Sehpa",
-      description: "Cam üstlü, metal ayaklı, minimalist stil ile odanın havasını açan modern sehpa"
+      name: "Glass Coffee Table",
+      description: "Modern coffee table with a glass top and metal legs whose minimalist style opens up the room"
     },
     {
       category: "Aydınlatma",
-      name: "Modern LED Avize",
-      description: "Sıcak beyaz ışık, dimmer özelliği ile atmosfer kontrolü sağlayan şık avize"
+      name: "Modern LED Chandelier",
+      description: "Stylish chandelier with warm white light and a dimmer for controlling the atmosphere"
     },
     {
       category: "Dekoratif Ürünler",
-      name: "Modern Halı",
-      description: "120x180 cm, geometrik desen, kolay temizlik özelliği ile pratik kullanım"
+      name: "Modern Rug",
+      description: "120x180 cm, geometric pattern, easy to clean and practical to use"
     },
     {
       category: "Aksesuarlar",
-      name: "Dekoratif Yastık Seti",
-      description: "3'lü set, farklı dokular, renk uyumu ile odaya canlılık katan yastıklar"
+      name: "Decorative Cushion Set",
+      description: "Set of 3 cushions in different textures with coordinated colors that liven up the room"
     }
   ]
 };
@@ -41,7 +41,7 @@ export const mockProductData = {
  * Empty state data for testing
  */
 export const emptyProductData = {
-  title: "Test Tasarım",
-  description: "Test açıklaması",
+  title: "Test Design",
+  description: "Test description",
   products: []
 };

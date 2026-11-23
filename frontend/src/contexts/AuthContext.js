@@ -51,17 +51,17 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true };
     } catch (error) {
-      let errorMessage = 'Giriş işlemi başarısız oldu';
+      let errorMessage = 'Login failed';
       
       if (error.response?.status === 401) {
-        errorMessage = 'E-posta veya şifre hatalı';
+        errorMessage = 'Incorrect email or password';
       } else if (error.response?.data?.detail) {
         const detail = error.response.data.detail;
         if (typeof detail === 'string') {
           if (detail.includes('Incorrect email or password')) {
-            errorMessage = 'E-posta veya şifre hatalı';
+            errorMessage = 'Incorrect email or password';
           } else if (detail.includes('User not found')) {
-            errorMessage = 'Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı';
+            errorMessage = 'No user is registered with this email address';
           } else {
             errorMessage = detail;
           }
@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       // Extract more specific error messages
-      let errorMessage = 'Kayıt işlemi başarısız oldu';
+      let errorMessage = 'Registration failed';
       
       if (error.response?.data?.detail) {
         const detail = error.response.data.detail;
@@ -97,23 +97,23 @@ export const AuthProvider = ({ children }) => {
         if (Array.isArray(detail)) {
           const messages = detail.map(err => {
             if (err.msg.includes('at least 8 characters')) {
-              return 'Şifre en az 8 karakter olmalıdır';
+              return 'Password must be at least 8 characters';
             }
             if (err.msg.includes('Field required') && err.loc.includes('username')) {
-              return 'Kullanıcı adı gereklidir';
+              return 'Username is required';
             }
             if (err.msg.includes('valid email')) {
-              return 'Geçerli bir e-posta adresi girin';
+              return 'Enter a valid email address';
             }
             if (err.msg.includes('already exists') || err.msg.includes('already registered')) {
-              return 'Bu e-posta adresi zaten kayıtlı';
+              return 'This email address is already registered';
             }
             return err.msg;
           });
           errorMessage = messages.join(', ');
         } else if (typeof detail === 'string') {
           if (detail.includes('already exists') || detail.includes('already registered')) {
-            errorMessage = 'Bu e-posta adresi zaten kayıtlı';
+            errorMessage = 'This email address is already registered';
           } else {
             errorMessage = detail;
           }

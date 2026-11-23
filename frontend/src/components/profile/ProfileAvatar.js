@@ -20,7 +20,7 @@ const ProfileAvatar = ({ user }) => (
     <h2 className="text-xl font-bold text-white mb-2">
       {user.first_name && user.last_name 
         ? `${user.first_name} ${user.last_name}`
-        : 'İsimsiz Kullanıcı'
+        : 'Unnamed User'
       }
     </h2>
     

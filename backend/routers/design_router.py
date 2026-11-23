@@ -47,33 +47,33 @@ def get_clean_image_filename(image_path):
     return filename
 
 def save_gemini_prompt_to_file(prompt_data):
-    """Gemini'ye gönderilen promptları bir dosyaya kaydet."""
+    """Save the prompts sent to Gemini to a file."""
     try:
-        # logs klasörünün var olduğundan emin ol
+        # Make sure the logs folder exists
         logs_dir = os.path.join("logs")
         if not os.path.exists(logs_dir):
             os.makedirs(logs_dir)
         
-        # Dosya adını tarih ile oluştur
+        # Build the file name from the date
         today = datetime.now().strftime("%Y-%m-%d")
         filename = f"gemini_prompts_{today}.json"
         filepath = os.path.join(logs_dir, filename)
         
-        # Kayıt edilecek veri
+        # Data to record
         log_entry = {
             "timestamp": datetime.now().isoformat(),
             "endpoint": "/design/test",
             "prompt_data": prompt_data
         }
         
-        # Dosyaya ekle (append mode)
+        # Append to file (append mode)
         with open(filepath, "a", encoding="utf-8") as f:
             f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
             
-        logger.info(f"Gemini prompt kaydedildi: {filepath}")
+        logger.info(f"Gemini prompt saved: {filepath}")
         
     except Exception as e:
-        logger.error(f"Gemini prompt kaydedilemedi: {str(e)}")
+        logger.error(f"Could not save Gemini prompt: {str(e)}")
 
 # Service Container Pattern
 class DesignServices:
@@ -144,7 +144,7 @@ async def design_request_endpoint(
         # Use structured product_categories data directly (no JSON parsing needed!)
         parsed_product_categories_for_ai = design_request.get_product_categories_as_dict()
 
-        # Gemini'ye gönderilecek prompt verilerini kaydet
+        # Save the prompt data to be sent to Gemini
         prompt_data_for_logging = {
             "room_type": room_type,
             "design_style": design_style,
@@ -170,7 +170,7 @@ async def design_request_endpoint(
             length=length,
             height=height,
             color_info=color_info,
-            product_categories=parsed_product_categories_for_ai  # ✅ Gemini AI'ya gönderiliyor
+            product_categories=parsed_product_categories_for_ai  # ✅ Sent to Gemini AI
         )
         
         logger.info(f"HYBRID design suggestion created successfully for {user_email}: {design_result['title']}")
@@ -227,11 +227,11 @@ async def design_request_endpoint(
                 room_type=room_type,
                 design_style=design_style,
                 notes=notes,
-                width=width,  # Doğrudan frontend'den gelen değer
-                length=length,  # Doğrudan frontend'den gelen değer
-                height=height,  # Doğrudan frontend'den gelen değer
-                color_info=color_info,  # Renk paleti bilgisi
-                product_categories=parsed_product_categories,  # Seçilen ürün kategorileri
+                width=width,  # Value coming directly from the frontend
+                length=length,  # Value coming directly from the frontend
+                height=height,  # Value coming directly from the frontend
+                color_info=color_info,  # Color palette info
+                product_categories=parsed_product_categories,  # Selected product categories
                 price=price,  # Fiyat limiti (TL)
                 product_suggestion=design_result["product_suggestion"],
                 products=design_result.get("products", []),
@@ -501,11 +501,11 @@ async def get_my_designs(
                 "room_type": design.room_type,
                 "design_style": design.design_style,
                 "notes": design.notes,
-                "width": design.width,  # Oda genişliği
-                "length": design.length,  # Oda uzunluğu
-                "height": design.height,  # Oda yüksekliği
-                "color_info": design.color_info,  # Renk paleti bilgisi
-                "product_categories": design.product_categories,  # Seçilen ürün kategorileri
+                "width": design.width,  # Room width
+                "length": design.length,  # Room length
+                "height": design.height,  # Room height
+                "color_info": design.color_info,  # Color palette info
+                "product_categories": design.product_categories,  # Selected product categories
                 "product_suggestion": design.product_suggestion,
                 "products": design.products,
                 "hashtags": hashtags_data,  # Add hashtags to response
@@ -607,11 +607,11 @@ async def get_my_design_by_id(
             "room_type": design.room_type,
             "design_style": design.design_style,
             "notes": design.notes,
-            "width": design.width,  # Oda genişliği
-            "length": design.length,  # Oda uzunluğu
-            "height": design.height,  # Oda yüksekliği
-            "color_info": design.color_info,  # Renk paleti bilgisi
-            "product_categories": design.product_categories,  # Seçilen ürün kategorileri
+            "width": design.width,  # Room width
+            "length": design.length,  # Room length
+            "height": design.height,  # Room height
+            "color_info": design.color_info,  # Color palette info
+            "product_categories": design.product_categories,  # Selected product categories
             "product_suggestion": design.product_suggestion,
             "products": design.products,
             "hashtags": hashtags_data,  # Add hashtags to response
@@ -884,11 +884,11 @@ async def get_design_details(
             "room_type": design.room_type,
             "design_style": design.design_style,
             "notes": design.notes,
-            "width": design.width,  # Oda genişliği
-            "length": design.length,  # Oda uzunluğu
-            "height": design.height,  # Oda yüksekliği
-            "color_info": design.color_info,  # Renk paleti bilgisi
-            "product_categories": design.product_categories,  # Seçilen ürün kategorileri
+            "width": design.width,  # Room width
+            "length": design.length,  # Room length
+            "height": design.height,  # Room height
+            "color_info": design.color_info,  # Color palette info
+            "product_categories": design.product_categories,  # Selected product categories
             "product_suggestion": design.product_suggestion,
             "products": design.products or [],
             "hashtags": hashtags_data,  # Add hashtags to response

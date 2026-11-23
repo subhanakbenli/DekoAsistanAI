@@ -1,100 +1,100 @@
-# **Deko Asistan - 2 Haftalık Geliştirme Planı**
+# **Deko Asistan - 2-Week Development Plan**
 
-* **Başlangıç:** 23 Temmuz 2025, 19:00  
-* **Bitiş:** 6 Ağustos 2025, 19:00  
-* **Ekip:** 2 Geliştirici \+ AI Asistanlar (GitHub Copilot, Gemini vb.)
+* **Start:** 23 July 2025, 19:00  
+* **End:** 6 August 2025, 19:00  
+* **Team:** 2 Developers \+ AI Assistants (GitHub Copilot, Gemini, etc.)
 
-### **Hafta 1: Temel Atma ve Çekirdek Fonksiyonların Geliştirilmesi (23 Temmuz \- 30 Temmuz)**
+### **Week 1: Foundations and Core Functionality (23 July \- 30 July)**
 
-Bu haftanın ana hedefi, projenin iskeletini kurmak, backend ve frontend'in temel yapılarını oluşturmak ve AI servislerinin çekirdek mantığını entegre etmektir.
+The main goal of this week is to set up the project skeleton, build the basic backend and frontend structure, and integrate the core logic of the AI services.
 
-#### **🚀 Gün 1-2: Kurulum ve Altyapı (23-24 Temmuz)**
+#### **🚀 Days 1-2: Setup and Infrastructure (23-24 July)**
 
-* **Görevler:**  
-  * \[ \] GitHub repository oluşturma, main ve develop branch'lerini açma.  
-  * \[ \] **Backend (Geliştirici 1):** FastAPI projesini başlatma, temel dosya yapısını (main.py, routers/, services/, models/) oluşturma.  
-  * \[ \] **Backend (Geliştirici 1):** PostgreSQL veritabanı kurulumu ve SQLAlchemy ORM konfigürasyonu.  
-  * \[ \] **Backend (Geliştirici 1):** Kullanıcı modeli ve JWT kimlik doğrulama sistemi altyapısı.  
-  * \[ \] **Frontend (Geliştirici 2):** React (Vite) projesini başlatma, React Router ve Tailwind CSS entegrasyonu.  
-  * \[ \] **Frontend (Geliştirici 2):** Temel sayfa yapısı (Ana sayfa, Giriş, Kayıt, Favoriler, Blog).  
-  * \[ \] **Backend (Geliştirici 1):** .env dosyası ile API anahtarlarını güvenli bir şekilde yönetme altyapısını kurma.  
-  * \[ \] **Ortak Görev:** products.json dosyasını oluşturma (15-20 örnek ürünle başlangıç).
+* **Tasks:**  
+  * \[ \] Create the GitHub repository and open the main and develop branches.  
+  * \[ \] **Backend (Developer 1):** Initialize the FastAPI project and create the base file structure (main.py, routers/, services/, models/).  
+  * \[ \] **Backend (Developer 1):** Set up the PostgreSQL database and configure the SQLAlchemy ORM.  
+  * \[ \] **Backend (Developer 1):** User model and JWT authentication infrastructure.  
+  * \[ \] **Frontend (Developer 2):** Initialize the React (Vite) project and integrate React Router and Tailwind CSS.  
+  * \[ \] **Frontend (Developer 2):** Basic page structure (Home, Login, Register, Favorites, Blog).  
+  * \[ \] **Backend (Developer 1):** Set up infrastructure for managing API keys securely via a .env file.  
+  * \[ \] **Shared Task:** Create the products.json file (starting with 15-20 sample products).
 
-#### **🧠 Gün 3-4: Kimlik Doğrulama ve Temel UI (25-26 Temmuz)**
+#### **🧠 Days 3-4: Authentication and Basic UI (25-26 July)**
 
-* **Görevler (Backend \- Geliştirici 1):**  
-  * \[ \] Kullanıcı kayıt ve giriş endpoint'lerini oluşturma (/auth/register, /auth/login).  
-  * \[ \] JWT token oluşturma ve doğrulama middleware'i.  
-  * \[ \] Favori sistemi için veritabanı modellerini oluşturma.  
-  * \[ \] /api/tasarim endpoint'ini oluşturma.  
-  * \[ \] multipart/form-data ile metin ve resim dosyasını alacak Pydantic modellerini tanımlama.  
-* **Görevler (Frontend \- Geliştirici 2):**  
-  * \[ \] Giriş ve kayıt sayfalarının UI'ını oluşturma.  
-  * \[ \] JWT token yönetimi için context/state yapısı kurma.  
-  * \[ \] Ana sayfa tasarım formunun temel yapısını oluşturma.  
-  * \[ \] Pencere/kapı konumu seçimi için interaktif harita komponenti.
+* **Tasks (Backend \- Developer 1):**  
+  * \[ \] Create the user registration and login endpoints (/auth/register, /auth/login).  
+  * \[ \] JWT token creation and validation middleware.  
+  * \[ \] Create the database models for favorites.  
+  * \[ \] Create the /api/tasarim endpoint.  
+  * \[ \] Define Pydantic models to receive text and an image file via multipart/form-data.  
+* **Tasks (Frontend \- Developer 2):**  
+  * \[ \] Build the login and registration page UI.  
+  * \[ \] Set up a context/state structure for JWT token management.  
+  * \[ \] Build the basic structure of the home page design form.  
+  * \[ \] Interactive map component for selecting window/door positions.
 
-#### **🔗 Gün 5-7: AI Servisleri ve Function Calling (27-29 Temmuz)**
+#### **🔗 Days 5-7: AI Services and Function Calling (27-29 July)**
 
-* **Görevler (Backend \- Geliştirici 1):**  
-  * \[ \] Gemini API'ye metin ve görsel prompt gönderecek temel servis fonksiyonunu yazma.  
-  * \[ \] Imagen API'ye prompt gönderip görsel üretecek temel servis fonksiyonunu yazma.  
-  * \[ \] **Function Calling:** urun\_bul fonksiyonunu tanımlama (products.json içinde arama yapacak).  
-  * \[ \] Ürün bazlı güncelleme için AI'ya istek atma endpoint'i (/api/update-product).  
-  * \[ \] Gemini API isteğine fonksiyon tanımını ekleme ve konuşma geçmişini yönetme.  
-  * \[ \] Favori ekleme/çıkarma endpoint'lerini oluşturma (/api/favorites).  
-* **Görevler (Frontend \- Geliştirici 2):**  
-  * \[ \] Tasarım sonuç sayfasının UI'ını oluşturma (mood board, ürün listesi).  
-  * \[ \] Favori ekleme butonları ve favori sayfası UI'ı.  
-  * \[ \] Ürün bazlı güncelleme için "Başka bir şey öner" butonları.  
-  * \[ \] Blog sayfası ve tasarım paylaşım UI'ı.
+* **Tasks (Backend \- Developer 1):**  
+  * \[ \] Write the core service function that sends text and image prompts to the Gemini API.  
+  * \[ \] Write the core service function that sends prompts to the Imagen API and generates images.  
+  * \[ \] **Function Calling:** Define the urun\_bul function (searches within products.json).  
+  * \[ \] Endpoint for sending per-product update requests to the AI (/api/update-product).  
+  * \[ \] Add the function definition to the Gemini API request and manage conversation history.  
+  * \[ \] Create the add/remove favorites endpoints (/api/favorites).  
+* **Tasks (Frontend \- Developer 2):**  
+  * \[ \] Build the design results page UI (mood board, product list).  
+  * \[ \] Add-to-favorites buttons and favorites page UI.  
+  * \[ \] "Suggest something else" buttons for per-product updates.  
+  * \[ \] Blog page and design sharing UI.
 
-#### **✅ Hafta 1 Sonu Değerlendirmesi (30 Temmuz Akşamı)**
+#### **✅ End-of-Week-1 Review (30 July, evening)**
 
-* **Hedef:** Backend kimlik doğrulama sistemi, temel UI sayfaları ve AI servislerinin çekirdek mantığı tamamlanmış olmalı. Kullanıcı girişi yapabilmeli, tasarım formu doldurabilmeli ve favori sistemi altyapısı hazır olmalı.
+* **Goal:** The backend authentication system, basic UI pages and core AI service logic should be complete. Users should be able to log in and fill in the design form, and the favorites infrastructure should be ready.
 
-### **Hafta 2: Entegrasyon, İyileştirme ve Teslimat (31 Temmuz \- 6 Ağustos)**
+### **Week 2: Integration, Polish and Delivery (31 July \- 6 August)**
 
-Bu haftanın ana hedefi, projeyi uçtan uca çalışır hale getirmek, kullanıcı deneyimini iyileştirmek, canlıya almak ve sunuma hazırlanmaktır.
+The main goal of this week is to make the project work end to end, improve the user experience, go live and prepare the presentation.
 
-#### **🤝 Gün 8-9: Uçtan Uca Entegrasyon ve Veritabanı (31 Temmuz \- 1 Ağustos)**
+#### **🤝 Days 8-9: End-to-End Integration and Database (31 July \- 1 August)**
 
-* **Görevler (Ortak Çalışma):**  
-  * \[ \] Frontend ve Backend'i tam olarak birbirine bağlama.  
-  * \[ \] Kullanıcı girişi ve JWT token doğrulamasını test etme.  
-  * \[ \] Tasarım oluşturma, favori ekleme/çıkarma akışını uçtan uca test etme.  
-  * \[ \] Blog paylaşım sistemi entegrasyonu.  
-  * \[ \] Ürün güncelleme işlevselliğini test etme.  
-  * \[ \] Veritabanı bağlantısı ve veri kalıcılığını test etme.  
-  * \[ \] İlk uçtan uca MVP testini gerçekleştirme ve çıkan hataları (bug) çözme.
+* **Tasks (Joint Work):**  
+  * \[ \] Fully connect the frontend and backend.  
+  * \[ \] Test user login and JWT token validation.  
+  * \[ \] Test the design creation and add/remove favorites flow end to end.  
+  * \[ \] Integrate the blog sharing system.  
+  * \[ \] Test the product update functionality.  
+  * \[ \] Test the database connection and data persistence.  
+  * \[ \] Run the first end-to-end MVP test and fix the resulting bugs.
 
-#### **✨ Gün 10-11: İyileştirme ve Kullanıcı Deneyimi (2-3 Ağustos)**
+#### **✨ Days 10-11: Polish and User Experience (2-3 August)**
 
-* **Görevler:**  
-  * \[ \] **UI/UX (Geliştirici 2):** Tüm sayfalar arası geçişleri iyileştirme (animasyonlar, loading states).  
-  * \[ \] **UI/UX (Geliştirici 2):** Favori sayfası ve blog sayfası kullanıcı deneyimini optimize etme.  
-  * \[ \] **UI/UX (Geliştirici 2):** Mobil uyumluluk kontrolü ve düzenlemeler.  
-  * \[ \] **Prompt Engineering (Geliştirici 1):** Gemini ve Imagen'den daha tutarlı ve kaliteli sonuçlar almak için prompt'ları iyileştirme.  
-  * \[ \] **Backend (Geliştirici 1):** Veritabanı sorgu optimizasyonları ve performans iyileştirmeleri.  
-  * \[ \] **Hata Yönetimi (Ortak):** Tüm API endpoint'leri için hata durumları ve kullanıcı dostu mesajlar.  
-  * \[ \] **F2.1:** "Yeniden Dene" butonunu ekleme.  
-  * \[ \] **F2.2:** "Panoya Kopyala" butonunu ekleme.
+* **Tasks:**  
+  * \[ \] **UI/UX (Developer 2):** Improve transitions between all pages (animations, loading states).  
+  * \[ \] **UI/UX (Developer 2):** Optimize the user experience of the favorites and blog pages.  
+  * \[ \] **UI/UX (Developer 2):** Check and adjust mobile responsiveness.  
+  * \[ \] **Prompt Engineering (Developer 1):** Refine prompts to get more consistent, higher-quality results from Gemini and Imagen.  
+  * \[ \] **Backend (Developer 1):** Database query optimizations and performance improvements.  
+  * \[ \] **Error Handling (Joint):** Error states and user-friendly messages for all API endpoints.  
+  * \[ \] **F2.1:** Add the "Try Again" button.  
+  * \[ \] **F2.2:** Add the "Copy to Clipboard" button.
 
-#### **🚀 Gün 12-13: Deployment ve Veritabanı Canlıya Alma (4-5 Ağustos)**
+#### **🚀 Days 12-13: Deployment and Database Go-Live (4-5 August)**
 
-* **Görevler:**  
-  * \[ \] **Backend Deployment (Geliştirici 1):** PostgreSQL veritabanını cloud'a kurma (DigitalOcean Managed Database).  
-  * \[ \] **Backend Deployment (Geliştirici 1):** Backend uygulamasını DigitalOcean VDS'e deploy etme (Nginx \+ Gunicorn konfigürasyonu).  
-  * \[ \] **Frontend Deployment (Geliştirici 2):** Frontend'i Vercel'e deploy etme ve backend API adresini doğru şekilde ayarlama.  
-  * \[ \] **Database Migration (Geliştirici 1):** Production veritabanında tüm tabloları oluşturma ve test verilerini ekleme.  
-  * \[ \] **Test (Ortak):** Canlı ortamda kapsamlı testler yapma (kullanıcı kayıt/giriş, tasarım oluşturma, favori ekleme, blog paylaşım).  
-  * \[ \] **Test (Ortak):** Farklı tarayıcılar ve mobil cihazlarda test. CORS hatalarını çözme.
+* **Tasks:**  
+  * \[ \] **Backend Deployment (Developer 1):** Set up the PostgreSQL database in the cloud (DigitalOcean Managed Database).  
+  * \[ \] **Backend Deployment (Developer 1):** Deploy the backend application to a DigitalOcean VDS (Nginx \+ Gunicorn configuration).  
+  * \[ \] **Frontend Deployment (Developer 2):** Deploy the frontend to Vercel and configure the backend API address correctly.  
+  * \[ \] **Database Migration (Developer 1):** Create all tables in the production database and add test data.  
+  * \[ \] **Testing (Joint):** Run thorough tests in the live environment (registration/login, design creation, adding favorites, blog sharing).  
+  * \[ \] **Testing (Joint):** Test on different browsers and mobile devices. Fix CORS errors.
 
-#### **🏆 Gün 14: Sunum Hazırlığı ve TESLİM\! (6 Ağustos, 19:00'a kadar)**
+#### **🏆 Day 14: Presentation Prep and SUBMISSION\! (6 August, by 19:00)**
 
-* **Görevler (Ortak):**  
-  * \[ \] GitHub repository'sini temizleme, README.md dosyasını PRD ve plan doğrultusunda güncelleme.  
-  * \[ \] 7 dakikalık jüri sunumunu planlama (kim ne anlatacak, demo akışı nasıl olacak).  
-  * \[ \] Proje teslim formunu doldurmak için gerekli materyalleri (GitHub linki, canlı link, 1 dakikalık video) hazırlama.  
-  * \[ \] Son bir kez canlı sistemi kontrol etme.  
-  * \[ \] **PROJEYİ TESLİM ETME\!** 🎉
+* **Tasks (Joint):**  
+  * \[ \] Clean up the GitHub repository and update README.md in line with the PRD and plan.  
+  * \[ \] Plan the 7-minute jury presentation (who presents what, how the demo flows).  
+  * \[ \] Prepare the materials needed for the submission form (GitHub link, live link, 1-minute video).  
+  * \[ \] Do a final check of the live system.  
+  * \[ \] **SUBMIT THE PROJECT\!** 🎉

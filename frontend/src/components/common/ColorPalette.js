@@ -32,7 +32,7 @@ const ColorPalette = memo(({ className = '', onSelectionChange }) => {
           : { type: 'palette', palette: selectedPalette }
       });
     }
-  }, [selectedPalette, useCustomDescription, customColorDescription, isValid]); // onSelectionChange'i dependency array'den çıkardık
+  }, [selectedPalette, useCustomDescription, customColorDescription, isValid]); // onSelectionChange intentionally left out of the dependency array
 
   return (
     <div className={`${className.includes('compact-palette') ? 'space-y-2 w-full' : 'space-y-6'} ${className} ${className.includes('compact-palette') ? 'compact-color-palette overflow-hidden' : ''}`}>
@@ -40,11 +40,11 @@ const ColorPalette = memo(({ className = '', onSelectionChange }) => {
       <div className={className.includes('compact-palette') ? 'space-y-1' : 'space-y-2'}>
         <h3 className={`font-semibold text-white flex items-center gap-2 ${className.includes('compact-palette') ? 'text-sm' : 'text-xl'}`}>
           <span className={className.includes('compact-palette') ? 'text-base' : 'text-2xl'}>🎨</span>
-          Renk Paleti
+          Color Palette
         </h3>
         {!className.includes('compact-palette') && (
           <p className="text-gray-400 text-sm">
-            Tasarımınız için uygun renk paletini seçin veya özel renk açıklaması girin.
+            Choose a color palette for your design or enter a custom color description.
           </p>
         )}
       </div>
@@ -52,7 +52,7 @@ const ColorPalette = memo(({ className = '', onSelectionChange }) => {
       {/* Category Selector */}
       <div className={`${className.includes('compact-palette') ? 'space-y-1' : 'space-y-3'}`}>
         <label className={`block font-medium text-gray-300 ${className.includes('compact-palette') ? 'text-xs' : 'text-sm'}`}>
-          Kategori
+          Category
         </label>
         <select
           value={selectedCategory}
@@ -68,7 +68,7 @@ const ColorPalette = memo(({ className = '', onSelectionChange }) => {
         </select>
       </div>
 
-      {/* Custom Description Toggle - Şık checkbox */}
+      {/* Custom Description Toggle - styled checkbox */}
       <div className={`flex items-center gap-3 bg-gray-800/50 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors ${className.includes('compact-palette') ? 'p-2' : 'p-4'}`}>
         <div className="relative">
           <input
@@ -102,7 +102,7 @@ const ColorPalette = memo(({ className = '', onSelectionChange }) => {
           </label>
         </div>
         <label htmlFor="useCustomDescription" className={`text-gray-300 flex-1 cursor-pointer select-none ${className.includes('compact-palette') ? 'text-xs' : 'text-sm'}`}>
-          Özel renk açıklaması
+          Custom color description
         </label>
       </div>
 
@@ -110,18 +110,18 @@ const ColorPalette = memo(({ className = '', onSelectionChange }) => {
       {useCustomDescription && (
         <div className={`${className.includes('compact-palette') ? 'space-y-1' : 'space-y-3'}`}>
           <label className={`block font-medium text-gray-300 ${className.includes('compact-palette') ? 'text-xs' : 'text-sm'}`}>
-            Renk Açıklaması
+            Color Description
           </label>
           <textarea
             value={customColorDescription}
             onChange={(e) => handleCustomDescriptionChange(e.target.value)}
-            placeholder="Örnek: Sıcak kahverengi tonları, krem beyazı..."
+            placeholder="Example: warm brown tones, cream white..."
             className={`w-full bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all resize-none ${className.includes('compact-palette') ? 'px-2 py-1 text-xs' : 'px-4 py-3'}`}
             rows={className.includes('compact-palette') ? 2 : 4}
           />
           <div className="flex justify-between items-center text-xs">
             <span className="text-gray-400">
-              {customColorDescription.length} karakter (isteğe bağlı)
+              {customColorDescription.length} characters (optional)
             </span>
           </div>
         </div>
@@ -131,13 +131,13 @@ const ColorPalette = memo(({ className = '', onSelectionChange }) => {
       {!useCustomDescription && (
         <div className={`${className.includes('compact-palette') ? 'space-y-1' : 'space-y-4'} overflow-hidden`}>
           <label className={`block font-medium text-gray-300 ${className.includes('compact-palette') ? 'text-xs' : 'text-sm'}`}>
-            Paleti Seç ({currentPalettes.length})
+            Choose a Palette ({currentPalettes.length})
           </label>
           
           {currentPalettes.length === 0 ? (
             <div className={`text-center text-gray-500 ${className.includes('compact-palette') ? 'py-2' : 'py-8'}`}>
               <span className={`block mb-1 ${className.includes('compact-palette') ? 'text-lg' : 'text-4xl'}`}>🎨</span>
-              <span className={className.includes('compact-palette') ? 'text-xs' : ''}>Bu kategoride palet yok.</span>
+              <span className={className.includes('compact-palette') ? 'text-xs' : ''}>No palettes in this category.</span>
             </div>
           ) : (
             <div 
@@ -177,8 +177,8 @@ const ColorPalette = memo(({ className = '', onSelectionChange }) => {
           <p className="text-green-400 flex items-center gap-2 text-sm">
             <span>✅</span>
             {useCustomDescription 
-              ? 'Özel renk açıklaması hazır'
-              : `"${selectedPalette?.name}" seçildi`
+              ? 'Custom color description ready'
+              : `"${selectedPalette?.name}" selected`
             }
           </p>
         </div>
@@ -215,7 +215,7 @@ const PaletteCard = memo(({ palette, isSelected, onSelect, isCompact = false }) 
       {palette.isPopular && !isCompact && (
         <div className="absolute -top-2 -right-2">
           <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-bold px-2 py-1 rounded-full">
-            ⭐ Popüler
+            ⭐ Popular
           </span>
         </div>
       )}
@@ -265,7 +265,7 @@ const PaletteCard = memo(({ palette, isSelected, onSelect, isCompact = false }) 
         </div>
       )}
 
-      {/* Selection Indicator - Şık tasarım */}
+      {/* Selection Indicator - styled */}
       {isSelected && (
         <div className={`absolute ${isCompact ? '-top-0.5 -right-0.5' : 'top-2 right-2'} z-10`}>
           <div className={`bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/50 ring-1 ring-gray-900 ${isCompact ? 'w-3 h-3' : 'w-6 h-6'}`}>

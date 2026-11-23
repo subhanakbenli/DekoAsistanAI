@@ -27,7 +27,7 @@ const FavoritesPage = memo(() => {
     fetchAllFavorites
   } = useFavorites();
 
-  // Local state - Tab artık gerekli değil
+  // Local state - tabs are no longer needed
   const [removing, setRemoving] = useState(null);
 
   // Redirect if not authenticated
@@ -65,10 +65,10 @@ const FavoritesPage = memo(() => {
               <span className="text-4xl">🔒</span>
             </div>
             <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-4">
-              Giriş Gerekli
+              Login Required
             </h2>
             <p className="text-gray-300 mb-8 max-w-md mx-auto">
-              Favorilerinizi görüntülemek için giriş yapmanız gerekiyor
+              You need to log in to view your favorites
             </p>
             <button
               onClick={() => navigate('/login')}
@@ -76,7 +76,7 @@ const FavoritesPage = memo(() => {
                        text-white font-bold px-8 py-3 rounded-xl transition-all duration-300 
                        transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
-              Giriş Yap
+              Log In
             </button>
           </div>
         </div>
@@ -97,7 +97,7 @@ const FavoritesPage = memo(() => {
 
         <div className="max-w-7xl mx-auto px-1 sm:px-2 lg:px-3 py-8">
           
-          {/* Main Content Section - Tab artık gerekli değil */}
+          {/* Main Content Section - tabs are no longer needed */}
           <FavoritesContentSection
             loading={loading}
             error={error}

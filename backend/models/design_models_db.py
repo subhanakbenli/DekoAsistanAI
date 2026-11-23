@@ -24,8 +24,8 @@ class Design(Base):
     height = Column(Integer, nullable=True)
     
     # User preferences - NEW FIELDS
-    color_info = Column(Text, nullable=True)  # Renk paleti bilgisi
-    product_categories = Column(JSON, nullable=True)  # Seçilen ürün kategorileri
+    color_info = Column(Text, nullable=True)  # Color palette info
+    product_categories = Column(JSON, nullable=True)  # Selected product categories
     price = Column(Float, nullable=True)  # Fiyat limiti (TL)
     
     # AI response data  
@@ -106,7 +106,7 @@ class Product(Base):
     
     # Details
     description = Column(Text, nullable=False)
-    price = Column(Integer, nullable=False, index=True)  # Price in kuruş or cents
+    price = Column(Integer, nullable=False, index=True)  # Price in kurus or cents
     
     # Links and media
     image_path = Column(String(255), nullable=True)

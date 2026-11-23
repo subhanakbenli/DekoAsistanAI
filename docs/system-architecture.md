@@ -1,27 +1,27 @@
-# 🏗️ **DekoAsistanAI - Detaylı Sistem Mimarisi**
+# 🏗️ **DekoAsistanAI - Detailed System Architecture**
 
-> **Hibrit AI destekli iç mekan tasarım sistemi - Teknik dokümantasyon**
+> **Hybrid AI-powered interior design system - Technical documentation**
 
-Bu dokümantasyon, DekoAsistanAI sisteminin detaylı mimarisini, iş akışlarını ve teknik implementasyonunu açıklar.
+This document describes the detailed architecture, workflows and technical implementation of the DekoAsistanAI system.
 
-## 📋 **İçindekiler**
+## 📋 **Table of Contents**
 
-1. [Sistem Genel Yapısı](#sistem-genel-yapısı)
-2. [Hibrit AI Pipeline](#hibrit-ai-pipeline)
-3. [Veri Akış Şeması](#veri-akış-şeması)
-4. [Teknoloji Stack Detayları](#teknoloji-stack-detayları)
-5. [Real-time İletişim Sistemi](#real-time-iletişim-sistemi)
-6. [Benzersiz Sistem Özellikleri](#benzersiz-sistem-özellikleri)
+1. [System Overview](#system-overview)
+2. [Hybrid AI Pipeline](#hybrid-ai-pipeline)
+3. [Data Flow Diagram](#data-flow-diagram)
+4. [Technology Stack Details](#technology-stack-details)
+5. [Real-time Communication System](#real-time-communication-system)
+6. [Unique System Features](#unique-system-features)
 
 ---
 
-## 🏗️ **Sistem Genel Yapısı**
+## 🏗️ **System Overview**
 
-DekoAsistanAI, **Google Gemini AI** ve **Google Imagen 4** destekli, gerçek zamanlı iç mekan tasarım asistanı sistemidir. Sistem **3 ana bileşenden** oluşur:
+DekoAsistanAI is a real-time interior design assistant powered by **Google Gemini AI** and **Google Imagen 4**. The system consists of **3 main components**:
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│    Frontend     │    │     Backend     │    │   Veritabanı    │
+│    Frontend     │    │     Backend     │    │    Database     │
 │   React + UI    │◄──►│  FastAPI + AI   │◄──►│   PostgreSQL    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
         │                        │                        │
@@ -35,19 +35,19 @@ DekoAsistanAI, **Google Gemini AI** ve **Google Imagen 4** destekli, gerçek zam
 
 ---
 
-## 🧠 **Hibrit AI Pipeline**
+## 🧠 **Hybrid AI Pipeline**
 
-### **1. Kullanıcı Girdisi → AI İşleme Süreci**
+### **1. User Input → AI Processing**
 
 ```python
-# Kullanıcı form verisi akışı
-Kullanıcı Input:
-├── Oda tipi (salon, yatak odası, vb.)
-├── Tasarım stili (modern, klasik, vb.)
-├── Oda boyutları (genişlik × uzunluk × yükseklik)
-├── Renk paleti tercihleri
-├── Ürün kategori seçimleri
-└── Özel kullanıcı notları
+# User form data flow
+User Input:
+├── Room type (living room, bedroom, etc.)
+├── Design style (modern, classic, etc.)
+├── Room dimensions (width × length × height)
+├── Color palette preferences
+├── Product category selections
+└── Custom user notes
 
          ↓ (JSON POST /api/design/test)
 
@@ -58,32 +58,32 @@ Backend Processing:
 └── AI service orchestration
 ```
 
-### **2. Hibrit AI İşleme Sistemi**
+### **2. Hybrid AI Processing System**
 
-Sistem **2 farklı AI modeli** paralel olarak kullanır:
+The system uses **2 different AI models** in parallel:
 
-#### **A. Gemini AI - Function Calling Sistemi**
+#### **A. Gemini AI - Function Calling System**
 
 ```python
 # services/ai/gemini_service.py
 async def generate_hybrid_design_suggestion():
     """
-    Hibrit tasarım önerisi üretimi
+    Generate a hybrid design suggestion
     """
-    # 1. GERÇEK ÜRÜN ARAMA (Function Calling)
+    # 1. REAL PRODUCT SEARCH (Function Calling)
     real_products = await find_product_function_calls(
         categories=user_categories,
         style=design_style,
         color=color_preferences
     )
     
-    # 2. AI ÜRÜN ÜRETİMİ (Eksik kategoriler için)
+    # 2. AI PRODUCT GENERATION (for missing categories)
     fake_products = await generate_ai_products(
         missing_categories=missing_cats,
         design_context=design_data
     )
     
-    # 3. HİBRİT KOMPOZİSYON
+    # 3. HYBRID COMPOSITION
     hybrid_design = compose_design_suggestion(
         real_products + fake_products,
         user_preferences
@@ -92,57 +92,57 @@ async def generate_hybrid_design_suggestion():
     return hybrid_design
 ```
 
-#### **Function Calling İş Akışı:**
+#### **Function Calling Workflow:**
 ```python
-# tools.py - Gerçek ürün arama fonksiyonu
+# tools.py - Real product search function
 def find_product(category: str, style: str = None, color: str = None):
     """
-    PostgreSQL veritabanından ürün arama
+    Search products in the PostgreSQL database
     
     SELECT * FROM products 
     WHERE category = ? 
     AND style LIKE ? 
     AND color LIKE ?
     """
-    # SQL sorgusu ile gerçek ürün bulma
-    # Eğer bulunamazsa None döndür
+    # Find real products with an SQL query
+    # Return None if nothing is found
 ```
 
-#### **B. Imagen 4 - Görsel Üretim Pipeline**
+#### **B. Imagen 4 - Image Generation Pipeline**
 
 ```python
 # services/design/mood_board_service.py
 async def generate_hybrid_mood_board():
     """
-    PURE GEMINI RESPONSE - Hiçbir modifikasyon yapılmaz
+    PURE GEMINI RESPONSE - no modifications are made
     """
     
-    # PHASE 1: Türkçe Veri Hazırlama (5% → 25%)
-    await websocket_progress("Hibrit tasarım promtu hazırlanıyor...")
+    # PHASE 1: Prepare Turkish data (5% → 25%)
+    await websocket_progress("Preparing hybrid design prompt...")
     products_text = format_hybrid_products(real_products, ai_products)
     
-    # PHASE 2: Gemini'ye Prompt Gönder (25% → 50%)
-    await websocket_progress("Gemini AI'dan Imagen prompt'u alınıyor...")
+    # PHASE 2: Send prompt to Gemini (25% → 50%)
+    await websocket_progress("Getting Imagen prompt from Gemini AI...")
     gemini_prompt_request = GeminiPrompts.get_imagen_prompt_enhancement_request(
         room_type, design_style, notes, products_text
     )
     
-    # PHASE 3: Pure Gemini Response (50% → 70%)
-    await websocket_progress("Gemini'den gelen prompt işleniyor...")
-    # ✅ KULLANICI TALEBİ: "gemini ne dönerse onu kullanalım bok da yolalsa okeyiz"
+    # PHASE 3: Pure Gemini response (50% → 70%)
+    await websocket_progress("Processing the prompt from Gemini...")
+    # ✅ Use the Gemini response as-is, without extra filtering
     pure_gemini_response = gemini_model.generate_content(gemini_prompt_request)
-    final_prompt = pure_gemini_response.text.strip()  # Hiç değiştirmeden kullan!
+    final_prompt = pure_gemini_response.text.strip()  # Use it unchanged!
     
-    # PHASE 4: Imagen 4 Görsel Üretimi (70% → 95%)
-    await websocket_progress("AI multimodal görsel oluşturuyor...")
+    # PHASE 4: Imagen 4 image generation (70% → 95%)
+    await websocket_progress("AI is creating the multimodal image...")
     imagen_response = await vertex_ai_imagen_generate(
         prompt=final_prompt,  # Pure Gemini response - NO MODIFICATIONS
         model="imagegeneration@006",
         reference_images=real_product_images  # Hybrid multimodal
     )
     
-    # PHASE 5: Son İşlemler (95% → 100%)
-    await websocket_progress("Hibrit görsel kaydediliyor...")
+    # PHASE 5: Finalization (95% → 100%)
+    await websocket_progress("Saving hybrid image...")
     final_image = save_and_optimize_image(imagen_response)
     
     return final_image
@@ -150,11 +150,11 @@ async def generate_hybrid_mood_board():
 
 ---
 
-## 📊 **Veri Akış Şeması**
+## 📊 **Data Flow Diagram**
 
 ```mermaid
 graph TD
-    A[Kullanıcı Form Input] --> B[Frontend React UI]
+    A[User Form Input] --> B[Frontend React UI]
     B --> C[JSON POST /api/design/test]
     C --> D[Backend FastAPI Router]
     D --> E[DesignRequest Validation]
@@ -162,7 +162,7 @@ graph TD
     
     F --> G[Function Calling - Product Search]
     F --> H[AI Product Generation]
-    G --> I[PostgreSQL Ürün DB]
+    G --> I[PostgreSQL Product DB]
     H --> J[Fake Product Creation]
     
     I --> K[Real Products Found]
@@ -189,7 +189,7 @@ graph TD
 
 ---
 
-## 🔧 **Teknoloji Stack Detayları**
+## 🔧 **Technology Stack Details**
 
 ### **Backend Architecture**
 
@@ -197,24 +197,24 @@ graph TD
 backend/
 ├── main.py                 # FastAPI app + CORS + static files
 ├── routers/               
-│   ├── design_router.py   # Hibrit tasarım endpoint'leri
-│   ├── auth_router.py     # JWT kimlik doğrulama
-│   ├── favorites_router.py # Favori yönetimi
-│   ├── blog_router.py     # Blog paylaşım sistemi
+│   ├── design_router.py   # Hybrid design endpoints
+│   ├── auth_router.py     # JWT authentication
+│   ├── favorites_router.py # Favorites management
+│   ├── blog_router.py     # Blog sharing system
 │   └── websocket_router.py # Real-time progress
 ├── services/              
 │   ├── ai/               # AI orchestration layer
-│   │   ├── gemini_service.py      # Ana AI koordinatörü
+│   │   ├── gemini_service.py      # Main AI coordinator
 │   │   ├── gemini_client.py       # Gemini API client
 │   │   ├── product_service.py     # Function calling logic
-│   │   ├── notes_parser.py        # Kullanıcı notu parser
-│   │   ├── response_processor.py  # AI response işleme
+│   │   ├── notes_parser.py        # User notes parser
+│   │   ├── response_processor.py  # AI response processing
 │   │   └── tools.py              # Function calling tools
 │   ├── design/           
-│   │   ├── mood_board_service.py  # Imagen 4 görsel üretim
+│   │   ├── mood_board_service.py  # Imagen 4 image generation
 │   │   ├── design_history_service.py # DB persistence
-│   │   ├── hashtag_service.py     # Hashtag yönetimi
-│   │   └── local_image_service.py # Görsel optimizasyon
+│   │   ├── hashtag_service.py     # Hashtag management
+│   │   └── local_image_service.py # Image optimization
 │   ├── communication/    
 │   │   └── websocket_manager.py   # Real-time progress
 │   └── auth/             
@@ -230,7 +230,7 @@ backend/
 │   ├── settings.py       # Environment settings
 │   └── constants.py      # System constants
 └── utils/                
-    ├── image_utils.py    # Görsel işleme utilities
+    ├── image_utils.py    # Image processing utilities
     └── error_handler.py  # Error handling
 ```
 
@@ -241,25 +241,25 @@ frontend/src/
 ├── App.js                # Router + Auth provider
 ├── pages/               
 │   ├── HomePage.js              # Landing page
-│   ├── RoomDesignStudio.js      # Ana tasarım formu
-│   ├── DesignDetailPage.js      # Sonuç görüntüleme
-│   ├── FavoritesPage.js         # Favori tasarımlar
-│   └── BlogPage.js             # Blog paylaşımları
+│   ├── RoomDesignStudio.js      # Main design form
+│   ├── DesignDetailPage.js      # Result view
+│   ├── FavoritesPage.js         # Favorite designs
+│   └── BlogPage.js             # Blog posts
 ├── components/          
-│   ├── studio/                  # Tasarım stüdyosu UI
-│   │   ├── DesignForm.js        # Ana form komponenti
-│   │   ├── ColorPicker.js       # Renk seçici
-│   │   ├── RoomDimensions.js    # Boyut girişi
-│   │   └── CategorySelector.js  # Ürün kategorisi seçimi
-│   ├── design/                  # Sonuç görüntüleme
-│   │   ├── DesignResult.js      # Ana sonuç komponenti
-│   │   ├── MoodBoard.js         # Görsel gösterici
-│   │   ├── ProductList.js       # Ürün listesi
+│   ├── studio/                  # Design studio UI
+│   │   ├── DesignForm.js        # Main form component
+│   │   ├── ColorPicker.js       # Color picker
+│   │   ├── RoomDimensions.js    # Dimension input
+│   │   └── CategorySelector.js  # Product category selection
+│   ├── design/                  # Result display
+│   │   ├── DesignResult.js      # Main result component
+│   │   ├── MoodBoard.js         # Image viewer
+│   │   ├── ProductList.js       # Product list
 │   │   └── ProgressTracker.js   # Real-time progress
-│   └── common/                  # Ortak komponnetler
-│       ├── Header.js            # Site başlığı
-│       ├── Footer.js            # Site altbilgisi
-│       └── LoadingSpinner.js    # Yükleme animasyonu
+│   └── common/                  # Shared components
+│       ├── Header.js            # Site header
+│       ├── Footer.js            # Site footer
+│       └── LoadingSpinner.js    # Loading animation
 ├── services/            
 │   ├── api.js                   # Axios HTTP client
 │   ├── websocket.js             # WebSocket manager
@@ -277,7 +277,7 @@ frontend/src/
 
 ---
 
-## 🔄 **Real-time İletişim Sistemi**
+## 🔄 **Real-time Communication System**
 
 ### **WebSocket Progress Tracking**
 
@@ -316,7 +316,7 @@ class WebSocketManager:
         self.mood_board_progress: Dict[str, Dict] = {}
     
     async def send_progress_update(self, connection_id: str, progress: int, message: str):
-        """Real-time progress güncellemesi gönder"""
+        """Send a real-time progress update"""
         if connection_id in self.active_connections:
             await self.active_connections[connection_id].send_json({
                 "type": "mood_board_progress",
@@ -326,175 +326,175 @@ class WebSocketManager:
             })
 ```
 
-### **19 Aşamalı Progress Tracking**
+### **19-Stage Progress Tracking**
 
 ```python
-# 19 aşamalı ilerlemem tracking sistemi
+# 19-stage progress tracking system
 PROGRESS_STAGES = [
-    (5, "Tasarım bilgileri analiz ediliyor..."),
-    (10, "Kullanıcı tercihleri işleniyor..."),
-    (15, "Ürün kategorileri belirleniyor..."),
-    (20, "Renk paleti optimize ediliyor..."),
-    (25, "Oda boyutları hesaplanıyor..."),
-    (30, "Türkçe prompt hazırlanıyor..."),
-    (40, "Gemini AI ile İngilizce'ye çeviriliyor..."),
-    (50, "Imagen 4 için prompt optimize ediliyor..."),
-    (55, "Karakter limiti kontrol ediliyor..."),
-    (60, "AI görsel üretim başlatılıyor..."),
-    (70, "Vertex AI ile görsel oluşturuluyor..."),
-    (80, "Görsel kalitesi artırılıyor..."),
-    (85, "Dosya sistemi hazırlanıyor..."),
-    (90, "Görsel kaydediliyor..."),
-    (95, "Final optimizasyonlar yapılıyor..."),
-    (98, "Veritabanı güncelleniyor..."),
-    (100, "Tasarım tamamlandı! 🎉")
+    (5, "Analyzing design details..."),
+    (10, "Processing user preferences..."),
+    (15, "Determining product categories..."),
+    (20, "Optimizing color palette..."),
+    (25, "Calculating room dimensions..."),
+    (30, "Preparing Turkish prompt..."),
+    (40, "Translating to English with Gemini AI..."),
+    (50, "Optimizing prompt for Imagen 4..."),
+    (55, "Checking character limit..."),
+    (60, "Starting AI image generation..."),
+    (70, "Creating image with Vertex AI..."),
+    (80, "Enhancing image quality..."),
+    (85, "Preparing file system..."),
+    (90, "Saving image..."),
+    (95, "Applying final optimizations..."),
+    (98, "Updating database..."),
+    (100, "Design complete! 🎉")
 ]
 ```
 
 ---
 
-## ⚡ **Benzersiz Sistem Özellikleri**
+## ⚡ **Unique System Features**
 
-### **1. Akıllı AI Orkestrasyon Sistemi**
+### **1. Smart AI Orchestration System**
 
 ```python
-# ENTEGRASYONELİ AI ZEKASı: Google'ın en gelişmiş teknolojileri
+# INTEGRATED AI INTELLIGENCE: Google's most advanced technologies
 async def _create_imagen_prompt(self, room_type, design_style, notes, products_text):
-    """Türkiye'nin en gelişmiş AI destekli iç mekan tasarım sistemi."""
+    """Turkey's most advanced AI-powered interior design system."""
     
-    # Google Gemini ile doğal dil işleme
+    # Natural language processing with Google Gemini
     prompt_request = GeminiPrompts.get_imagen_prompt_enhancement_request(
         room_type, design_style, notes, products_text
     )
     
     try:
-        # Gemini AI'nın yaratıcı gücü
+        # The creative power of Gemini AI
         response = self.gemini_model.generate_content(prompt_request)
-        enhanced_prompt = response.text.strip()  # Ham AI zekanı!
+        enhanced_prompt = response.text.strip()  # Raw AI intelligence!
         
-        # ✅ ÖZEL ÖZELLİKLER
-        # 🎨 Sınırsız yaratıcılık: AI'nın doğal zekanı hiç filtrelenmez
-        # 🚀 Ultra-hızlı işlem: Gereksiz katmanlar kaldırıldı
-        # 🎯 Kişiselleştirilmiş sonuçlar: Her kullanıcıya özel tasarım
+        # ✅ SPECIAL FEATURES
+        # 🎨 Unlimited creativity: the AI's natural intelligence is never filtered
+        # 🚀 Ultra-fast processing: unnecessary layers removed
+        # 🎯 Personalized results: a design tailored to each user
         
-        return enhanced_prompt  # Benzersiz tasarım garantisi!
+        return enhanced_prompt  # Unique design guaranteed!
         
     except Exception as e:
-        # ⚡ Akıllı Hata Yönetimi: Sistem kendini sürekli iyileştirir
-        raise Exception(f"AI tasarım sistemi geçici olarak yoğun - lütfen tekrar deneyin")
+        # ⚡ Smart error handling: the system continuously improves itself
+        raise Exception(f"AI design system is temporarily busy - please try again")
 
-# HİBRİT ÇOKLU-MODAL SİSTEM
+# HYBRID MULTIMODAL SYSTEM
 async def _create_hybrid_imagen_prompt(self, real_products, ai_products):
-    """Dünya'da eşi benzeri olmayan hibrit tasarım teknolojisi."""
+    """One-of-a-kind hybrid design technology."""
     
     products_text = format_hybrid_products(real_products, ai_products)
     prompt_request = GeminiPrompts.get_imagen_prompt_enhancement_request(
         room_type, design_style, notes, products_text
     )
     
-    # Google Gemini'nin yaratıcı gücü
+    # The creative power of Google Gemini
     response = self.gemini_model.generate_content(prompt_request)
     premium_prompt = response.text.strip()
     
-    # ✅ Gerçek ürün fotoğrafları + AI yaratıcılığı = Eşsiz sonuçlar
+    # ✅ Real product photos + AI creativity = unique results
     return await self._generate_image_with_imagen_multimodal(
-        premium_prompt,  # Premium AI tasarım promtu
+        premium_prompt,  # Premium AI design prompt
         reference_images=real_product_images
     )
 ```
 
-### **2. Devrimsel Hibrit Görselleştirme Teknolojisi**
+### **2. Revolutionary Hybrid Visualization Technology**
 
 ```python
-# Türkiye'nin en gelişmiş gerçek+AI ürün entegrasyon sistemi
+# Turkey's most advanced real + AI product integration system
 async def generate_hybrid_mood_board(real_products, ai_products):
     """
-    🏆 SEKTÖRDE İLK: Gerçek ürün fotoğrafları + AI yaratıcılığı
+    🏆 INDUSTRY FIRST: Real product photos + AI creativity
     """
     
-    # Gerçek ürün fotoğraflarından multimodal referans
+    # Multimodal references from real product photos
     reference_images = []
     for product in real_products:
         if product.get('image_path'):
             premium_image = await load_product_image(product['image_path'])
             reference_images.append(premium_image)
     
-    # Akıllı ürün kategorilendirme
+    # Smart product categorization
     products_text = ""
     if real_products:
-        products_text += "✅ GERÇEK ÜRÜNLER (Satın Alınabilir):\n"
+        products_text += "✅ REAL PRODUCTS (Purchasable):\n"
         for product in real_products:
             products_text += f"- {product['category']}: {product['name']}\n"
     
     if ai_products:
-        products_text += "🎨 YARATICI ÖNERİLER (AI Tasarımı):\n" 
+        products_text += "🎨 CREATIVE SUGGESTIONS (AI Design):\n" 
         for product in ai_products:
             products_text += f"- {product['category']}: {product['name']}\n"
     
-    # Google Gemini ile profesyonel prompt oluşturma
+    # Professional prompt creation with Google Gemini
     gemini_prompt = await self._create_hybrid_imagen_prompt(products_text)
     
-    # 🚀 Çoklu-modal görsel üretimi: AI promtu + Gerçek ürün fotoğrafları
+    # 🚀 Multimodal image generation: AI prompt + real product photos
     return await self._generate_image_with_imagen_multimodal(
-        prompt=gemini_prompt,  # Premium AI tasarım promtu
-        reference_images=reference_images,  # Gerçek ürün referansları
-        product_data=real_products  # Detaylı ürün bilgileri
+        prompt=gemini_prompt,  # Premium AI design prompt
+        reference_images=reference_images,  # Real product references
+        product_data=real_products  # Detailed product information
     )
 ```
 
 ```python
-# prompts.py - Endüstri standartlarını aşan 480-karakter optimizasyonu
+# prompts.py - 480-character optimization beyond industry standards
 def get_imagen_prompt_enhancement_request(room_type, design_style, notes, products_text):
     return f"""
-🎯 MİSYON: Türkçe tasarım fikirlerinizi Hollywood kalitesinde İngilizce görsel promtuna dönüştür.
+🎯 MISSION: Turn Turkish design ideas into a Hollywood-quality English image prompt.
 
-🏆 PREMIUM KURALLAR:
-✅ WORLD-CLASS 480 karakter optimizasyonu
-✅ En fazla 5 ürün ile maksimum etki
-✅ %100 İngilizce - Uluslararası standart
-✅ "Photo-realistic" başlangıç - Sinematik kalite
-✅ Oda boyut optimizasyonu - Mükemmel perspektif
-✅ Renk harmoni analizi - Profesyonel palet
+🏆 PREMIUM RULES:
+✅ WORLD-CLASS 480-character optimization
+✅ Maximum impact with at most 5 products
+✅ 100% English - international standard
+✅ "Photo-realistic" opening - cinematic quality
+✅ Room dimension optimization - perfect perspective
+✅ Color harmony analysis - professional palette
 
-🎨 SIHIRLI FORMAT: "Photo-realistic [style] [room] interior, [colors], [products], natural lighting, residential home"
+🎨 MAGIC FORMAT: "Photo-realistic [style] [room] interior, [colors], [products], natural lighting, residential home"
 
-🇹🇷 TÜRKÇE TASARIM BİLGİLERİ:
-Oda: {room_type}
-Stil: {design_style} 
-Notlar: {notes}
-Ürünler: {products_text}
+🇹🇷 TURKISH DESIGN DETAILS:
+Room: {room_type}
+Style: {design_style} 
+Notes: {notes}
+Products: {products_text}
 
-🇺🇸 HOLLYWOOD KALİTESİ İNGİLİZCE PROMPT (max 480 char):"""
+🇺🇸 HOLLYWOOD-QUALITY ENGLISH PROMPT (max 480 char):"""
 
-# ✅ SİSTEM AVANTAJLARI
-# 🚀 Google Gemini'nin yaratıcı gücü hiç filtrelenmez - saf AI zekası
-# 🎯 Sıfır müdahale politikası - AI'nın doğal yetenekleri serbest
-# ⚡ Ultra-optimize edilmiş pipeline - Imagen'a direkt bağlantı
+# ✅ SYSTEM ADVANTAGES
+# 🚀 Google Gemini's creative power is never filtered - pure AI intelligence
+# 🎯 Zero-intervention policy - the AI's natural abilities run free
+# ⚡ Ultra-optimized pipeline - direct connection to Imagen
 ```
 
-### **3. Akıllı Çeviri & Optimizasyon Motoru**
+### **3. Smart Translation & Optimization Engine**
 
 ```python
 # tools.py - Gemini Function Calling tools
 function_tools = [
     {
         "name": "find_product",
-        "description": "Veritabanından ürün arama fonksiyonu",
+        "description": "Searches products in the database",
         "parameters": {
             "type": "object",
             "properties": {
                 "category": {
                     "type": "string",
-                    "description": "Ürün kategorisi (zorunlu)",
+                    "description": "Product category (required)",
                     "enum": ["Mobilya", "Aydınlatma", "Tekstil", "Dekoratif Objeler"]
                 },
                 "style": {
                     "type": "string", 
-                    "description": "Tasarım stili (opsiyonel)"
+                    "description": "Design style (optional)"
                 },
                 "color": {
                     "type": "string",
-                    "description": "Renk tercihi (opsiyonel)"
+                    "description": "Color preference (optional)"
                 }
             },
             "required": ["category"]
@@ -510,22 +510,22 @@ async def handle_function_call(function_name, function_args):
     return {"error": "Unknown function"}
 ```
 
-### **4. Function Calling Dinamik Ürün Arama**
+### **4. Function Calling Dynamic Product Search**
 
 ```python
-# Gerçek zamanlı progress tracking
+# Real-time progress tracking
 async def simulate_background_progress(connection_id: str, total_duration: int = 45):
     """
-    AI işlem sırasında kullanıcı deneyimini iyileştiren 
-    gerçek zamanlı progress simülasyonu
+    Real-time progress simulation that improves the user
+    experience while the AI is processing
     """
     progress_steps = [
-        (5, "Başlatılıyor..."),
-        (15, "Analiz ediliyor..."),
-        (30, "AI işliyor..."),
-        (50, "Görsel üretiliyor..."),
-        (75, "Optimize ediliyor..."),
-        (95, "Tamamlanıyor...")
+        (5, "Starting..."),
+        (15, "Analyzing..."),
+        (30, "AI is processing..."),
+        (50, "Generating image..."),
+        (75, "Optimizing..."),
+        (95, "Finishing...")
     ]
     
     for progress, message in progress_steps:
@@ -539,19 +539,19 @@ async def simulate_background_progress(connection_id: str, total_duration: int =
 
 ---
 
-## 🔍 **Performans & Optimizasyon**
+## 🔍 **Performance & Optimization**
 
-### **Performans Optimizasyonu & Teknoloji Avantajları**
-- **🚀 Google AI Entegrasyonu**: Gemini'nin ham yeteneklerini %100 oranında kullanır
-- **⚡ Hızlı İşlem Garantisi**: Gereksiz katmanlar kaldırılarak maksimum performans
-- **🎯 Yaratıcılık Serbest**: AI'nın doğal zekanına hiç müdahale edilmez  
-- **📊 Akıllı Hata Yönetimi**: Sistem kendini sürekli geliştirir ve optimize eder
+### **Performance Optimization & Technology Advantages**
+- **🚀 Google AI Integration**: uses 100% of Gemini's raw capabilities
+- **⚡ Fast Processing Guarantee**: maximum performance by removing unnecessary layers
+- **🎯 Creativity Unleashed**: the AI's natural intelligence is never interfered with  
+- **📊 Smart Error Handling**: the system continuously improves and optimizes itself
 
-### **Endüstri Lideri Optimizasyon Teknikleri**
-- **Imagen 4 Limit**: 480 karakter maximum
-- **Turkish → English**: %60-70 karakter tasarrufu
-- **Meta-info removal**: Hibrit sistem referansları kaldırıldı
-- **Smart truncation**: Ürün açıklamaları 25/20 karakter ile sınırlandı
+### **Industry-Leading Optimization Techniques**
+- **Imagen 4 Limit**: 480 characters maximum
+- **Turkish → English**: 60-70% character savings
+- **Meta-info removal**: hybrid system references removed
+- **Smart truncation**: product descriptions limited to 25/20 characters
 
 ### **Database Query Optimization**
 ```sql
@@ -621,13 +621,13 @@ services:
 
 ---
 
-Bu dokümantasyon, DekoAsistanAI sisteminin tüm teknik detaylarını, iş akışlarını ve implementasyon özelliklerini kapsamaktadır. Sistem sürekli geliştirilmekte olup, yeni özellikler eklendikçe bu dokümantasyon güncellenecektir.
+This document covers all technical details, workflows and implementation features of the DekoAsistanAI system. The system is under continuous development, and this document will be updated as new features are added.
 
-**Son Güncelleme**: 6 Ağustos 2025 - Premium AI Integration Launch 🚀  
-**Versiyon**: 2.0 - Professional Edition  
-**Yenilikler**: 
-- 🏆 Google Gemini tam entegrasyonu - sınırsız yaratıcılık
-- 🎯 Hibrit multimodal sistem - gerçek ürün + AI kombinasyonu
-- ⚡ Ultra-optimize pipeline - Hollywood kalitesi sonuçlar
-- 🌟 Türkiye'nin en gelişmiş iç mekan tasarım AI sistemi  
-**Geliştirici Ekibi**: [@cihanayindi](https://github.com/cihanayindi), [@subhanakbenli](https://github.com/subhanakbenli)
+**Last Updated**: 6 August 2025 - Premium AI Integration Launch 🚀  
+**Version**: 2.0 - Professional Edition  
+**What's New**: 
+- 🏆 Full Google Gemini integration - unlimited creativity
+- 🎯 Hybrid multimodal system - real products + AI combined
+- ⚡ Ultra-optimized pipeline - Hollywood-quality results
+- 🌟 Turkey's most advanced interior design AI system  
+**Development Team**: [@cihanayindi](https://github.com/cihanayindi), [@subhanakbenli](https://github.com/subhanakbenli)

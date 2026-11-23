@@ -1,150 +1,156 @@
 # 🏡 Deko Asistan AI
 
-> **Google Gemini destekli, kişiselleştirilmiş iç mekan tasarım asistanı**
+> **A personalized interior design assistant powered by Google Gemini**
 
-Deko Asistan, yapay zeka gücüyle odalarınız için özel tasarım önerileri sunan, BTK Akademi Hackathon 2025 için geliştirilmiş yenilikçi bir web uygulamasıdır. Google Gemini'nin multimodal yetenekleri ve Function Calling teknolojisini kullanarak, kullanıcıların hayallerindeki mekanları tasarlamasına yardımcı olur.
+Deko Asistan is an innovative web application built for the BTK Akademi Hackathon 2025 that uses AI to deliver tailored design suggestions for your rooms. Using Google Gemini's multimodal capabilities and Function Calling, it helps users design the spaces they dream of.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
 [![React](https://img.shields.io/badge/React-18+-61DAFB.svg)](https://reactjs.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116+-009688.svg)](https://fastapi.tiangolo.com)
 
-## 🌟 Özellikler
+## 🌟 Features
 
-### 🎯 **Akıllı Tasarım Motoru**
-- **Google Gemini AI** ile güçlendirilmiş tasarım önerileri
-- **Metin tabanlı girdi**: Detaylı açıklamalar, renk paleti ve özel notlar
-- **Kişiselleştirilmiş öneriler**: Oda tipi, tasarım stili ve ürün kategorileri
-- **Gerçek zamanlı oda görselleştirmesi**: Google Imagen ile hibrit oda görselü üretimi
+### 🎯 **Smart Design Engine**
+- Design suggestions powered by **Google Gemini AI**
+- **Text-based input**: detailed descriptions, color palette and custom notes
+- **Personalized suggestions**: room type, design style and product categories
+- **Real-time room visualization**: hybrid room image generation with Google Imagen
 
-### 🛍️ **Akıllı Ürün Önerileri**
-- **Function Calling** teknolojisiyle entegre ürün arama
-- **Hibrit görselleştirme sistemi**: Gerçek e-ticaret ürün görselleri + AI ile oda kompozisyonu
-- **Kategori bazlı filtreleme**: Mobilya, aydınlatma, aksesuar ve daha fazlası
-- **Fiyat optimizasyonu**: Bütçe dostu alternatifler
+### 🛍️ **Smart Product Recommendations**
+- Integrated product search via **Function Calling**
+- **Hybrid visualization system**: real e-commerce product images + AI room composition
+- **Category-based filtering**: furniture, lighting, accessories and more
+- **Price optimization**: budget-friendly alternatives
 
-### 👤 **Kullanıcı Deneyimi**
-- **Sezgisel arayüz**: Kolay form tabanlı tasarım oluşturma
-- **Favori sistemi**: Beğenilen tasarımları kaydetme
-- **Blog paylaşımı**: Tasarımları toplulukla paylaşma
-- **Tasarım arşivi**: Favori tasarımlar üzerinden geçmiş çalışmaları görüntüleme (gelecekte tam geçmiş özelliği eklenecek)
+### 👤 **User Experience**
+- **Intuitive interface**: easy form-based design creation
+- **Favorites**: save the designs you like
+- **Blog sharing**: share designs with the community
+- **Design archive**: view past work through favorited designs (a full history feature is planned)
 
-### 🔄 **Real-time İletişim**
-- **WebSocket bağlantısı**: Canlı tasarım süreci takibi
-- **Progresif yükleme**: Adım adım sonuç görüntüleme
-- **Dinamik güncellemeler**: Ürün bazlı yeniden öneriler
+### 🔄 **Real-time Communication**
+- **WebSocket connection**: live tracking of the design process
+- **Progressive loading**: results shown step by step
+- **Dynamic updates**: per-product re-recommendations
 
-## 🏗️ Teknik Mimari
+## 🏗️ Technical Architecture
 
 ### Backend (Python/FastAPI)
 ```
 backend/
-├── main.py                 # FastAPI ana uygulama
-├── routers/               # API endpoint'leri
-│   ├── design_router.py   # Tasarım operasyonları
-│   ├── auth_router.py     # Kimlik doğrulama
-│   ├── favorites_router.py # Favori yönetimi
-│   └── blog_router.py     # Blog sistemi
-├── services/              # İş mantığı katmanı
-│   ├── ai/               # AI servisleri
+├── main.py                 # FastAPI main application
+├── routers/               # API endpoints
+│   ├── design_router.py   # Design operations
+│   ├── auth_router.py     # Authentication
+│   ├── favorites_router.py # Favorites management
+│   └── blog_router.py     # Blog system
+├── services/              # Business logic layer
+│   ├── ai/               # AI services
 │   │   ├── gemini_service.py
 │   │   ├── gemini_client.py
 │   │   └── product_service.py
-│   ├── auth/             # Kimlik doğrulama
-│   ├── design/           # Tasarım yönetimi
-│   └── communication/    # WebSocket yönetimi
-├── models/               # Veri modelleri
-└── config/               # Konfigürasyon
+│   ├── auth/             # Authentication
+│   ├── design/           # Design management
+│   └── communication/    # WebSocket management
+├── models/               # Data models
+└── config/               # Configuration
 ```
 
 ### Frontend (React/Vite)
 ```
 frontend/
 ├── src/
-│   ├── pages/            # Sayfa bileşenleri
+│   ├── pages/            # Page components
 │   │   ├── HomePage.js
 │   │   ├── RoomDesignStudio.js
 │   │   └── DesignDetailPage.js
-│   ├── components/       # UI bileşenleri
-│   │   ├── studio/       # Tasarım stüdyosu
-│   │   ├── design/       # Tasarım gösterimi
-│   │   └── sections/     # Sayfa bölümleri
-│   ├── services/         # API iletişimi
-│   ├── hooks/           # React Hook'ları
-│   └── contexts/        # State yönetimi
+│   ├── components/       # UI components
+│   │   ├── studio/       # Design studio
+│   │   ├── design/       # Design display
+│   │   └── sections/     # Page sections
+│   ├── services/         # API communication
+│   ├── hooks/           # React hooks
+│   └── contexts/        # State management
 ```
 
-## 🛠️ Teknoloji Yığını
+## 🛠️ Tech Stack
 
 ### **Backend**
 - **Framework**: FastAPI 0.116+
-- **Dil**: Python 3.11+
-- **Veritabanı**: PostgreSQL + SQLAlchemy ORM
+- **Language**: Python 3.11+
+- **Database**: PostgreSQL + SQLAlchemy ORM
 - **AI**: Google Gemini API + Imagen API
-- **Kimlik Doğrulama**: JWT
+- **Authentication**: JWT
 - **Real-time**: WebSocket
 
 ### **Frontend**
 - **Framework**: React 18+ (Vite)
-- **Stil**: Tailwind CSS
+- **Styling**: Tailwind CSS
 - **Routing**: React Router v7
 - **State Management**: Zustand
 - **HTTP Client**: Axios
 
 ### **AI & Cloud**
-- **Google Gemini**: Metin tabanlı AI model (tasarım önerileri ve ürün seçimi)
-- **Google Imagen**: Multimodal görsel üretimi (metin + seçilen ürün görselleri)
-- **Function Calling**: Dinamik ürün arama
+- **Google Gemini**: text-based AI model (design suggestions and product selection)
+- **Google Imagen**: multimodal image generation (text + selected product images)
+- **Function Calling**: dynamic product search
 - **Google Cloud Platform**: Hosting
 
-## 🚀 Kurulum
+## 🚀 Installation
 
-### Ön Koşullar
+### Prerequisites
 - Python 3.11+
 - Node.js 18+
 - PostgreSQL 14+
-- Google Cloud Platform hesabı
+- Google Cloud Platform account
 
-### 1. Repository'yi klonlayın
+### 1. Clone the repository
 ```bash
 git clone https://github.com/cihanayindi/DekoAsistanAI.git
 cd DekoAsistanAI
 ```
 
-### 2. Backend Kurulumu
+### 2. Backend Setup
 ```bash
 cd backend
 
-# Sanal ortam oluşturun
+# Create a virtual environment
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# Bağımlılıkları yükleyin
+# Install dependencies
 pip install -r requirements.txt
 
-# Ortam değişkenlerini ayarlayın
+# Configure environment variables
 cp .env.example .env
-# .env dosyasını düzenleyerek API anahtarlarınızı ekleyin
+# Edit .env and add your API keys
 
-# Veritabanı migration'larını çalıştırın
+# Run database migrations
 alembic upgrade head
 
-# Sunucuyu başlatın
+# Load the product catalog (see the "Product Data" section)
+python load_dataset.py
+
+# Start the server
 python main.py
 ```
 
-### 3. Frontend Kurulumu
+#### Product Data
+For copyright reasons, this repository does not include a real product catalog or product images. Add your own products as JSON files in `backend/data/jsonlaryeni/`, using the same format as `ornek_urunler.json` (`product_name`, `category`, `style`, `color`, `dimensions`, `description`, `price`, `image_path`, `product_link`). You can put the images under `backend/data/products/` (this directory is not tracked by git).
+
+### 3. Frontend Setup
 ```bash
 cd frontend
 
-# Bağımlılıkları yükleyin
+# Install dependencies
 npm install
 
-# Geliştirme sunucusunu başlatın
+# Start the development server
 npm start
 ```
 
-### 4. Ortam Değişkenleri
+### 4. Environment Variables
 
 #### Backend (.env)
 ```env
@@ -173,73 +179,73 @@ REACT_APP_API_URL=http://localhost:8000
 REACT_APP_WS_URL=ws://localhost:8000
 ```
 
-## 📱 Kullanım
+## 📱 Usage
 
-### 1. **Hesap Oluşturma**
-- Ana sayfada "Kayıt Ol" butonuna tıklayın
-- E-posta ve şifre ile hesabınızı oluşturun
+### 1. **Create an Account**
+- Click the "Sign Up" button on the home page
+- Create your account with an email and password
 
-### 2. **Tasarım Oluşturma**
-- "Tasarım Stüdyosu"na gidin
-- Oda tipi ve tasarım stilini seçin
-- Oda boyutlarını girin (genişlik, uzunluk, yükseklik)
-- Renk paletinizi belirleyin
-- İstediğiniz ürün kategorilerini seçin
-- Özel notlarınızı ekleyin
+### 2. **Create a Design**
+- Go to the "Design Studio"
+- Choose the room type and design style
+- Enter the room dimensions (width, length, height)
+- Set your color palette
+- Select the product categories you want
+- Add your custom notes
 
-### 3. **Sonuçları İnceleme**
-- AI tarafından oluşturulan tasarım açıklamasını okuyun
-- Hibrit oda görselini inceleyin (gerçek ürün görselleri + AI üretimi)
-- Önerilen ürünleri görüntüleyin
-- Tüm tasarımı favorilerinize ekleyin
+### 3. **Review the Results**
+- Read the AI-generated design description
+- Inspect the hybrid room image (real product images + AI generation)
+- Browse the recommended products
+- Add the whole design to your favorites
 
-### 4. **Paylaşım ve Yönetim**
-- Tasarımlarınızı blog olarak paylaşın
-- Favori tasarım koleksiyonunuzu yönetin
-- Favori tasarımlar üzerinden geçmiş çalışmalarınızı görüntüleyin
+### 4. **Sharing and Management**
+- Share your designs as blog posts
+- Manage your collection of favorite designs
+- View your past work through your favorited designs
 
-## 🎯 Proje Hedefleri
+## 🎯 Project Goals
 
-Bu proje **BTK Akademi Hackathon 2025** kapsamında geliştirilmiş olup aşağıdaki hedefleri taşımaktadır:
+This project was developed for the **BTK Akademi Hackathon 2025** with the following goals:
 
-- ✅ **Kullanıcı Hedefi**: 2 dakikadan kısa sürede kişiselleştirilmiş tasarım önerisi
-- ✅ **Teknoloji Hedefi**: Google Gemini'nin gelişmiş yeteneklerini sergileme
-- ✅ **İnovasyon Hedefi**: AI destekli iç mimari danışmanlığının demokratikleştirilmesi
+- ✅ **User goal**: a personalized design suggestion in under 2 minutes
+- ✅ **Technology goal**: showcase Google Gemini's advanced capabilities
+- ✅ **Innovation goal**: democratize AI-assisted interior design consulting
 
-## 🏆 Hackathon Başarıları
+## 🏆 Hackathon Highlights
 
-- **Gemini Function Calling**: Dinamik ürün arama ve önerme sistemi
-- **Imagen Multimodal**: Gerçek ürün görselleri + AI ile hibrit oda görselleştirmesi
-- **Real-time UX**: WebSocket ile canlı tasarım süreci takibi
-- **Hibrit AI Sistemi**: Gerçek e-ticaret verileri + yapay zeka önerileri entegrasyonu
+- **Gemini Function Calling**: dynamic product search and recommendation
+- **Imagen Multimodal**: hybrid room visualization from real product images + AI
+- **Real-time UX**: live design-process tracking over WebSocket
+- **Hybrid AI system**: real e-commerce data integrated with AI suggestions
 
-## 👥 Katkıda Bulunma
+## 👥 Contributing
 
-1. Fork edin
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add amazing feature'`)
-4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
-5. Pull Request açın
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📄 Lisans
+## 📄 License
 
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasını inceleyebilirsiniz.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-## 🤝 İletişim
+## 🤝 Contact
 
-**Geliştirici Ekibi**
+**Development Team**
 - GitHub: [@cihanayindi](https://github.com/cihanayindi)
 - GitHub: [@subhanakbenli](https://github.com/subhanakbenli)
-- Proje: [DekoAsistanAI](https://github.com/cihanayindi/DekoAsistanAI)
+- Project: [DekoAsistanAI](https://github.com/cihanayindi/DekoAsistanAI)
 
-## 🙏 Teşekkürler
+## 🙏 Acknowledgments
 
-- **BTK Akademi** - Hackathon organizasyonu
-- **Google Cloud Platform** - AI API'leri
-- **Açık Kaynak Topluluğu** - Kullanılan kütüphaneler
+- **BTK Akademi** - hackathon organization
+- **Google Cloud Platform** - AI APIs
+- **Open-source community** - the libraries we use
 
 ---
 
-> 💡 **Deko Asistan ile hayalinizdeki mekanları gerçeğe dönüştürün!**
+> 💡 **Turn the spaces you dream of into reality with Deko Asistan!**
 
-*BTK Akademi Hackathon 2025 için geliştirilmiştir.*
+*Built for the BTK Akademi Hackathon 2025.*

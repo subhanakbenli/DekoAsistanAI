@@ -1,21 +1,21 @@
 export const formConfig = {
   roomTypes: [
-    { value: 'salon', label: 'Salon' },
-    { value: 'yatak-odasi', label: 'Yatak Odası' },
-    { value: 'mutfak', label: 'Mutfak' },
-    { value: 'banyo', label: 'Banyo' },
-    { value: 'calisma-odasi', label: 'Çalışma Odası' },
+    { value: 'salon', label: 'Living Room' },
+    { value: 'yatak-odasi', label: 'Bedroom' },
+    { value: 'mutfak', label: 'Kitchen' },
+    { value: 'banyo', label: 'Bathroom' },
+    { value: 'calisma-odasi', label: 'Study' },
   ],
   
   designStyles: [
     { value: 'modern', label: 'Modern' },
-    { value: 'skandinav', label: 'Skandinav' },
-    { value: 'endustriyel', label: 'Endüstriyel' },
+    { value: 'skandinav', label: 'Scandinavian' },
+    { value: 'endustriyel', label: 'Industrial' },
     { value: 'vintage', label: 'Vintage' },
     { value: 'minimalist', label: 'Minimalist' },
   ],
   
   placeholders: {
-    notes: "Geniş bir kitaplık ve rahat bir okuma koltuğu istiyorum..."
+    notes: "I would like a large bookcase and a comfortable reading chair..."
   }
 };

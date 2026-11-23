@@ -7,7 +7,7 @@ const DesignDetailHeader = ({ design, isAuthenticated }) => {
 
   return (
     <div className="mb-8">
-      {/* Geri Dön Butonu - Üst kısmında */}
+      {/* Back button - at the top */}
       <div className="mb-6">
         <button 
           onClick={() => navigate(-1)}
@@ -16,11 +16,11 @@ const DesignDetailHeader = ({ design, isAuthenticated }) => {
           <svg className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Geri Dön
+          Go Back
         </button>
       </div>
 
-      {/* Ana Header */}
+      {/* Main header */}
       <div className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-white/10">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex-1">
@@ -32,7 +32,7 @@ const DesignDetailHeader = ({ design, isAuthenticated }) => {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span>{new Date(design.created_at).toLocaleString('tr-TR')}</span>
+                <span>{new Date(design.created_at).toLocaleString('en-US')}</span>
               </div>
               
               <div className="flex items-center space-x-2">
@@ -67,7 +67,7 @@ const DesignDetailHeader = ({ design, isAuthenticated }) => {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <span>Yeni Tasarım</span>
+                <span>New Design</span>
               </div>
             </button>
           </div>

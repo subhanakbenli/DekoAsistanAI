@@ -46,8 +46,8 @@ class Settings(BaseSettings):
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
     DB_NAME: str = "dekodb"
-    DB_USER: str = "dekouser"
-    DB_PASSWORD: str = "REDACTED_DB_PASSWORD"
+    DB_USER: str
+    DB_PASSWORD: str
     
     # Authentication settings
     SECRET_KEY: str

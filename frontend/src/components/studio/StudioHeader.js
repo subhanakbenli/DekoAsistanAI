@@ -14,13 +14,13 @@ const StudioHeader = memo(() => {
         </div>
         <div>
           <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-            Tasarım Stüdyosu
+            Design Studio
           </h1>
-          <p className="text-xs text-gray-400">AI destekli iç mekan tasarımı</p>
+          <p className="text-xs text-gray-400">AI-powered interior design</p>
         </div>
       </div>
       <div className="text-right hidden md:block">
-        <p className="text-xs text-gray-400">Beta Sürümü</p>
+        <p className="text-xs text-gray-400">Beta Version</p>
         <p className="text-xs text-purple-300">Gemini AI</p>
       </div>
     </div>

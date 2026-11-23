@@ -156,7 +156,7 @@ export const useProductCategories = (roomType = 'salon') => {
   // Validation
   const isValid = useMemo(() => {
     if (useCustomProducts) {
-      // Minimum karakter sınırı kaldırıldı - boş bile olabilir
+      // Minimum length requirement removed - may even be empty
       return true;
     }
     return selectedProducts.length > 0;
@@ -182,7 +182,7 @@ export const useProductCategories = (roomType = 'salon') => {
         products: selectedProductObjects,
         productIds: selectedProducts,
         roomType,
-        description: `${roomInfo?.name || 'Oda'} için seçilen ürünler: ${selectedProductObjects.map(p => p.name).join(', ')}`
+        description: `Selected products for ${roomInfo?.name || 'the room'}: ${selectedProductObjects.map(p => p.name).join(', ')}`
       };
     }
     
@@ -192,7 +192,7 @@ export const useProductCategories = (roomType = 'salon') => {
   // Get validation message
   const getValidationMessage = useCallback(() => {
     if (!useCustomProducts && selectedProducts.length === 0) {
-      return 'Lütfen en az bir ürün kategorisi seçin veya özel açıklama girin.';
+      return 'Please select at least one product category or enter a custom description.';
     }
     return '';
   }, [useCustomProducts, selectedProducts]);
@@ -200,14 +200,14 @@ export const useProductCategories = (roomType = 'salon') => {
   // Get selection summary
   const getSelectionSummary = useCallback(() => {
     if (useCustomProducts) {
-      return `Özel ürün açıklaması (${customProductDescription.length} karakter)`;
+      return `Custom product description (${customProductDescription.length} characters)`;
     }
     
     if (selectedProducts.length > 0) {
-      return `${selectedProducts.length} ürün kategorisi seçildi`;
+      return `${selectedProducts.length} product ${selectedProducts.length === 1 ? 'category' : 'categories'} selected`;
     }
     
-    return 'Henüz seçim yapılmadı';
+    return 'Nothing selected yet';
   }, [useCustomProducts, customProductDescription, selectedProducts]);
 
   return {

@@ -106,13 +106,13 @@ export const useDesignSubmission = () => {
     if (result.success) {
       return { 
         status: 'success', 
-        message: 'Tasarım başarıyla oluşturuldu' 
+        message: 'Design created successfully' 
       };
     }
     
     return { 
       status: 'error', 
-      message: result.message || 'Tasarım oluşturulamadı' 
+      message: result.message || 'Design could not be created' 
     };
   };
 

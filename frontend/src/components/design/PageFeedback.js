@@ -7,20 +7,20 @@ const LoadingSpinner = () => (
 const ErrorDisplay = ({ error, onRetry, onGoBack }) => (
   <div className="text-center py-12">
     <div className="text-red-500 text-6xl mb-4">❌</div>
-    <h1 className="text-2xl font-bold text-red-400 mb-4">Hata Oluştu</h1>
+    <h1 className="text-2xl font-bold text-red-400 mb-4">An Error Occurred</h1>
     <p className="text-gray-400 mb-6">{error}</p>
     <div className="space-x-4">
       <button 
         onClick={onGoBack}
         className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors"
       >
-        Geri Dön
+        Go Back
       </button>
       <button 
         onClick={onRetry}
         className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
       >
-        Tekrar Dene
+        Try Again
       </button>
     </div>
   </div>
@@ -31,7 +31,7 @@ const PageFeedback = ({ loading, error, onRetry, onGoBack }) => {
     return (
       <div className="text-center py-12">
         <LoadingSpinner />
-        <p className="text-gray-400">Tasarım detayları yükleniyor...</p>
+        <p className="text-gray-400">Loading design details...</p>
       </div>
     );
   }

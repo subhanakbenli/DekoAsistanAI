@@ -59,19 +59,19 @@ const HashtagDisplay = ({
       <div className="flex items-center justify-between mb-2">
         <h4 className="text-sm font-medium text-gray-300 flex items-center">
           <span className="mr-2">🏷️</span>
-          Hashtag'ler
+          Hashtags
         </h4>
         
         {copyEnabled && displayTags.length > 0 && (
           <button
             onClick={handleCopyToClipboard}
             className="flex items-center text-xs text-gray-400 hover:text-blue-300 transition-colors"
-            title="Hashtag'leri kopyala"
+            title="Copy hashtags"
           >
             <span className="mr-1">
               {copied ? '✓' : '📋'}
             </span>
-            {copied ? 'Kopyalandı!' : 'Kopyala'}
+            {copied ? 'Copied!' : 'Copy'}
           </button>
         )}
       </div>
@@ -105,7 +105,7 @@ const HashtagDisplay = ({
                        transition-all duration-200 active:scale-95"
           >
             {expanded 
-              ? `Daha az` 
+              ? `Show less` 
               : `+${displayTags.length - previewLimit}`
             }
           </button>

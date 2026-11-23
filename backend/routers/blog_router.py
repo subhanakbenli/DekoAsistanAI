@@ -131,7 +131,7 @@ async def get_public_designs(
         # Author name
         author_name = f"{first_name or ''} {last_name or ''}".strip()
         if not author_name:
-            author_name = "Anonim Kullanıcı"
+            author_name = "Anonymous User"
         
         blog_posts.append(BlogPostResponse(
             id=blog_post.id,
@@ -187,38 +187,38 @@ async def publish_design_to_blog(
     
     # Generate blog content from design data
     room_type_names = {
-        "salon": "Salon", "yatak": "Yatak Odası", "çocuk": "Çocuk Odası",
-        "mutfak": "Mutfak", "banyo": "Banyo", "çalışma": "Çalışma Odası"
+        "salon": "Living Room", "yatak": "Bedroom", "çocuk": "Kids' Room",
+        "mutfak": "Kitchen", "banyo": "Bathroom", "çalışma": "Study Room"
     }
     style_names = {
-        "modern": "Modern", "minimal": "Minimalist", "klasik": "Klasik",
-        "endüstriyel": "Endüstriyel", "iskandinav": "İskandinav"
+        "modern": "Modern", "minimal": "Minimalist", "klasik": "Classic",
+        "endüstriyel": "Industrial", "iskandinav": "Scandinavian"
     }
     
     room_name = room_type_names.get(design.room_type, design.room_type)
     style_name = style_names.get(design.design_style, design.design_style)
-    blog_title = f"{style_name} {room_name} Tasarımı"
+    blog_title = f"{style_name} {room_name} Design"
     
     # Generate blog content
     blog_content = f"# {blog_title}\n\n"
-    blog_content += "## Tasarım Detayları\n"
-    blog_content += f"- **Oda Türü:** {room_name}\n"
-    blog_content += f"- **Tasarım Tarzı:** {style_name}\n"
+    blog_content += "## Design Details\n"
+    blog_content += f"- **Room Type:** {room_name}\n"
+    blog_content += f"- **Design Style:** {style_name}\n"
     
     if design.width and design.length and design.height:
-        blog_content += f"- **Boyutlar:** {design.width}cm x {design.length}cm x {design.height}cm\n"
+        blog_content += f"- **Dimensions:** {design.width}cm x {design.length}cm x {design.height}cm\n"
     
-    blog_content += f"\n## Tasarım Açıklaması\n{design.description}\n\n"
+    blog_content += f"\n## Design Description\n{design.description}\n\n"
     
     if design.notes:
-        blog_content += f"## Özel Notlar\n{design.notes}\n\n"
+        blog_content += f"## Special Notes\n{design.notes}\n\n"
 
     # Create blog post
     blog_post = BlogPost(
         design_id=design_id,
         title=blog_title,
         content=blog_content,
-        tags=[design.room_type, design.design_style, "tasarım"],
+        tags=[design.room_type, design.design_style, "design"],
         category=design.room_type,
         is_published=True,
         allow_comments=publish_options.get('allowComments', True),
@@ -342,10 +342,10 @@ async def get_blog_filters(
         "room_types": room_types,
         "design_styles": design_styles,
         "sort_options": [
-            {"value": "newest", "label": "En Yeni"},
-            {"value": "popular", "label": "En Popüler"},
-            {"value": "most_viewed", "label": "En Çok Görüntülenen"},
-            {"value": "most_liked", "label": "En Çok Beğenilen"}
+            {"value": "newest", "label": "Newest"},
+            {"value": "popular", "label": "Most Popular"},
+            {"value": "most_viewed", "label": "Most Viewed"},
+            {"value": "most_liked", "label": "Most Liked"}
         ]
     }
 

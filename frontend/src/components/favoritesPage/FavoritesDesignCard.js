@@ -19,7 +19,7 @@ const FavoritesDesignCard = memo(({ design, onRemove, removing }) => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('tr-TR', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -54,7 +54,7 @@ const FavoritesDesignCard = memo(({ design, onRemove, removing }) => {
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
             </div>
-            <p className="text-xs">Görsel bulunamadı</p>
+            <p className="text-xs">Image not found</p>
           </div>
         </div>
         
@@ -71,7 +71,7 @@ const FavoritesDesignCard = memo(({ design, onRemove, removing }) => {
         {/* Title Overlay - Blog style with gradient background */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3">
           <h3 className="text-sm font-semibold text-white mb-1 group-hover:text-purple-300 transition-colors line-clamp-2 drop-shadow-lg">
-            {design.title || design.design_title || 'Tasarım Başlığı'}
+            {design.title || design.design_title || 'Design Title'}
           </h3>
           
           <div className="flex items-center justify-between">
@@ -90,7 +90,7 @@ const FavoritesDesignCard = memo(({ design, onRemove, removing }) => {
             onClick={handleRemoveClick}
             disabled={removing === design.design_id}
             className="p-1.5 rounded-full backdrop-blur-sm transition-all duration-300 bg-red-500/80 text-white hover:bg-red-600/90"
-            title="Favorilerden çıkar"
+            title="Remove from favorites"
           >
             {removing === design.design_id ? (
               <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

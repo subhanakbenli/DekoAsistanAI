@@ -31,7 +31,7 @@ const RegisterPage = () => {
     // Real-time password validation
     if (name === 'password') {
       if (value.length > 0 && value.length < 8) {
-        setPasswordError('Şifre en az 8 karakter olmalıdır');
+        setPasswordError('Password must be at least 8 characters');
       } else {
         setPasswordError('');
       }
@@ -49,12 +49,12 @@ const RegisterPage = () => {
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
-      setError('Şifreler eşleşmiyor');
+      setError('Passwords do not match');
       return;
     }
 
     if (formData.password.length < 8) {
-      setError('Şifre en az 8 karakter olmalıdır');
+      setError('Password must be at least 8 characters');
       return;
     }
 
@@ -88,10 +88,10 @@ const RegisterPage = () => {
             </div>
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-white">
-            Hesap Oluşturun
+            Create an Account
           </h2>
           <p className="mt-2 text-sm text-gray-400">
-            Tasarım stüdyosuna erişim için kayıt olun
+            Sign up to access the design studio
           </p>
         </div>
 
@@ -107,7 +107,7 @@ const RegisterPage = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-300 mb-2">
-                  Ad
+                  First Name
                 </label>
                 <input
                   id="firstName"
@@ -117,13 +117,13 @@ const RegisterPage = () => {
                   value={formData.firstName}
                   onChange={handleChange}
                   className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Adınız"
+                  placeholder="First name"
                 />
               </div>
               
               <div>
                 <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-2">
-                  Soyad
+                  Last Name
                 </label>
                 <input
                   id="lastName"
@@ -133,14 +133,14 @@ const RegisterPage = () => {
                   value={formData.lastName}
                   onChange={handleChange}
                   className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="Soyadınız"
+                  placeholder="Last name"
                 />
               </div>
             </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                E-posta Adresi
+                Email Address
               </label>
               <input
                 id="email"
@@ -151,13 +151,13 @@ const RegisterPage = () => {
                 value={formData.email}
                 onChange={handleChange}
                 className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="ornek@email.com"
+                placeholder="example@email.com"
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Şifre
+                Password
               </label>
               <input
                 id="password"
@@ -168,7 +168,7 @@ const RegisterPage = () => {
                 value={formData.password}
                 onChange={handleChange}
                 className={`w-full px-3 py-3 bg-gray-700 border ${passwordError ? 'border-red-500' : 'border-gray-600'} rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                placeholder="En az 8 karakter"
+                placeholder="At least 8 characters"
               />
               {passwordError && (
                 <p className="mt-1 text-sm text-red-400">{passwordError}</p>
@@ -177,7 +177,7 @@ const RegisterPage = () => {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                Şifre Tekrar
+                Confirm Password
               </label>
               <input
                 id="confirmPassword"
@@ -188,7 +188,7 @@ const RegisterPage = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 className="w-full px-3 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Şifrenizi tekrar girin"
+                placeholder="Re-enter your password"
               />
             </div>
 
@@ -201,23 +201,23 @@ const RegisterPage = () => {
                 {isLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Kayıt olunuyor...
+                    Signing up...
                   </div>
                 ) : (
-                  'Kayıt Ol'
+                  'Sign Up'
                 )}
               </button>
             </div>
 
             <div className="text-center">
               <p className="text-sm text-gray-400">
-                Zaten hesabınız var mı?{' '}
+                Already have an account?{' '}
                 <Link
                   to="/login"
                   state={{ from: location.state?.from }}
                   className="font-medium text-purple-400 hover:text-purple-300 transition-colors"
                 >
-                  Giriş yapın
+                  Log in
                 </Link>
               </p>
             </div>
@@ -230,7 +230,7 @@ const RegisterPage = () => {
             to="/"
             className="text-sm text-gray-400 hover:text-gray-300 transition-colors"
           >
-            ← Ana sayfaya dön
+            ← Back to home
           </Link>
         </div>
       </div>

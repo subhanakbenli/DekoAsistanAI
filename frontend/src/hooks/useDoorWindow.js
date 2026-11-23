@@ -13,10 +13,10 @@ export const WALL_POSITIONS = {
 };
 
 export const WALL_NAMES = {
-  [WALL_POSITIONS.NORTH]: 'Kuzey Duvarı',
-  [WALL_POSITIONS.SOUTH]: 'Güney Duvarı', 
-  [WALL_POSITIONS.EAST]: 'Doğu Duvarı',
-  [WALL_POSITIONS.WEST]: 'Batı Duvarı'
+  [WALL_POSITIONS.NORTH]: 'North Wall',
+  [WALL_POSITIONS.SOUTH]: 'South Wall', 
+  [WALL_POSITIONS.EAST]: 'East Wall',
+  [WALL_POSITIONS.WEST]: 'West Wall'
 };
 
 export const useDoorWindow = () => {
@@ -130,15 +130,15 @@ export const useDoorWindow = () => {
     const parts = [];
     
     if (doorConfig.hasDoor) {
-      parts.push(`Kapı: ${WALL_NAMES[doorConfig.position]}`);
+      parts.push(`Door: ${WALL_NAMES[doorConfig.position]}`);
     } else {
-      parts.push('Kapı yok');
+      parts.push('No door');
     }
     
     if (windowConfig.hasWindow) {
-      parts.push(`Pencere: ${WALL_NAMES[windowConfig.position]}`);
+      parts.push(`Window: ${WALL_NAMES[windowConfig.position]}`);
     } else {
-      parts.push('Pencere yok');
+      parts.push('No window');
     }
     
     return parts.join(', ');
@@ -164,7 +164,7 @@ export const useDoorWindow = () => {
   // Validation message
   const getValidationMessage = useCallback(() => {
     if (hasConflict) {
-      return 'Kapı ve pencere aynı duvarda olamaz. Lütfen farklı duvarları seçin.';
+      return 'The door and window cannot be on the same wall. Please choose different walls.';
     }
     return '';
   }, [hasConflict]);

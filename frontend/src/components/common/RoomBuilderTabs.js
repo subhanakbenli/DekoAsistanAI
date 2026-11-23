@@ -19,7 +19,7 @@ const RoomBuilderTabs = ({ setRoomStructure, currentStructure }) => {
     setRoomStructure({
       type: 'standard',
       dimensions,
-      name: `${dimensions.width}x${dimensions.height} cm Dikdörtgen Oda`
+      name: `${dimensions.width}x${dimensions.height} cm Rectangular Room`
     });
   };
 
@@ -29,18 +29,18 @@ const RoomBuilderTabs = ({ setRoomStructure, currentStructure }) => {
       shape: 'rectangle-with-protrusion',
       dimensions,
       protrusions: [{ side: 'right', width: 50, depth: 100 }],
-      name: 'Özel Tasarım Oda'
+      name: 'Custom Room'
     });
   };
 
   const getShapeName = (shape) => {
     const names = {
-      'L': 'L Şekilli Oda',
-      'T': 'T Şekilli Oda',
-      'U': 'U Şekilli Oda',
-      'rectangle': 'Dikdörtgen Oda'
+      'L': 'L-Shaped Room',
+      'T': 'T-Shaped Room',
+      'U': 'U-Shaped Room',
+      'rectangle': 'Rectangular Room'
     };
-    return names[shape] || 'Özel Oda';
+    return names[shape] || 'Custom Room';
   };
 
   return (
@@ -91,13 +91,13 @@ const TabButtons = ({ activeTab, setActiveTab }) => {
   return (
     <div className="flex space-x-2 mb-4">
       <TabButton tabKey="standard" isActive={activeTab === 'standard'} onClick={setActiveTab}>
-        📐 Standart
+        📐 Standard
       </TabButton>
       <TabButton tabKey="preset" isActive={activeTab === 'preset'} onClick={setActiveTab}>
-        🏠 Hazır Şekiller
+        🏠 Preset Shapes
       </TabButton>
       <TabButton tabKey="custom" isActive={activeTab === 'custom'} onClick={setActiveTab}>
-        ✏️ Özel Tasarım
+        ✏️ Custom Design
       </TabButton>
     </div>
   );
@@ -109,7 +109,7 @@ const StandardTab = ({ dimensions, onDimensionChange, onCreateRoom }) => (
     <div className="grid grid-cols-2 gap-4">
       <div>
         <label className="block text-sm font-medium mb-2 text-gray-300">
-          Genişlik (cm)
+          Width (cm)
         </label>
         <input
           type="number"
@@ -123,7 +123,7 @@ const StandardTab = ({ dimensions, onDimensionChange, onCreateRoom }) => (
       </div>
       <div>
         <label className="block text-sm font-medium mb-2 text-gray-300">
-          Uzunluk (cm)
+          Length (cm)
         </label>
         <input
           type="number"
@@ -143,12 +143,12 @@ const StandardTab = ({ dimensions, onDimensionChange, onCreateRoom }) => (
         {dimensions.width} x {dimensions.height} cm
       </p>
       <p className="text-xs text-gray-400">
-        Alan: {(dimensions.width * dimensions.height / 10000).toFixed(1)} m²
+        Area: {(dimensions.width * dimensions.height / 10000).toFixed(1)} m²
       </p>
     </div>
 
     <Button onClick={onCreateRoom} size="small" className="w-full">
-      Dikdörtgen Oda Oluştur
+      Create Rectangular Room
     </Button>
   </div>
 );
@@ -172,29 +172,29 @@ const PresetTab = ({ onShapeSelect }) => {
         <PresetCard
           shape="L"
           icon="📐"
-          name="L Şekilli"
-          description="Köşeli oda tasarımı"
+          name="L-Shaped"
+          description="Corner room layout"
           onClick={onShapeSelect}
         />
         <PresetCard
           shape="T"
           icon="✚"
-          name="T Şekilli"
-          description="Merkezi geçiş alanı"
+          name="T-Shaped"
+          description="Central passage area"
           onClick={onShapeSelect}
         />
         <PresetCard
           shape="U"
           icon="🔄"
-          name="U Şekilli"
-          description="Üç taraflı açık alan"
+          name="U-Shaped"
+          description="Space open on three sides"
           onClick={onShapeSelect}
         />
         <PresetCard
           shape="rectangle"
           icon="⬜"
-          name="Klasik"
-          description="Standart dikdörtgen"
+          name="Classic"
+          description="Standard rectangle"
           onClick={onShapeSelect}
         />
       </div>
@@ -207,19 +207,19 @@ const CustomTab = ({ onCreateRoom }) => (
   <div className="space-y-4">
     <div className="text-center p-6 bg-gray-700 rounded-lg">
       <div className="text-4xl mb-3">🎨</div>
-      <h4 className="text-lg font-semibold mb-2">Özel Oda Tasarımı</h4>
+      <h4 className="text-lg font-semibold mb-2">Custom Room Design</h4>
       <p className="text-sm text-gray-400 mb-4">
-        Çıkıntıları ve özel şekilleri olan oda tasarımı oluştur
+        Create a room layout with protrusions and custom shapes
       </p>
       
       <div className="bg-gray-800 rounded p-3 mb-4">
         <p className="text-xs text-gray-300">
-          🏗️ Bu özellik: Sağ tarafta 50x100 cm çıkıntı ekler
+          🏗️ This option adds a 50x100 cm protrusion on the right side
         </p>
       </div>
 
       <Button onClick={onCreateRoom} size="small" className="w-full">
-        Özel Oda Oluştur
+        Create Custom Room
       </Button>
     </div>
   </div>
@@ -230,7 +230,7 @@ const CurrentSelection = ({ currentStructure }) => (
   <div className="mt-4 p-3 bg-purple-900/20 border border-purple-500 rounded-lg">
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm font-medium text-purple-300">Seçili Oda Yapısı:</p>
+        <p className="text-sm font-medium text-purple-300">Selected Room Layout:</p>
         <p className="text-xs text-gray-300">{currentStructure.name}</p>
       </div>
       <div className="text-purple-400">✓</div>

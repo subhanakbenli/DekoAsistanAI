@@ -9,14 +9,14 @@ const Footer = () => {
             Deko Asistan
           </h3>
           <p className="text-gray-400 mt-2">
-            BTK Akademi Hackathon 2025 • Google Gemini Destekli
+            BTK Akademi Hackathon 2025 • Powered by Google Gemini
           </p>
         </div>
         
         <div className="flex justify-center space-x-8 text-sm text-gray-400">
-          <span>🏆 E-ticaret Kategorisi</span>
-          <span>🤖 AI/ML Teknolojisi</span>
-          <span>⚡ KISS Prensibi</span>
+          <span>🏆 E-commerce Category</span>
+          <span>🤖 AI/ML Technology</span>
+          <span>⚡ KISS Principle</span>
         </div>
       </div>
     </footer>

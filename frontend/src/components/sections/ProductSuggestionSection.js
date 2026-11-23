@@ -12,18 +12,18 @@ const ProductSuggestionSection = ({ result }) => {
   const validProducts = filterValidProducts(result.products);
   const hasValidProducts = validProducts.length > 0;
 
-  // Test için geçici mock data (backend henüz yeni format göndermiyorsa)
+  // Temporary mock data for testing (in case the backend does not send the new format yet)
   const mockProducts = [
     {
       category: "Mobilyalar",
-      name: "Test Koltuk",
-      description: "Bu mock data - gerçek data geldiğinde kaybolacak"
+      name: "Test Sofa",
+      description: "This is mock data - it disappears once real data arrives"
     }
   ];
 
-  // Gerçek data varsa onu kullan, yoksa mock data
+  // Use real data if available, otherwise mock data
   const productsToShow = hasValidProducts ? validProducts : (
-    // Mock data'yı sadece hiç gerçek data yoksa göster
+    // Show mock data only when there is no real data at all
     validProducts.length === 0 && result?.products === undefined ? mockProducts : []
   );
 
@@ -32,14 +32,14 @@ const ProductSuggestionSection = ({ result }) => {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-purple-300 flex items-center space-x-2">
           <span>🛍️</span>
-          <span>Ürün Önerileri</span>
+          <span>Product Suggestions</span>
         </h3>
         <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded-full">
-          {productsToShow.length} ürün
+          {productsToShow.length} products
         </span>
       </div>
       
-      {/* Ürün kartları */}
+      {/* Product cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {productsToShow.map((product, index) => (
           <ProductCard
@@ -51,11 +51,11 @@ const ProductSuggestionSection = ({ result }) => {
         ))}
       </div>
 
-      {/* Fallback text sadece ürün yokken */}
+      {/* Fallback text only when there are no products */}
       {productsToShow.length === 0 && (
         <div className="bg-gray-700 p-4 rounded-lg">
           <p className="text-sm text-gray-300 leading-relaxed">
-            {result.product_suggestion || 'Ürün önerileri bulunamadı.'}
+            {result.product_suggestion || 'No product suggestions found.'}
           </p>
         </div>
       )}

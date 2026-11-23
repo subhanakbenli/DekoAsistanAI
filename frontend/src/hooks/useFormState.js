@@ -15,13 +15,13 @@ export const useFormState = () => {
     width: '',
     length: '',
     height: '',
-    colorPalette: null, // Renk paleti bilgisi için
-    productCategories: null, // Ürün kategorileri bilgisi için
-    doorWindow: null, // Kapı/pencere konumu bilgisi için
-    price: '' // Fiyat limiti (TL)
+    colorPalette: null, // Color palette info
+    productCategories: null, // Product category info
+    doorWindow: null, // Door/window position info
+    price: '' // Price limit (TL)
   });
 
-  // Debug: Form state değişikliklerini izle
+  // Debug: watch form state changes
   React.useEffect(() => {
     console.log('📊 [useFormState] Form state changed:', {
       colorPalette: form.colorPalette,

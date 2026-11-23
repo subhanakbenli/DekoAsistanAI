@@ -15,7 +15,7 @@ const BlogStats = memo(({ stats, className = '' }) => {
       {/* Header */}
       <h3 className="text-lg font-semibold text-white flex items-center space-x-2 mb-6">
         <span>📊</span>
-        <span>Blog İstatistikleri</span>
+        <span>Blog Statistics</span>
       </h3>
 
       <div className="space-y-6">
@@ -26,7 +26,7 @@ const BlogStats = memo(({ stats, className = '' }) => {
             <div className="text-2xl font-bold text-purple-400 mb-1">
               {stats.total_posts}
             </div>
-            <div className="text-sm text-gray-400">Toplam Tasarım</div>
+            <div className="text-sm text-gray-400">Total Designs</div>
           </div>
         </div>
 
@@ -35,7 +35,7 @@ const BlogStats = memo(({ stats, className = '' }) => {
           <div>
             <h4 className="text-sm font-medium text-gray-300 mb-3 flex items-center space-x-2">
               <span>🏠</span>
-              <span>Popüler Oda Tipleri</span>
+              <span>Popular Room Types</span>
             </h4>
             <div className="space-y-2">
               {stats.popular_room_types.slice(0, 5).map((room, index) => (
@@ -56,7 +56,7 @@ const BlogStats = memo(({ stats, className = '' }) => {
           <div>
             <h4 className="text-sm font-medium text-gray-300 mb-3 flex items-center space-x-2">
               <span>🎨</span>
-              <span>Popüler Tasarım Stilleri</span>
+              <span>Popular Design Styles</span>
             </h4>
             <div className="space-y-2">
               {stats.popular_design_styles.slice(0, 5).map((style, index) => (
@@ -74,7 +74,7 @@ const BlogStats = memo(({ stats, className = '' }) => {
 
         {/* Last Updated */}
         <div className="pt-4 border-t border-gray-700 text-xs text-gray-500 text-center">
-          Son güncelleme: {new Date().toLocaleTimeString('tr-TR')}
+          Last updated: {new Date().toLocaleTimeString('en-US')}
         </div>
       </div>
     </div>

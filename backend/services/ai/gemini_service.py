@@ -38,19 +38,19 @@ class GeminiService(BaseService):
         self.log_operation("GeminiService initialized with Function Calling support")
     
     def save_gemini_prompt_to_file(self, prompt_text, prompt_type="final_prompt", additional_data=None):
-        """Gemini'ye gönderilen son prompt'ları kaydet."""
+        """Save the final prompts sent to Gemini."""
         try:
-            # logs klasörünün var olduğundan emin ol
+            # Make sure the logs folder exists
             logs_dir = os.path.join("logs")
             if not os.path.exists(logs_dir):
                 os.makedirs(logs_dir)
             
-            # Dosya adını tarih ile oluştur
+            # Build the file name from the date
             today = datetime.now().strftime("%Y-%m-%d")
             filename = f"gemini_final_prompts_{today}.json"
             filepath = os.path.join(logs_dir, filename)
             
-            # Kayıt edilecek veri
+            # Data to record
             log_entry = {
                 "timestamp": datetime.now().isoformat(),
                 "prompt_type": prompt_type,
@@ -58,14 +58,14 @@ class GeminiService(BaseService):
                 "additional_data": additional_data or {}
             }
             
-            # Dosyaya ekle (append mode)
+            # Append to file (append mode)
             with open(filepath, "a", encoding="utf-8") as f:
                 f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
                 
-            logger.info(f"Gemini final prompt kaydedildi: {filepath}")
+            logger.info(f"Gemini final prompt saved: {filepath}")
             
         except Exception as e:
-            logger.error(f"Gemini final prompt kaydedilemedi: {str(e)}")
+            logger.error(f"Could not save Gemini final prompt: {str(e)}")
     
     def generate_design_suggestion(self, room_type: str, design_style: str, notes: str) -> Dict[str, Any]:
         """
@@ -196,7 +196,7 @@ class GeminiService(BaseService):
         
         # Add price constraint to context if provided
         if price and price > 0:
-            price_context = f"\n\n💰 ÖNEMLI: Kullanıcının bütçe limiti {price} TL'dir. Önerilen ürünlerin toplam maliyeti bu bütçeyi aşmamalıdır."
+            price_context = f"\n\n💰 IMPORTANT: The user's budget limit is {price} TL. The total cost of the suggested products must not exceed this budget."
             additional_context += price_context
         
         # Use hybrid prompt template
@@ -207,7 +207,7 @@ class GeminiService(BaseService):
             additional_context=additional_context
         )
         
-        # Gemini'ye gönderilecek final prompt'u kaydet
+        # Save the final prompt to be sent to Gemini
         self.save_gemini_prompt_to_file(
             prompt_text=prompt,
             prompt_type="hybrid_design_prompt",
@@ -249,7 +249,7 @@ class GeminiService(BaseService):
                         "is_real": True,
                         "name": real_product.get("product_name"),  # Use real product name
                         "category": real_product.get("category"),  # Use real product category
-                        "original_description": real_product.get("description"),  # IKEA orijinal açıklaması
+                        "original_description": real_product.get("description"),  # Original IKEA description
                         "image_available": bool(real_product.get("image_path")),
                         "image_path": real_product.get("image_path"),
                         "product_link": real_product.get("product_link"),
@@ -300,10 +300,10 @@ class GeminiService(BaseService):
         fallback_products = self._get_fallback_products(room_type, design_style)
         
         return {
-            "title": f"{design_style} Tarzı {room_type} Tasarımı",
-            "description": f"Bu {room_type.lower()} için {design_style.lower()} tarzında özel bir tasarım hazırladık. Modern ve şık unsurları birleştirerek, yaşam alanınızı daha konforlu hale getiren bir atmosfer oluşturduk.",
+            "title": f"{design_style} Style {room_type} Design",
+            "description": f"We have prepared a custom {design_style.lower()} style design for this {room_type.lower()}. By combining modern and elegant elements, we created an atmosphere that makes your living space more comfortable.",
             "hashtags": {"en": [], "tr": [], "display": []},
-            "product_suggestion": "Temel mobilya ve dekorasyon önerileri",
+            "product_suggestion": "Basic furniture and decoration suggestions",
             "products": fallback_products,
             "raw_response": "Fallback response generated",
             "fallback": True
@@ -313,18 +313,18 @@ class GeminiService(BaseService):
         """Get basic fallback products for room type."""
         base_products = {
             "Living Room": [
-                {"category": "Mobilyalar", "name": "Koltuk Takımı", "description": "Konforlu oturma grubu", "type": "product"},
-                {"category": "Mobilyalar", "name": "Sehpa", "description": "Modern cam sehpa", "type": "product"},
-                {"category": "Aydınlatma", "name": "Avize", "description": "Şık salon aydınlatması", "type": "product"}
+                {"category": "Mobilyalar", "name": "Sofa Set", "description": "Comfortable seating group", "type": "product"},
+                {"category": "Mobilyalar", "name": "Coffee Table", "description": "Modern glass coffee table", "type": "product"},
+                {"category": "Aydınlatma", "name": "Chandelier", "description": "Elegant living room lighting", "type": "product"}
             ],
             "Bedroom": [
-                {"category": "Mobilyalar", "name": "Yatak", "description": "Konforlu çift kişilik yatak", "type": "product"},
-                {"category": "Mobilyalar", "name": "Gardırop", "description": "Geniş dolap sistemi", "type": "product"},
-                {"category": "Aydınlatma", "name": "Abajur", "description": "Yatak başı aydınlatması", "type": "product"}
+                {"category": "Mobilyalar", "name": "Bed", "description": "Comfortable double bed", "type": "product"},
+                {"category": "Mobilyalar", "name": "Wardrobe", "description": "Spacious wardrobe system", "type": "product"},
+                {"category": "Aydınlatma", "name": "Table Lamp", "description": "Bedside lighting", "type": "product"}
             ],
             "Kitchen": [
-                {"category": "Mobilyalar", "name": "Mutfak Dolabı", "description": "Modern mutfak dolap sistemi", "type": "product"},
-                {"category": "Aydınlatma", "name": "Spot Aydınlatma", "description": "LED spot ışıklar", "type": "product"}
+                {"category": "Mobilyalar", "name": "Kitchen Cabinet", "description": "Modern kitchen cabinet system", "type": "product"},
+                {"category": "Aydınlatma", "name": "Spot Lighting", "description": "LED spotlights", "type": "product"}
             ]
         }
         

@@ -12,11 +12,11 @@ export class ErrorHandler {
   };
 
   static TURKISH_MESSAGES = {
-    NETWORK: 'Bağlantı hatası. İnternet bağlantınızı kontrol edin.',
-    AUTHENTICATION: 'Oturum süresi doldu. Lütfen tekrar giriş yapın.',
-    VALIDATION: 'Girdiğiniz bilgilerde hata var. Lütfen kontrol edin.',
-    SERVER: 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.',
-    UNKNOWN: 'Bilinmeyen bir hata oluştu. Lütfen tekrar deneyin.'
+    NETWORK: 'Connection error. Please check your internet connection.',
+    AUTHENTICATION: 'Your session has expired. Please log in again.',
+    VALIDATION: 'Some of the information you entered is invalid. Please check it.',
+    SERVER: 'Server error. Please try again later.',
+    UNKNOWN: 'An unknown error occurred. Please try again.'
   };
 
   /**
@@ -50,7 +50,7 @@ export class ErrorHandler {
 
     // Show alert if requested
     if (showAlert) {
-      alert(`❌ Hata: ${userMessage}`);
+      alert(`❌ Error: ${userMessage}`);
     }
 
     const processedError = {
@@ -147,12 +147,12 @@ export class ErrorHandler {
    */
   static handleValidationErrors(errors) {
     if (!Array.isArray(errors) || errors.length === 0) {
-      return 'Validasyon hatası oluştu.';
+      return 'A validation error occurred.';
     }
 
-    const errorMessage = '⚠️ Eksik Bilgi!\n\nLütfen aşağıdaki alanları doldurun:\n• ' + 
+    const errorMessage = '⚠️ Missing information!\n\nPlease fill in the following fields:\n• ' + 
       errors.join('\n• ') + 
-      '\n\n💡 Tüm bilgiler gereklidir.';
+      '\n\n💡 All fields are required.';
 
     return errorMessage;
   }
@@ -162,7 +162,7 @@ export class ErrorHandler {
    * @returns {string} Timeout error message
    */
   static getTimeoutMessage() {
-    return 'İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.';
+    return 'The request timed out. Please try again.';
   }
 
   /**
@@ -216,7 +216,7 @@ export class ErrorHandler {
       return error.data.message;
     }
 
-    return 'Bilinmeyen bir hata oluştu';
+    return 'An unknown error occurred';
   }
 }
 

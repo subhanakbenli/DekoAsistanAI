@@ -106,15 +106,15 @@ const ShareToBlog = memo(({
         <div className="flex items-start gap-3">
           <span className="text-2xl">📝</span>
           <div className="flex-1">
-            <h4 className="font-medium text-purple-300 mb-2">Blog'da Paylaş</h4>
+            <h4 className="font-medium text-purple-300 mb-2">Share on Blog</h4>
             <p className="text-sm text-gray-400 mb-3">
-              Bu tasarımı blog'da paylaşarak diğer kullanıcılarla ilham verin.
+              Share this design on the blog to inspire other users.
             </p>
             
             {checkingPublishStatus ? (
               <div className="text-sm text-gray-400 flex items-center gap-2">
                 <span className="animate-spin">⏳</span>
-                Durum kontrol ediliyor...
+                Checking status...
               </div>
             ) : (
               <ShareButton
@@ -154,7 +154,7 @@ const ShareToBlog = memo(({
           className="w-full bg-gray-600 text-gray-400 py-2 px-4 rounded-lg font-medium flex items-center justify-center gap-2 cursor-not-allowed transition-all"
         >
           <span className="animate-spin">⏳</span>
-          Durum Kontrol Ediliyor...
+          Checking Status...
         </button>
       ) : (
         <ShareButton
@@ -198,7 +198,7 @@ const ShareButton = memo(({ isAlreadyPublished, isPublishing, canPublish, onPubl
         className={`w-full bg-green-600/20 border border-green-500/30 text-green-300 ${sizeClasses[size]} rounded-lg font-medium flex items-center justify-center gap-2 cursor-not-allowed transition-all`}
       >
         <span>✅</span>
-        Blog'da Paylaşıldı
+        Shared on Blog
       </button>
     );
   }
@@ -210,7 +210,7 @@ const ShareButton = memo(({ isAlreadyPublished, isPublishing, canPublish, onPubl
         className={`w-full bg-purple-600/20 border border-purple-500/30 text-purple-300 ${sizeClasses[size]} rounded-lg font-medium flex items-center justify-center gap-2 cursor-not-allowed transition-all`}
       >
         <span className="animate-spin">⏳</span>
-        Paylaşılıyor...
+        Sharing...
       </button>
     );
   }
@@ -222,7 +222,7 @@ const ShareButton = memo(({ isAlreadyPublished, isPublishing, canPublish, onPubl
       className={`w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white ${sizeClasses[size]} rounded-lg font-medium flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed`}
     >
       <span>📝</span>
-      Blog'da Paylaş
+      Share on Blog
     </button>
   );
 });
@@ -269,19 +269,19 @@ const ConfirmDialog = memo(({ show, onConfirm, onCancel, designData }) => {
         <div className="text-center mb-4">
           <span className="text-4xl block mb-2">📝</span>
           <h3 className="text-lg font-semibold text-white mb-2">
-            Blog'da Paylaş
+            Share on Blog
           </h3>
           <p className="text-sm text-gray-400">
-            Bu tasarımı blog'da paylaşmak istediğinizden emin misiniz?
+            Are you sure you want to share this design on the blog?
           </p>
         </div>
 
         {/* Design Preview */}
         <div className="bg-gray-700/50 rounded-lg p-3 mb-4 text-sm">
           <div className="text-gray-300 space-y-1">
-            <div><strong>Oda:</strong> {designData.roomType}</div>
-            <div><strong>Tarz:</strong> {designData.designStyle}</div>
-            <div><strong>Boyut:</strong> {designData.width}×{designData.length}×{designData.height}cm</div>
+            <div><strong>Room:</strong> {designData.roomType}</div>
+            <div><strong>Style:</strong> {designData.designStyle}</div>
+            <div><strong>Size:</strong> {designData.width}×{designData.length}×{designData.height}cm</div>
           </div>
         </div>
 
@@ -290,13 +290,13 @@ const ConfirmDialog = memo(({ show, onConfirm, onCancel, designData }) => {
             onClick={onCancel}
             className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium transition-colors"
           >
-            ❌ İptal
+            ❌ Cancel
           </button>
           <button
             onClick={onConfirm}
             className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-all"
           >
-            ✅ Paylaş
+            ✅ Share
           </button>
         </div>
       </div>

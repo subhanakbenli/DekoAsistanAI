@@ -10,67 +10,68 @@ from config import logger
 find_product_declaration = genai.protos.FunctionDeclaration(
     name="find_product",
     description="""
-    Veritabanından tasarıma uygun ürün ara. SADECE belirtilen kategorilerden birini kullan.
-    Eğer istediğin ürün mevcut kategorilerde yoksa, en yakın kategoriyi seç.
+    Search the database for products that fit the design. Use ONLY one of the listed categories.
+    If the product you want is not in the available categories, choose the closest category.
+    Category values are Turkish database keys - always pass them exactly as written.
     
-    ÖNEMLİ KURALLAR:
-    - Mutfak ürünleri için: "Tezgah", "Lavabo" veya "Yemek Masası" 
-    - Oturma için: "Koltuk", "Sandalye", "Berjer", "Bar Sandalyesi"
-    - Depolama için: "Dolap", "Kitaplık", "Komodin", "Oyuncak Dolabı"
-    - Dekorasyon için: "Aksesuar", "Duvar Dekorasyonu", "Halı", "Ayna"
+    IMPORTANT RULES:
+    - For kitchen products: "Tezgah" (countertop), "Lavabo" (sink) or "Yemek Masası" (dining table)
+    - For seating: "Koltuk" (sofa/armchair), "Sandalye" (chair), "Berjer" (wing chair), "Bar Sandalyesi" (bar stool)
+    - For storage: "Dolap" (cabinet/wardrobe), "Kitaplık" (bookcase), "Komodin" (nightstand), "Oyuncak Dolabı" (toy cabinet)
+    - For decoration: "Aksesuar" (accessory), "Duvar Dekorasyonu" (wall decoration), "Halı" (rug), "Ayna" (mirror)
     
-    Kendi kategori isimleri uydurmA!
+    Do NOT make up your own category names!
     """,
     parameters=genai.protos.Schema(
         type=genai.protos.Type.OBJECT,
         properties={
             "category": genai.protos.Schema(
                 type=genai.protos.Type.STRING,
-                description="""Ürün kategorisi (zorunlu). SADECE aşağıdaki kategorilerden birini seç:
+                description="""Product category (required). Choose ONLY one of the categories below and pass the exact Turkish value (the English meaning in parentheses is for reference only - do not include it):
 
-MEVCUT KATEGORİLER:
-• Sandalye
-• Büfe  
-• Lavabo
-• Koltuk
-• Komodin
-• Aksesuar
-• Dolap
-• TV Ünitesi
-• Ranza
-• Bar Sandalyesi
-• Halı
-• Yatak
-• Berjer
-• Yemek Masası
-• Aydınlatma
-• Oyuncak Dolabı
-• Tezgah
-• Kitaplık
-• Duvar Dekorasyonu
-• Çalışma Masası
-• Ayna
-• Tek Kişilik Baza
+AVAILABLE CATEGORIES:
+• Sandalye (chair)
+• Büfe (sideboard)
+• Lavabo (sink)
+• Koltuk (sofa/armchair)
+• Komodin (nightstand)
+• Aksesuar (accessory)
+• Dolap (cabinet/wardrobe)
+• TV Ünitesi (TV unit)
+• Ranza (bunk bed)
+• Bar Sandalyesi (bar stool)
+• Halı (rug)
+• Yatak (bed)
+• Berjer (wing chair)
+• Yemek Masası (dining table)
+• Aydınlatma (lighting)
+• Oyuncak Dolabı (toy cabinet)
+• Tezgah (countertop)
+• Kitaplık (bookcase)
+• Duvar Dekorasyonu (wall decoration)
+• Çalışma Masası (desk)
+• Ayna (mirror)
+• Tek Kişilik Baza (single bed base)
 
-ÖNEMLI: Bu kategorilerin dışında kategori kullanma. Eğer aradığın ürün bu kategorilerde yoksa en yakın kategoriyi seç.
-Örnek:
-- Mutfak masası için → "Yemek Masası"
-- Oturma grubu için → "Koltuk" 
-- Depolama için → "Dolap" veya "Kitaplık"
-- Dekoratif objeler için → "Aksesuar" veya "Duvar Dekorasyonu"
+IMPORTANT: Do not use any category outside these. If the product you are looking for is not in these categories, choose the closest category.
+Examples:
+- For a kitchen table → "Yemek Masası"
+- For a seating group → "Koltuk"
+- For storage → "Dolap" or "Kitaplık"
+- For decorative objects → "Aksesuar" or "Duvar Dekorasyonu"
 """,
             ),
             "style": genai.protos.Schema(
                 type=genai.protos.Type.STRING,
-                description="Tasarım stili (opsiyonel). Örnek: modern, klasik, minimalist, rustic",
+                description="Design style (optional). Example: modern, classic, minimalist, rustic",
             ),
             "color": genai.protos.Schema(
                 type=genai.protos.Type.STRING,
-                description="Renk tercihi (opsiyonel). Örnek: beyaz, siyah, venge, doğal",
+                description="Color preference (optional). Example: white, black, wenge, natural",
             ),
             "limit": genai.protos.Schema(
                 type=genai.protos.Type.INTEGER,
-                description="Maksimum ürün sayısı (opsiyonel, varsayılan: 2)",
+                description="Maximum number of products (optional, default: 2)",
             )
         },
         required=["category"]
@@ -144,7 +145,7 @@ class FunctionCallHandler:
                 name="find_product",
                 response={
                     "status": "error",
-                    "message": "Ürün arama sırasında hata oluştu",
+                    "message": "An error occurred while searching for products",
                     "products": []
                 }
             )

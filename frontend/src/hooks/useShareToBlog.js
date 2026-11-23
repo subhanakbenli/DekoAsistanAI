@@ -98,13 +98,13 @@ export const useShareToBlog = () => {
    */
   const getPublishStatusMessage = useMemo(() => {
     if (isPublishing) {
-      return 'Blog\'da paylaşılıyor...';
+      return 'Sharing on the blog...';
     }
     if (publishSuccess) {
-      return 'Tasarım başarıyla blog\'da paylaşıldı!';
+      return 'Design shared on the blog successfully!';
     }
     if (publishError) {
-      return `Paylaşım hatası: ${publishError}`;
+      return `Sharing error: ${publishError}`;
     }
     return '';
   }, [isPublishing, publishSuccess, publishError]);

@@ -95,7 +95,7 @@ export const useFavorites = () => {
    */
   const addDesignToFavorites = useCallback(async (designId) => {
     if (!isAuthenticated) {
-      throw new Error('Favorilere eklemek için giriş yapın');
+      throw new Error('Log in to add to favorites');
     }
 
     try {
@@ -105,7 +105,7 @@ export const useFavorites = () => {
       // Refresh all favorites with optimized call
       await fetchAllFavorites();
       
-      return { success: true, message: 'Tasarım favorilere eklendi!' };
+      return { success: true, message: 'Design added to favorites!' };
     } catch (err) {
       console.error('Error adding design to favorites:', err);
       setError(err.message);
@@ -118,7 +118,7 @@ export const useFavorites = () => {
    */
   const removeDesignFromFavorites = useCallback(async (designId) => {
     if (!isAuthenticated) {
-      throw new Error('Bu işlem için giriş yapın');
+      throw new Error('Log in to perform this action');
     }
 
     try {
@@ -128,7 +128,7 @@ export const useFavorites = () => {
       // Refresh all favorites with optimized call
       await fetchAllFavorites();
       
-      return { success: true, message: 'Tasarım favorilerden çıkarıldı!' };
+      return { success: true, message: 'Design removed from favorites!' };
     } catch (err) {
       console.error('Error removing design from favorites:', err);
       setError(err.message);
@@ -141,7 +141,7 @@ export const useFavorites = () => {
    */
   const addProductToFavorites = useCallback(async (productData) => {
     if (!isAuthenticated) {
-      throw new Error('Favorilere eklemek için giriş yapın');
+      throw new Error('Log in to add to favorites');
     }
 
     try {
@@ -151,7 +151,7 @@ export const useFavorites = () => {
       // Refresh all favorites with optimized call
       await fetchAllFavorites();
       
-      return { success: true, message: 'Ürün favorilere eklendi!' };
+      return { success: true, message: 'Product added to favorites!' };
     } catch (err) {
       console.error('Error adding product to favorites:', err);
       setError(err.message);
@@ -164,7 +164,7 @@ export const useFavorites = () => {
    */
   const removeProductFromFavorites = useCallback(async (productId) => {
     if (!isAuthenticated) {
-      throw new Error('Bu işlem için giriş yapın');
+      throw new Error('Log in to perform this action');
     }
 
     try {
@@ -174,7 +174,7 @@ export const useFavorites = () => {
       // Refresh all favorites with optimized call
       await fetchAllFavorites();
       
-      return { success: true, message: 'Ürün favorilerden çıkarıldı!' };
+      return { success: true, message: 'Product removed from favorites!' };
     } catch (err) {
       console.error('Error removing product from favorites:', err);
       setError(err.message);

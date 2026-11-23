@@ -43,7 +43,7 @@ class DesignService extends BaseService {
         console.log('✅ [DesignService] Adding color_info to request:', formData.colorPalette);
         
         if (formData.colorPalette.type === 'palette' && formData.colorPalette.palette) {
-          // Palette seçimi - palette objesi içinden bilgileri al
+          // Palette selection - read the details from the palette object
           const palette = formData.colorPalette.palette;
           requestBody.color_info = {
             dominantColor: palette.dominantColor || palette.colors?.[0] || '#000000',
@@ -51,7 +51,7 @@ class DesignService extends BaseService {
             colorPalette: palette.colors || [palette.dominantColor || '#000000']
           };
         } else if (formData.colorPalette.type === 'custom') {
-          // Özel renk açıklaması
+          // Custom color description
           requestBody.color_info = {
             dominantColor: '#000000',
             colorName: 'Özel Renk Seçimi',
@@ -74,7 +74,7 @@ class DesignService extends BaseService {
         console.log('✅ [DesignService] Adding product_categories to request:', formData.productCategories);
         
         if (formData.productCategories.type === 'categories' && formData.productCategories.productIds) {
-          // Kategoriler seçimi - productIds'lerden products array'i oluştur
+          // Category selection - build the products array from productIds
           const products = formData.productCategories.productIds.map(id => {
             const productCategory = PRODUCT_CATEGORIES[id.toUpperCase()];
             return {
@@ -89,14 +89,14 @@ class DesignService extends BaseService {
             description: null
           };
         } else if (formData.productCategories.type === 'custom') {
-          // Özel ürün açıklaması
+          // Custom product description
           requestBody.product_categories = {
             type: 'custom',
             products: null,
             description: formData.productCategories.description || 'Özel ürün seçimi'
           };
         } else {
-          // Fallback - mevcut yapıyı koru
+          // Fallback - keep the existing structure
           requestBody.product_categories = {
             type: formData.productCategories.type || 'categories',
             products: formData.productCategories.products || [],
@@ -159,7 +159,7 @@ class DesignService extends BaseService {
       });
     }
 
-    // Product categories information - YENİ EKLENEN!
+    // Product categories information - newly added
     if (formData.productCategories) {
       if (formData.productCategories.type === 'categories') {
         const products = formData.productCategories.products || [];
@@ -174,7 +174,7 @@ class DesignService extends BaseService {
       }
     }
 
-    // Door/Window position information - KAPIYA HAZIR!
+    // Door/Window position information
     if (formData.doorWindow) {
       notes.push(`Kapı/Pencere Pozisyonları: ${JSON.stringify(formData.doorWindow)}`);
     }

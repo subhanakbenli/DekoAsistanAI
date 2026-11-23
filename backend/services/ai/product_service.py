@@ -16,30 +16,30 @@ class ProductService(BaseService):
     Searches PostgreSQL products table with flexible criteria.
     """
     
-    # Kategori eşleme - Gemini'nin kullandığı kategori adlarını PostgreSQL kategori adlarına çevirir
-    # PostgreSQL'deki gerçek kategoriler: Sandalye, Büfe, Lavabo, Koltuk, Komodin, Aksesuar, 
+    # Category mapping - converts the category names Gemini uses into PostgreSQL category names
+    # Actual categories in PostgreSQL: Sandalye, Büfe, Lavabo, Koltuk, Komodin, Aksesuar, 
     # Dolap, TV Ünitesi, Ranza, Bar Sandalyesi, Halı, Yatak, Berjer, Yemek Masası, 
     # Aydınlatma, Oyuncak Dolabı, Tezgah, Kitaplık, Duvar Dekorasyonu, Çalışma Masası, Ayna, Tek Kişilik Baza
     CATEGORY_MAPPING = {
-        # Koltuk ve Oturma Grubu
+        # Sofas and seating groups
         "Koltuk Takımı": ["Koltuk"],
         "Koltuk": ["Koltuk"],
         "Kanepe": ["Koltuk"],
         "Berjer": ["Berjer"],
         
-        # Sandalye kategorileri
+        # Chair categories
         "Sandalye": ["Sandalye"],
         "Bar Taburesi": ["Bar Sandalyesi"],
         "Bar Sandalyesi": ["Bar Sandalyesi"],
         "Ofis Koltuğu": ["Sandalye"],
         
-        # Yatak kategorileri
+        # Bed categories
         "Yatak": ["Yatak"],
-        "Çocuk Yatağı": ["Yatak"],  # Çocuk yatağı da Yatak kategorisinde
+        "Çocuk Yatağı": ["Yatak"],  # Children's beds are also in the Yatak (bed) category
         "Ranza": ["Ranza"],
         "Tek Kişilik Baza": ["Tek Kişilik Baza"],
         
-        # Depolama kategorileri
+        # Storage categories
         "Gardırop": ["Dolap"],
         "Gardirop": ["Dolap"],
         "Dolap": ["Dolap"],
@@ -48,8 +48,8 @@ class ProductService(BaseService):
         "Komodin": ["Komodin"],
         "Oyuncak Dolabı": ["Oyuncak Dolabı"],
         
-        # Masa ve Sehpa kategorileri
-        "Sehpa": ["Yemek Masası"],  # Sehpa kategorisi yok, en yakını Yemek Masası
+        # Table and coffee table categories
+        "Sehpa": ["Yemek Masası"],  # No coffee table category; closest is Yemek Masası (dining table)
         "Orta Sehpa": ["Yemek Masası"],
         "Yan Sehpa": ["Yemek Masası"],
         "Konsol": ["Yemek Masası"],
@@ -59,35 +59,63 @@ class ProductService(BaseService):
         "Büfe": ["Büfe"],
         "Bufe": ["Büfe"],
         
-        # Mutfak & Banyo kategorileri
-        "Mutfak Dolabı": ["Dolap"],  # Mutfak dolabı kategorisi yok, Dolap kullan
+        # Kitchen & bathroom categories
+        "Mutfak Dolabı": ["Dolap"],  # No kitchen cabinet category; use Dolap (cabinet)
         "Tezgah": ["Tezgah"],
         "Lavabo": ["Lavabo"],
-        "Duş": ["Lavabo"],  # Duş kategorisi yok, Lavabo kullan
+        "Duş": ["Lavabo"],  # No shower category; use Lavabo (sink)
         "Duş Kabini": ["Lavabo"],
         "Banyo Depolama": ["Dolap"],
         
-        # Aydınlatma kategorileri
+        # Lighting categories
         "Aydınlatma": ["Aydınlatma"],
         "Sarkıt Lamba": ["Aydınlatma"],
         "Lambader": ["Aydınlatma"],
         "Aplik": ["Aydınlatma"],
         "Avize": ["Aydınlatma"],
         
-        # Dekorasyon kategorileri
+        # Decoration categories
         "Halı": ["Halı"],
-        "Perde": ["Aksesuar"],  # Perde kategorisi yok, Aksesuar kullan
+        "Perde": ["Aksesuar"],  # No curtain category; use Aksesuar (accessory)
         "Ayna": ["Ayna"],
         "Tablo": ["Duvar Dekorasyonu"],
         "Duvar Dekorasyonu": ["Duvar Dekorasyonu"],
         "Aksesuar": ["Aksesuar"],
         "Tekstil": ["Aksesuar"],
         
-        # Dekoratif objeler - birden fazla kategoride arama (ÖNEMLİ!)
+        # Decorative objects - search across multiple categories (IMPORTANT!)
         "Dekoratif Objeler": ["Duvar Dekorasyonu", "Aksesuar"],
         
-        # Mobilyalar (genel kategori)
-        "Mobilyalar": ["Koltuk"]
+        # Furniture (general category)
+        "Mobilyalar": ["Koltuk"],
+
+        # English aliases, in case the model sends English category names
+        "Sofa": ["Koltuk"],
+        "Armchair": ["Berjer"],
+        "Chair": ["Sandalye"],
+        "Bar Stool": ["Bar Sandalyesi"],
+        "Bed": ["Yatak"],
+        "Bunk Bed": ["Ranza"],
+        "Wardrobe": ["Dolap"],
+        "Cabinet": ["Dolap"],
+        "Bookcase": ["Kitaplık"],
+        "Nightstand": ["Komodin"],
+        "Coffee Table": ["Yemek Masası"],
+        "Dining Table": ["Yemek Masası"],
+        "Desk": ["Çalışma Masası"],
+        "TV Unit": ["TV Ünitesi"],
+        "Sideboard": ["Büfe"],
+        "Sink": ["Lavabo"],
+        "Countertop": ["Tezgah"],
+        "Lighting": ["Aydınlatma"],
+        "Lamp": ["Aydınlatma"],
+        "Rug": ["Halı"],
+        "Mirror": ["Ayna"],
+        "Wall Decor": ["Duvar Dekorasyonu"],
+        "Accessory": ["Aksesuar"],
+        "Accessories": ["Aksesuar"],
+        "Decorative Objects": ["Duvar Dekorasyonu", "Aksesuar"],
+        "Furniture": ["Koltuk"]
     }
     
     def __init__(self):
@@ -96,24 +124,24 @@ class ProductService(BaseService):
     
     def _map_category_to_db_categories(self, category: str) -> List[str]:
         """
-        Gemini'den gelen kategori adını PostgreSQL'deki kategori adlarına çevirir.
+        Convert the category name coming from Gemini into PostgreSQL category names.
         
         Args:
-            category: Gemini'den gelen kategori adı
+            category: Category name coming from Gemini
             
         Returns:
-            PostgreSQL'de aranacak kategori adları listesi
+            List of category names to search in PostgreSQL
         """
-        # Önce tam eşleşme ara
+        # Try an exact match first
         if category in self.CATEGORY_MAPPING:
             return self.CATEGORY_MAPPING[category]
         
-        # Case-insensitive arama
+        # Case-insensitive search
         for key, value in self.CATEGORY_MAPPING.items():
             if key.lower() == category.lower():
                 return value
         
-        # Eğer eşleşme bulunamazsa, orijinal kategoriyi döndür
+        # If no match is found, return the original category
         logger.warning(f"Category mapping not found for: {category}, using original")
         return [category.lower()]
     
@@ -143,16 +171,16 @@ class ProductService(BaseService):
         try:
             logger.info(f"Searching products: category={category}, style={style}, color={color}")
             
-            # Kategori eşlemesi yap
+            # Apply category mapping
             db_categories = self._map_category_to_db_categories(category)
             logger.info(f"Mapped category '{category}' to DB categories: {db_categories}")
             
             # Build query with category mapping
             if len(db_categories) == 1:
-                # Tek kategori araması
+                # Single-category search
                 query = select(Product).where(Product.category == db_categories[0])
             else:
-                # Birden fazla kategori araması (OR logic)
+                # Multi-category search (OR logic)
                 category_filters = [Product.category == cat for cat in db_categories]
                 query = select(Product).where(or_(*category_filters))
             
@@ -193,7 +221,7 @@ class ProductService(BaseService):
                 # Convert relative image path to full URL if exists
                 image_url = None
                 if product.image_path:
-                    # Database'de tam path var (/data/products/koltuk/...), relative'e çevirelim
+                    # The database stores the full path (/data/products/koltuk/...); convert it to relative
                     relative_path = product.image_path
                     if relative_path.startswith('/data/products/'):
                         relative_path = relative_path[len('/data/products/'):]
@@ -276,13 +304,13 @@ class ProductService(BaseService):
         if not products:
             return {
                 "status": "not_found",
-                "message": "Belirtilen kriterlere uygun ürün bulunamadı",
+                "message": "No products found matching the given criteria",
                 "products": []
             }
         
         return {
             "status": "found",
-            "message": f"{len(products)} ürün bulundu",
+            "message": f"{len(products)} products found",
             "products": products
         }
     

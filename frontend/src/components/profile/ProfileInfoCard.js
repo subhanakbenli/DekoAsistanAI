@@ -17,7 +17,7 @@ const ProfileInfoCard = ({ user }) => (
     
     <div className="mt-6 pt-4 border-t border-gray-700">
       <p className="text-xs text-gray-500">
-        📅 Üyelik: {new Date(user.created_at || Date.now()).toLocaleDateString('tr-TR')}
+        📅 Member since: {new Date(user.created_at || Date.now()).toLocaleDateString('en-US')}
       </p>
     </div>
   </Card>

@@ -22,10 +22,10 @@ const StudioDesignForm = ({
         </div>
         <div>
           <h3 className="text-lg font-semibold text-green-300">
-            Tasarım Tercihleri
+            Design Preferences
           </h3>
           <p className="text-xs text-gray-400">
-            Stilinizi ve tercihlerinizi seçin
+            Choose your style and preferences
           </p>
         </div>
       </div>

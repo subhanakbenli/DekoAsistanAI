@@ -1,9 +1,9 @@
 import React from 'react';
 
 /**
- * Tooltip bileşeni - Hover durumunda bilgilendirici mesaj gösterir
+ * Tooltip component - shows an informative message on hover
  * @param {React.ReactNode} children - Tooltip tetikleyici element
- * @param {string} text - Gösterilecek tooltip metni
+ * @param {string} text - Tooltip text to display
  */
 const Tooltip = ({ children, text }) => (
   <div className="relative group inline-block">

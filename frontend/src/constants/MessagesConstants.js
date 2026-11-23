@@ -5,142 +5,142 @@
 export class MessagesConstants {
   // Success Messages
   static SUCCESS = {
-    LOGIN: 'Başarıyla giriş yaptınız!',
-    REGISTER: 'Hesabınız başarıyla oluşturuldu!',
-    LOGOUT: 'Başarıyla çıkış yaptınız!',
-    PROFILE_UPDATED: 'Profil başarıyla güncellendi!',
-    DESIGN_CREATED: 'Tasarım başarıyla oluşturuldu!',
-    DESIGN_SAVED: 'Tasarım başarıyla kaydedildi!',
-    FAVORITE_ADDED: 'Favorilere eklendi!',
-    FAVORITE_REMOVED: 'Favorilerden çıkarıldı!',
-    FILE_UPLOADED: 'Dosya başarıyla yüklendi!',
-    COPIED_TO_CLIPBOARD: 'Panoya kopyalandı!'
+    LOGIN: 'Logged in successfully!',
+    REGISTER: 'Your account was created successfully!',
+    LOGOUT: 'Logged out successfully!',
+    PROFILE_UPDATED: 'Profile updated successfully!',
+    DESIGN_CREATED: 'Design created successfully!',
+    DESIGN_SAVED: 'Design saved successfully!',
+    FAVORITE_ADDED: 'Added to favorites!',
+    FAVORITE_REMOVED: 'Removed from favorites!',
+    FILE_UPLOADED: 'File uploaded successfully!',
+    COPIED_TO_CLIPBOARD: 'Copied to clipboard!'
   };
 
   // Error Messages
   static ERRORS = {
     // Authentication
-    INVALID_CREDENTIALS: 'E-posta veya şifre hatalı!',
-    USER_NOT_FOUND: 'Kullanıcı bulunamadı!',
-    EMAIL_ALREADY_EXISTS: 'Bu e-posta adresi zaten kullanılıyor!',
-    WEAK_PASSWORD: 'Şifre en az 8 karakter olmalı!',
-    INVALID_EMAIL: 'Geçerli bir e-posta adresi girin!',
+    INVALID_CREDENTIALS: 'Incorrect email or password!',
+    USER_NOT_FOUND: 'User not found!',
+    EMAIL_ALREADY_EXISTS: 'This email address is already in use!',
+    WEAK_PASSWORD: 'Password must be at least 8 characters!',
+    INVALID_EMAIL: 'Enter a valid email address!',
     
     // Network
-    NETWORK_ERROR: 'Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.',
-    SERVER_ERROR: 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.',
-    TIMEOUT_ERROR: 'İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.',
+    NETWORK_ERROR: 'Connection error. Please check your internet connection.',
+    SERVER_ERROR: 'Server error. Please try again later.',
+    TIMEOUT_ERROR: 'The request timed out. Please try again.',
     
     // Validation
-    REQUIRED_FIELD: 'Bu alan zorunludur!',
-    INVALID_DIMENSIONS: 'Oda boyutları geçersiz!',
-    INVALID_FILE_TYPE: 'Desteklenmeyen dosya türü!',
-    FILE_TOO_LARGE: 'Dosya boyutu çok büyük!',
+    REQUIRED_FIELD: 'This field is required!',
+    INVALID_DIMENSIONS: 'Invalid room dimensions!',
+    INVALID_FILE_TYPE: 'Unsupported file type!',
+    FILE_TOO_LARGE: 'File is too large!',
     
     // Design
-    DESIGN_GENERATION_FAILED: 'Tasarım oluşturulamadı. Lütfen tekrar deneyin.',
-    DESIGN_NOT_FOUND: 'Tasarım bulunamadı!',
-    DESIGN_LOAD_FAILED: 'Tasarım yüklenemedi!',
+    DESIGN_GENERATION_FAILED: 'Design could not be created. Please try again.',
+    DESIGN_NOT_FOUND: 'Design not found!',
+    DESIGN_LOAD_FAILED: 'Design could not be loaded!',
     
     // General
-    UNEXPECTED_ERROR: 'Beklenmeyen bir hata oluştu!',
-    ACCESS_DENIED: 'Bu işlem için yetkiniz yok!',
-    PAGE_NOT_FOUND: 'Sayfa bulunamadı!'
+    UNEXPECTED_ERROR: 'An unexpected error occurred!',
+    ACCESS_DENIED: 'You are not authorized to perform this action!',
+    PAGE_NOT_FOUND: 'Page not found!'
   };
 
   // Warning Messages
   static WARNINGS = {
-    UNSAVED_CHANGES: 'Kaydedilmemiş değişiklikler var. Sayfadan çıkmak istediğinizden emin misiniz?',
-    DELETE_CONFIRMATION: 'Bu işlem geri alınamaz. Silmek istediğinizden emin misiniz?',
-    LOGOUT_CONFIRMATION: 'Çıkış yapmak istediğinizden emin misiniz?',
-    CLEAR_FORM: 'Form temizlenecek. Devam etmek istediğinizden emin misiniz?',
-    OVERWRITE_DATA: 'Mevcut veriler üzerine yazılacak. Devam etmek istiyor musunuz?',
-    ROOM_TOO_SMALL: 'Oda çok küçük görünüyor. Gerçekçi mi?',
-    ROOM_TOO_LARGE: 'Oda çok büyük görünüyor. Gerçekçi mi?',
-    LOW_CEILING: 'Tavan yüksekliği çok düşük görünüyor.',
-    HIGH_CEILING: 'Tavan yüksekliği çok yüksek görünüyor.'
+    UNSAVED_CHANGES: 'You have unsaved changes. Are you sure you want to leave this page?',
+    DELETE_CONFIRMATION: 'This action cannot be undone. Are you sure you want to delete?',
+    LOGOUT_CONFIRMATION: 'Are you sure you want to log out?',
+    CLEAR_FORM: 'The form will be cleared. Are you sure you want to continue?',
+    OVERWRITE_DATA: 'Existing data will be overwritten. Do you want to continue?',
+    ROOM_TOO_SMALL: 'The room looks very small. Is that realistic?',
+    ROOM_TOO_LARGE: 'The room looks very large. Is that realistic?',
+    LOW_CEILING: 'The ceiling height looks very low.',
+    HIGH_CEILING: 'The ceiling height looks very high.'
   };
 
   // Info Messages
   static INFO = {
-    LOADING: 'Yükleniyor...',
-    PROCESSING: 'İşleniyor...',
-    GENERATING_DESIGN: 'Tasarım oluşturuluyor...',
-    SAVING: 'Kaydediliyor...',
-    UPLOADING: 'Yükleniyor...',
-    CONNECTING: 'Bağlanıyor...',
-    RECONNECTING: 'Yeniden bağlanıyor...',
-    NO_DATA: 'Gösterilecek veri yok.',
-    NO_RESULTS: 'Sonuç bulunamadı.',
-    EMPTY_LIST: 'Liste boş.',
-    COMING_SOON: 'Yakında...'
+    LOADING: 'Loading...',
+    PROCESSING: 'Processing...',
+    GENERATING_DESIGN: 'Generating design...',
+    SAVING: 'Saving...',
+    UPLOADING: 'Uploading...',
+    CONNECTING: 'Connecting...',
+    RECONNECTING: 'Reconnecting...',
+    NO_DATA: 'No data to display.',
+    NO_RESULTS: 'No results found.',
+    EMPTY_LIST: 'The list is empty.',
+    COMING_SOON: 'Coming soon...'
   };
 
   // Placeholders
   static PLACEHOLDERS = {
-    EMAIL: 'E-posta adresinizi girin',
-    PASSWORD: 'Şifrenizi girin',
-    FIRST_NAME: 'Adınızı girin',
-    LAST_NAME: 'Soyadınızı girin',
-    BIO: 'Kendinizden bahsedin...',
-    SEARCH: 'Arama yapın...',
-    NOTES: 'Notlarınızı yazın...',
-    ROOM_NAME: 'Oda adını girin'
+    EMAIL: 'Enter your email address',
+    PASSWORD: 'Enter your password',
+    FIRST_NAME: 'Enter your first name',
+    LAST_NAME: 'Enter your last name',
+    BIO: 'Tell us about yourself...',
+    SEARCH: 'Search...',
+    NOTES: 'Write your notes...',
+    ROOM_NAME: 'Enter a room name'
   };
 
   // Button Labels
   static BUTTONS = {
-    LOGIN: 'Giriş Yap',
-    REGISTER: 'Kayıt Ol',
-    LOGOUT: 'Çıkış Yap',
-    SAVE: 'Kaydet',
-    CANCEL: 'İptal',
-    DELETE: 'Sil',
-    EDIT: 'Düzenle',
-    ADD: 'Ekle',
-    REMOVE: 'Çıkar',
-    UPLOAD: 'Yükle',
-    DOWNLOAD: 'İndir',
-    COPY: 'Kopyala',
-    SHARE: 'Paylaş',
-    BACK: 'Geri',
-    NEXT: 'İleri',
-    FINISH: 'Bitir',
-    SUBMIT: 'Gönder',
-    RESET: 'Sıfırla',
-    CLEAR: 'Temizle',
-    SEARCH: 'Ara',
-    FILTER: 'Filtrele',
-    SORT: 'Sırala',
-    REFRESH: 'Yenile',
-    RETRY: 'Tekrar Dene'
+    LOGIN: 'Log In',
+    REGISTER: 'Sign Up',
+    LOGOUT: 'Log Out',
+    SAVE: 'Save',
+    CANCEL: 'Cancel',
+    DELETE: 'Delete',
+    EDIT: 'Edit',
+    ADD: 'Add',
+    REMOVE: 'Remove',
+    UPLOAD: 'Upload',
+    DOWNLOAD: 'Download',
+    COPY: 'Copy',
+    SHARE: 'Share',
+    BACK: 'Back',
+    NEXT: 'Next',
+    FINISH: 'Finish',
+    SUBMIT: 'Submit',
+    RESET: 'Reset',
+    CLEAR: 'Clear',
+    SEARCH: 'Search',
+    FILTER: 'Filter',
+    SORT: 'Sort',
+    REFRESH: 'Refresh',
+    RETRY: 'Try Again'
   };
 
   // Navigation
   static NAVIGATION = {
-    HOME: 'Ana Sayfa',
-    DESIGN_STUDIO: 'Tasarım Stüdyosu',
-    FAVORITES: 'Favoriler',
-    PROFILE: 'Profil',
-    SETTINGS: 'Ayarlar',
-    HELP: 'Yardım',
-    ABOUT: 'Hakkında',
-    CONTACT: 'İletişim',
-    PRIVACY: 'Gizlilik',
-    TERMS: 'Kullanım Şartları'
+    HOME: 'Home',
+    DESIGN_STUDIO: 'Design Studio',
+    FAVORITES: 'Favorites',
+    PROFILE: 'Profile',
+    SETTINGS: 'Settings',
+    HELP: 'Help',
+    ABOUT: 'About',
+    CONTACT: 'Contact',
+    PRIVACY: 'Privacy',
+    TERMS: 'Terms of Use'
   };
 
   // Status Labels
   static STATUS = {
-    ACTIVE: 'Aktif',
-    INACTIVE: 'Pasif',
-    PENDING: 'Beklemede',
-    COMPLETED: 'Tamamlandı',
-    FAILED: 'Başarısız',
-    CANCELLED: 'İptal Edildi',
-    IN_PROGRESS: 'Devam Ediyor',
-    DRAFT: 'Taslak',
-    PUBLISHED: 'Yayınlandı'
+    ACTIVE: 'Active',
+    INACTIVE: 'Inactive',
+    PENDING: 'Pending',
+    COMPLETED: 'Completed',
+    FAILED: 'Failed',
+    CANCELLED: 'Cancelled',
+    IN_PROGRESS: 'In Progress',
+    DRAFT: 'Draft',
+    PUBLISHED: 'Published'
   };
 
   // Helper method to get nested message
